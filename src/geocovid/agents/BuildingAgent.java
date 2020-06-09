@@ -57,6 +57,8 @@ public class BuildingAgent {
 	private void setBuildingShape() {
 		// Si es espacio verde tomo toda el area
 		int realArea = (coveredArea > 0 ? coveredArea : area);
+		// Se resta un porcentaje del area para paredes, muebles, etc.
+		realArea *= DataSet.BUILDING_AVAILABLE_AREA;
 		if (geometry instanceof Point) {
 			// Si es solo un punto, tomar la superficie como un cuadrado
 			size[1] = (int)Math.sqrt(realArea);
