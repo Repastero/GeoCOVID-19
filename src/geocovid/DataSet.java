@@ -5,8 +5,8 @@ public final class DataSet {
 	static int			cantHumanosExtranjeros		= 1000;
 	static int			cantHumanosLocales			= 1000;
 	//
-	public static final int HOUSE_INHABITANTS_MEAN = 4;
-	public static final double BUILDING_AVAILABLE_AREA = 0.8;	// porcentaje del area construida ocupable 
+	public static final int HOUSE_INHABITANTS_MEAN		= 4;	// cantidad media de humanos por hogar
+	public static final double BUILDING_AVAILABLE_AREA	= 0.8;	// porcentaje del area construida ocupable 
 	//
 	public static final int	HUMANOS_PORCENTAJE_DESEMPLEADO	= 10;	//porcentaje de humanos que no asisten a su lugar de trabajo
 	public static final int	HUMANOS_PORCENTAJE_EXTERIOR		= 5;	//porcentaje de humanos que trabajan al exterior - fuera de edificios
@@ -29,8 +29,8 @@ public final class DataSet {
 	
 	/** % sobre 100 de cada grupo etario <p> 5 a 24 / 25 a 64 / > 65 anos */
 	public static final double[]HUMANS_PER_AGE_GROUP			= {59d, 31d, 10d};
-	/** radio en metros en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
-	public static final double[]TRAVEL_RADIUS_PER_AGE_GROUP		= {750d, -1d, 500d};
+	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
+	public static final double[]TRAVEL_RADIUS_PER_AGE_GROUP		= {750d / 111320, -1d, 500d / 111320}; // metros div metros por grado (longitud)
 	/** % sobre 100 de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[]ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 5d, 36d};
 	/** % sobre 100 de casos en UTI que mueren al terminar la infeccion */

@@ -62,10 +62,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		ScheduleParameters stopParams = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
 		schedule.schedule(stopParams, this, "printSimulationDuration");
 
-		// Crear la proyeccion para almacenar los agentes GIS.
+		// Crear la proyeccion para almacenar los agentes GIS (EPSG:4326).
 		GeographyParameters<Object> geoParams = new GeographyParameters<Object>();
 		this.geography = GeographyFactoryFinder.createGeographyFactory(null).createGeography("Geography", context, geoParams);
-		
 		setBachParameters();
 		
 		// Schedule one shot para agregar infectados

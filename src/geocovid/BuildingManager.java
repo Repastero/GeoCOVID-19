@@ -21,7 +21,7 @@ import repast.simphony.random.RandomHelper;
 import repast.simphony.space.gis.Geography;
 
 public final class BuildingManager {
-	private static final Envelope BOUNDARY = new Envelope(-6737525, -6736387, -3739699, -3740920); // Rectangulo con las coordenadas minimas y maximas del GIS
+	private static final Envelope BOUNDARY = new Envelope(-60.52217611, -60.51670536, -31.81675550, -31.83208680); // Rectangulo con las coordenadas minimas y maximas del GIS
 	
 	private static Context<Object> context; // Lo uso para crear el Query con PropertyEquals
 	private static Geography<Object> geography; // Lo uso para crear el Query con PropertyEquals
@@ -82,7 +82,7 @@ public final class BuildingManager {
 	 * @return
 	 */
 	public static WorkplaceAgent findPlace(Geometry geo, String[] types, int[] chances, double radius) {
-		WorkplaceAgent newPlace;
+		WorkplaceAgent newPlace = null;
         int rnd = RandomHelper.nextIntFromTo(1, 1000);
         int i = 0;
         while (rnd > chances[i]) {
@@ -100,17 +100,13 @@ public final class BuildingManager {
 	        int[] indexes = new int[count];
 	        int index = 0;
 	        for (i = 0; i < count; i++) {
-	        	if (geo.isWithinDistance(placesList.get(i).getGeometry(), radius))
+	        	if (geo.isWithinDistance(placesList.get(i).getGeometry(), radius)) {
 	        		indexes[index++] = i;
+	        	}
 	        }
 	        if (index > 0)
 	        	newPlace = placesList.get(indexes[RandomHelper.nextIntFromTo(0, index-1)]);
-	        else {
-	        	// Si no hay lugares disponibles en el radio buscado, seleciona uno al azar
-	        	// TODO ver si no es mejor que se quede donde esta
-	        	newPlace = placesList.get(RandomHelper.nextIntFromTo(0, count-1));
-	        	//System.out.println("radius not found " + radius);
-	        }
+	        // Si no hay lugares disponibles se quede donde esta
         }
         return newPlace;
 	}
@@ -145,7 +141,7 @@ public final class BuildingManager {
 				// Busca las casas de la misma manzana y viaja a una al azar
 				List<BuildingAgent> houseList = new ArrayList<>();
 				// TODO ver si no es mas realista que seleccione una casa al azar en un radio de 100 metros (vecino de enfrente)
-				Query<Object> query = new PropertyEquals<Object>(context, "block", currentBuilding.getBlockId());
+				Query<Object> query = new PropertyEquals<Object>(context, "blockId", currentBuilding.getBlockId());
 				for (Object building : query.query())
 					houseList.add((BuildingAgent) building);
 				foundedPlace = houseList.get(RandomHelper.nextIntFromTo(0, houseList.size()-1)); // Por lo menos 1 hay seguro
@@ -161,7 +157,7 @@ public final class BuildingManager {
 	 */
 	public static void createInfectiousHuman(int agentID, Coordinate coordinate) {
 		Point pointGeom = geometryFactory.createPoint(coordinate);
-		Geometry geomCircle = pointGeom.buffer(0.00045d); // Crear circunferencia de 50 metros
+		Geometry geomCircle = pointGeom.buffer(0.00045d); // Crear circunferencia de 50 metros aprox (lat 110540 lon 111320)
 		
 		InfectiousHumanAgent infectedHuman = new InfectiousHumanAgent(agentID, coordinate);
 		geography.move(infectedHuman, geomCircle);

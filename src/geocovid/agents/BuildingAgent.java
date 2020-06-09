@@ -10,7 +10,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import geocovid.DataSet;
-import repast.simphony.parameter.Parameter;
 import repast.simphony.random.RandomHelper;
 
 public class BuildingAgent {
@@ -256,8 +255,6 @@ public class BuildingAgent {
 		this.id = id;
 	}
 
-	// Este parametro lo uso para complementar la busqueda de inmuebles por parte de Humanos
-	@Parameter(displayName="Block ID", usageName="block")
 	public long getBlockId() {
 		return blockId;
 	}

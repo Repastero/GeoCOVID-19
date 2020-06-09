@@ -272,7 +272,6 @@ public class HumanAgent {
         	// Si esta dentro de un inmueble
             if (currentBuilding != null) {
             	currentBuilding.removeHuman(this, currentPosition);
-            	currentBuilding = null;
             }
         }
         
@@ -305,6 +304,7 @@ public class HumanAgent {
         }
         
         if (switchBuilding) {
+        	currentBuilding = null;
         	// Si el nuevo lugar es un inmueble
         	if (newBuilding != null) {
         		if (localizActual == 1 && (homeBuilding != jobBuilding))
