@@ -200,6 +200,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		workPlaces.clear();		
 		
 		BuildingAgent tempBuilding = null;
+		WorkplaceAgent tempWorkspace = null;
 		String placeType;
 		maxParcelId = 0;
 		
@@ -255,17 +256,17 @@ public class ContextCreator implements ContextBuilder<Object> {
 						}
 					}
 					else {
-						tempBuilding = new WorkplaceAgent(geom, id, blockId, type, area, coveredArea, placeType);
+						tempWorkspace = new WorkplaceAgent(geom, id, blockId, type, area, coveredArea, placeType);
 						if (placeType.contains("school") || placeType.contains("university"))
-							schoolPlaces.add((WorkplaceAgent) tempBuilding);
+							schoolPlaces.add(tempWorkspace);
 						else {
-							workPlaces.add((WorkplaceAgent) tempBuilding);
+							workPlaces.add(tempWorkspace);
 							
 							if (placesTypeList.contains(placeType))
-								BuildingManager.addPlace(placeType, (WorkplaceAgent)tempBuilding);
+								BuildingManager.addPlace(placeType, tempWorkspace);
 						}
-						context.add(tempBuilding);
-						geography.move(tempBuilding, geom);
+						context.add(tempWorkspace);
+						geography.move(tempWorkspace, geom);
 					}
 				}
 			}

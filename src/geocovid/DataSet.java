@@ -6,6 +6,7 @@ public final class DataSet {
 	static int			cantHumanosLocales			= 1000;
 	//
 	public static final int HOUSE_INHABITANTS_MEAN		= 4;	// cantidad media de humanos por hogar
+	public static final int DISTANCE_BETWEEN_WORKERS	= 2;	// distancia en metros entre trabajadores/estudiantes
 	public static final double BUILDING_AVAILABLE_AREA	= 0.8;	// porcentaje del area construida ocupable 
 	//
 	public static final int	HUMANOS_PORCENTAJE_DESEMPLEADO	= 10;	//porcentaje de humanos que no asisten a su lugar de trabajo
