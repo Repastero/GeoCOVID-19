@@ -1,6 +1,16 @@
 # Folders
 .settings/
 bin/
+docs/
+freezedried_data/
+icons/
+installer/
+integration/
+lib/
+misc/
+output/
+repast-licenses/
 
 # Files
 *.log
+*.txt
