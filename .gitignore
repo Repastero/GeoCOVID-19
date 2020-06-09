@@ -1,0 +1,6 @@
+# Folders
+.settings/
+bin/
+
+# Files
+*.log
