@@ -20,10 +20,10 @@ git clone https://github.com/Repastero/GeoCOVID-19.git --branch master GeoCOVID-
 ## Cómo contribuir
 - Buscar una Issue abierta y sin asignados.
 - Evaluar si es posible resolver, discutir soluciones, aclarar dudas, etc.
-- Asignarse a Issue y crear nueva branch de la principal, desde la web github o comando git.
-- Cambiar a nueva branch y actualizar del repositorio remoto:
+- Asignarse a Issue.
+- Crear nueva branch de la principal y actualizar del repositorio remoto:
 ```
-git checkout nueva-branch
+git checkout -b nueva-branch
 git pull
 ```
 - Realizar los cambios necesarios en el proyecto para resolver Issue.
