@@ -127,7 +127,7 @@ public class BuildingAgent {
 		if (human.isContagious()) {
 			spreadersList.add(human);
 			if ((humans.size() - spreadersList.size()) != 0)
-				spreadVirus(pos);
+				spreadVirus(human.getAgentID(), pos);
 		}
 		else if (!human.wasExposed() && !spreadersList.isEmpty()) {
 			catchVirus(human, pos);
@@ -156,7 +156,7 @@ public class BuildingAgent {
 		// Si comienza a contagiar luego de ingresar al building
 		spreadersList.add(human);
 		if ((humans.size() - spreadersList.size()) != 0)
-			spreadVirus(human.getCurrentPosition());
+			spreadVirus(human.getAgentID(), human.getCurrentPosition());
 	}
 	
 	public void removeSpreader(HumanAgent human) {
@@ -166,18 +166,19 @@ public class BuildingAgent {
 	
     /**
      * Esparce el virus a los humanos susceptibles a su alrededor.
+     * @param id 
      * @see DataSet#INFECTION_RADIUS
      * @see DataSet.INFECTION_RATE
      */
-    public void spreadVirus(int[] pos) {
+    public void spreadVirus(int spId, int[] spPos) {
     	// Buscar vecinos
     	int radius = DataSet.INFECTION_RADIUS;
 		// Si se pasa del inicio
-		int startX = (pos[0] - radius < 0) ? 0 : pos[0] - radius;
-		int startY = (pos[1] - radius < 0) ? 0 : pos[1] - radius;
+		int startX = (spPos[0] - radius < 0) ? 0 : spPos[0] - radius;
+		int startY = (spPos[1] - radius < 0) ? 0 : spPos[1] - radius;
 		// Si se pasa del fin
-		int endX = (pos[0] + radius > size[0]) ? size[0] : pos[0] + radius;
-		int endY = (pos[1] + radius > size[1]) ? size[1] : pos[1] + radius;
+		int endX = (spPos[0] + radius > size[0]) ? size[0] : spPos[0] + radius;
+		int endY = (spPos[1] + radius > size[1]) ? size[1] : spPos[1] + radius;
 		
 		HumanAgent prey = null;
 		int preyId;
@@ -185,16 +186,14 @@ public class BuildingAgent {
 		// TODO ver si hay diferencia en rendimiento reccoriendo "humans" y midiendo la distancia
 		for (int row = startX; row < endX; row++) {
 		    for (int col = startY; col < endY; col++) {
-		    	if (row != pos[0] && col != pos[1]) { // Si no es el mismo
-		    		preyId = grid[row][col];
-			    	if (preyId != 0) { // Si no esta vacio
-			    		prey = humans.get(preyId);
-						if (!prey.wasExposed()) {
-							if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-								prey.setExposed();
-							}
+	    		preyId = grid[row][col];
+		    	if ((preyId != 0) && (preyId != spId)) { // Si no esta vacio o es el mismo
+		    		prey = humans.get(preyId);
+					if (!prey.wasExposed()) {
+						if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
+							prey.setExposed();
 						}
-			    	}
+					}
 		    	}
 		    }
 		}
