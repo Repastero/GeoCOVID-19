@@ -2,11 +2,11 @@ package geocovid;
 
 public final class DataSet {
 	/** Ver <b>cantHumanos</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	public static int	cantHumanosFijos		= 6000;
+	public static int	localHumans		= 6000;
 	/** Ver <b>cantHumanosExtranjeros</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	public static int	cantHumanosExtranjeros	= 1000;
+	public static int	foreignTravelerHumans	= 1000;
 	/** Ver <b>cantHumanosLocales</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	public static int	cantHumanosLocales		= 1000;
+	public static int	localTravelerHumans		= 1000;
 	
 	public static final int HOUSE_INHABITANTS_MEAN		= 4;	// cantidad media de humanos por hogar
 	public static final int DISTANCE_BETWEEN_WORKERS	= 2;	// distancia en metros entre trabajadores/estudiantes

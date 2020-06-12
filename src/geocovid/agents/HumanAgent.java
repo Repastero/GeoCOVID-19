@@ -26,9 +26,9 @@ public class HumanAgent {
 	private BuildingAgent workPlace;
 	
 	private int[] currentPosition = {0,0};
-	private int[] workPosition = {0,0};
+	private int[] workplacePosition = {0,0};
 	
-	private int localizActual = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
+	private int currentActivity = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
 	private int indexTMMC;
 	private int ageGroup = 0;
 	private double icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[1];
@@ -51,7 +51,7 @@ public class HumanAgent {
 	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, int tmmc) {
 		this.homePlace = home;
 		this.workPlace = work;
-		this.workPosition = workPos;
+		this.workplacePosition = workPos;
 		this.indexTMMC = tmmc;
 		this.ageGroup = ageGroup;
 		this.icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup];
@@ -107,7 +107,7 @@ public class HumanAgent {
 			return;
 		
 		AddAgentToContext("GeoCOVID-19", this);
-		localizActual = 0;
+		currentActivity = 0;
 		currentPosition = homePlace.insertHuman(this);
 		currentBuilding = homePlace;
 		switchLocation();
@@ -280,19 +280,19 @@ public class HumanAgent {
 				break;
 		}
         
-        while (r > matrixTMMC[p][localizActual][i]) {
+        while (r > matrixTMMC[p][currentActivity][i]) {
         	// La suma de las pobabilidades no debe dar mas de 1000
-        	r -= matrixTMMC[p][localizActual][i];
+        	r -= matrixTMMC[p][currentActivity][i];
         	++i;
         }
         
         // Si el nuevo lugar es del mismo tipo, y no es el hogar o trabajo, lo cambia
-        if ((localizActual != i) || (i > 1)) {
+        if ((currentActivity != i) || (i > 1)) {
         	switchBuilding = true;
         }
 
-        newBuilding = switchActivity(localizActual, i);
-        localizActual = i;
+        newBuilding = switchActivity(currentActivity, i);
+        currentActivity = i;
         
         if (switchBuilding) {
         	// Si esta dentro de un inmueble
@@ -302,8 +302,9 @@ public class HumanAgent {
             }
         	// Si el nuevo lugar es un inmueble
         	if (newBuilding != null) {
-        		if ((localizActual == 1) && (workPosition != null)) {
-        			currentPosition = newBuilding.insertHuman(this, workPosition);
+        		// Si tiene un lugar de trabajo especifico
+        		if ((currentActivity == 1) && (workplacePosition != null)) {
+        			currentPosition = newBuilding.insertHuman(this, workplacePosition);
         		}
         		else
         			currentPosition = newBuilding.insertHuman(this);
@@ -314,7 +315,7 @@ public class HumanAgent {
    					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getGeometry().getCoordinate());
     			}
         	}
-        	else if (isContagious() && localizActual == 1) {
+        	else if (isContagious() && currentActivity == 1) {
         		// Si va afuera a trabajar y es contagioso, oculto el marcador
         		BuildingManager.hideInfectiousHuman(agentID);
         	}

@@ -13,7 +13,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	private int[][] workPositions;
 	private int workPositionsCount;
 	/** Cantidad maxima de trabajdores en lugar de trabajo */
-	private int workers = 4;
+	private int vacancies = 4;
 	/** Cantidad de trajadores por actividad */
 	private static Map<String, Integer> workersPerType;
 	/** Metros cuadrados por trabajador por actividad */
@@ -130,10 +130,9 @@ public class WorkplaceAgent extends BuildingAgent {
 		super(geo, id, blockid, type, area, coveredArea);
 		
 		int workersAmount = workersPerType.getOrDefault(workplaceType, -1);
-		if (workersAmount == -1) {
+		if (workersAmount == -1)
 			workersAmount = (getNumberOfSpots() / workersPerTypeAndArea.get(workplaceType))+1;
-		}
-		setWorkers(workersAmount);
+		this.vacancies = workersAmount;
 		createWorkPositions();
 	}
 	
@@ -143,7 +142,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	private void createWorkPositions() {
 		int x = getWidth();
 		int y = getHeight();
-		workPositions = new int[workers][2];
+		workPositions = new int[vacancies][2];
 		int distance = DataSet.DISTANCE_BETWEEN_WORKERS;
 		int col = 0;
 		int row = 0;
@@ -161,7 +160,7 @@ public class WorkplaceAgent extends BuildingAgent {
 				}
 			}
 		}
-		workPositionsCount = workers;
+		workPositionsCount = workPositions.length;
 	}
 	
 	/**
@@ -174,16 +173,12 @@ public class WorkplaceAgent extends BuildingAgent {
 		workPositions[randomIndex] = workPositions[--workPositionsCount];
 		return pos;
 	}
-
-	public int getWorkers() {
-		return workers;
-	}
-
-	public void setWorkers(int workers) {
-		this.workers = workers;
+	
+	public boolean vacancyAvailable() {
+		return (vacancies > 0);
 	}
 	
-	public void decreaseWorkers() {
-		--this.workers;
+	public void reduceVacancies() {
+		--this.vacancies;
 	}
 }

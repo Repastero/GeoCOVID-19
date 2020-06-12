@@ -46,9 +46,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private Context<Object> context;
 	private Geography<Object> geography;
 	
-	private Integer cantidadInfectados;
-	private Integer tiempoEntradaCaso;
-	private Integer tiempoInicioCuarentena;
+	private Integer infectedAmount;
+	private Integer outbreakStartTime;
+	private Integer lockdownStartTime;
 	private long simulationStartTime;
 	
 	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
@@ -72,11 +72,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 		setBachParameters();
 		
 		// Schedule one shot para agregar infectados
-		params = ScheduleParameters.createOneTime(tiempoEntradaCaso, ScheduleParameters.FIRST_PRIORITY);
+		params = ScheduleParameters.createOneTime(outbreakStartTime, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, this, "infectRandos");
 		
 		// Schedule one shot para iniciar cierre de emergencia (tiempo de primer caso + tiempo inicio cuarentena
-		params = ScheduleParameters.createOneTime(tiempoEntradaCaso + tiempoInicioCuarentena, ScheduleParameters.FIRST_PRIORITY);
+		params = ScheduleParameters.createOneTime(outbreakStartTime + lockdownStartTime, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, this, "initiateLockdown");
 		
 		this.context = context;
@@ -97,7 +97,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
 		System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
 		
-		System.out.println("Susceptibles: " + (DataSet.cantHumanosFijos + DataSet.cantHumanosLocales)); // TODO los extranjeros tambien se suman a susceptibles ???
+		System.out.println("Susceptibles: " + (DataSet.localHumans + DataSet.localTravelerHumans)); // TODO los extranjeros tambien se suman a susceptibles ???
 		System.out.println("Expuestos: " + InfeccionReport.getExposedCount());
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
@@ -114,14 +114,14 @@ public class ContextCreator implements ContextBuilder<Object> {
 		System.out.println("Recuperados Mayores: " + InfeccionReport.getElderRecoveredCount());
 		System.out.println("Muertos Mayores: " + InfeccionReport.getElderDeathsCount());
 		
-		System.out.println("Dias de epidemia: " + (int) (RunEnvironment.getInstance().getCurrentSchedule().getTickCount() - tiempoEntradaCaso) / 12);
+		System.out.println("Dias de epidemia: " + (int) (RunEnvironment.getInstance().getCurrentSchedule().getTickCount() - outbreakStartTime) / 12);
 	}
 	
 	/**
 	 * Selecciona al azar la cantidad de Humanos y Mosquitos seteada en los parametros y los infecta.
 	 */
 	public void infectRandos() {
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, cantidadInfectados);
+		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, infectedAmount);
 		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
 			HumanAgent humano = (HumanAgent) iterator.next();
 			humano.setExposed();
@@ -160,13 +160,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	private void setBachParameters() {
 		Parameters params = RunEnvironment.getInstance().getParameters();
-		cantidadInfectados					= (Integer) params.getValue("cantidadInfectados");
-		tiempoEntradaCaso					= (Integer) params.getValue("tiempoEntradaCaso");
-		tiempoInicioCuarentena				= (Integer) params.getValue("tiempoInicioCuarentena");
+		infectedAmount		= (Integer) params.getValue("cantidadInfectados");
+		outbreakStartTime	= (Integer) params.getValue("tiempoEntradaCaso");
+		lockdownStartTime	= (Integer) params.getValue("tiempoInicioCuarentena");
 		
-		DataSet.cantHumanosFijos			= (Integer) params.getValue("cantHumanos");
-		DataSet.cantHumanosExtranjeros		= (Integer) params.getValue("cantHumanosExtranjeros");
-		DataSet.cantHumanosLocales			= (Integer) params.getValue("cantHumanosLocales");
+		DataSet.localHumans				= (Integer) params.getValue("cantHumanos");
+		DataSet.foreignTravelerHumans	= (Integer) params.getValue("cantHumanosExtranjeros");
+		DataSet.localTravelerHumans		= (Integer) params.getValue("cantHumanosLocales");
 	}
 
 	private void loadPlacesShapefile() {
@@ -325,8 +325,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	private void createFictitiousHomes(int extraHomes) {
 		BuildingAgent tempBuilding, tempHome;
-		// Crear casas que faltan
-		
 		int[] ciIndexes = IntStream.range(0, homePlaces.size()).toArray();
 		int indexesCount = homePlaces.size()-1;
 		int randomIndex;
@@ -356,9 +354,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work, int tmmc) {
 		int[] workPos = null;
 		HumanAgent tempHuman;
-		if (work instanceof WorkplaceAgent) {
+		if (work instanceof WorkplaceAgent)
 			workPos = ((WorkplaceAgent)work).getWorkPosition();
-		}
 		if (home != null) // si tiene hogar es local, si no extranjero
 			tempHuman = new HumanAgent(ageGroup, home, work, workPos, tmmc);
 		else
@@ -370,7 +367,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	/**
 	 * Crea Humanos dependiendo la franja etaria.
 	 * @see DataSet#HUMANS_PER_AGE_GROUP
-	 * @see DataSet#cantHumanosFijos
+	 * @see DataSet#localHumans
 	 */
 	private void initHumans() {
 		// TODO este metodo tiene mas lineas que el Diego! ver de fraccionarlo
@@ -392,7 +389,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		HumanAgent.infectedElderTMMC = MarkovChains.ELDER_DEFAULT_TMMC;
 		
 		// Cntadores
-		int localHumansCount = DataSet.cantHumanosFijos + DataSet.cantHumanosLocales;
+		int localHumansCount = DataSet.localHumans + DataSet.localTravelerHumans;
 		int unemployedCount = 0;
 		//
 		
@@ -413,8 +410,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		// Crear humanos que viven fuera y trabajan o estudian en OV
 		// los de 3era edad no los tengo en cuenta, se suponen que esos no trabajan
-		int age1ForeignCount = (int) ((DataSet.cantHumanosExtranjeros * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[0]) / 100);
-		int age2ForeignCount = (int) ((DataSet.cantHumanosExtranjeros * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[1]) / 100);
+		int age1ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[0]) / 100);
+		int age2ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[1]) / 100);
 		//
 		
 		//System.out.println("Locals: "+ age1Count + " - " + age2Count + " - " + age3Count);
@@ -504,7 +501,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		}
 		//
 		
-		System.out.println("HUMANOS TOTALES: " + (localHumansCount + DataSet.cantHumanosExtranjeros));
+		System.out.println("HUMANOS TOTALES: " + (localHumansCount + DataSet.foreignTravelerHumans));
 		System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
 	}
 	
@@ -515,14 +512,14 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	private WorkplaceAgent findWorkingPlace(List<WorkplaceAgent> list) { 
 		int index;
-		WorkplaceAgent job = null;
+		WorkplaceAgent workplace = null;
 		if (!list.isEmpty()) {
 			index = RandomHelper.nextIntFromTo(0, list.size()-1);
-			job = list.get(index);
-			job.decreaseWorkers();
-			if (job.getWorkers() == 0)
+			workplace = list.get(index);
+			workplace.reduceVacancies();
+			if (!workplace.vacancyAvailable())
 				list.remove(index);
 		}
-		return job;
+		return workplace;
 	}
 }
