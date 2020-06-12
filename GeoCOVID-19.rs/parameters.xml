@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE xml>
 <parameters>
 	<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
 		defaultValue="__NULL__"
@@ -22,10 +23,10 @@
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
 		
 	<parameter name="cantHumanosExtranjeros" displayName="Cantidad de Humanos que viven afuera"
-		type="int"	defaultValue="0" isReadOnly="false"
+		type="int"	defaultValue="1000" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
 		
 	<parameter name="cantHumanosLocales" displayName="Cantidad de Humanos que trabajan afuera"
-		type="int"	defaultValue="0" isReadOnly="false"
+		type="int"	defaultValue="1000" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
 </parameters>

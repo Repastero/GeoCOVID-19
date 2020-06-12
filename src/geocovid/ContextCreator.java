@@ -23,6 +23,7 @@ import com.vividsolutions.jts.geom.Point;
 import cern.jet.random.Uniform;
 import geocovid.agents.BuildingAgent;
 import geocovid.agents.HumanAgent;
+import geocovid.agents.ForeignHumanAgent;
 import geocovid.agents.WorkplaceAgent;
 import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
@@ -48,6 +49,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private Integer cantidadInfectados;
 	private Integer tiempoEntradaCaso;
 	private Integer tiempoInicioCuarentena;
+	private long simulationStartTime;
 	
 	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
 
@@ -59,8 +61,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 		RunEnvironment.getInstance().endAt(3600); // 300 dias maximo
 		
 		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
-		ScheduleParameters stopParams = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
-		schedule.schedule(stopParams, this, "printSimulationDuration");
+		ScheduleParameters params = ScheduleParameters.createOneTime(0d, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, this, "startSimulation");
+		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
+		schedule.schedule(params, this, "printSimulationDuration");
 
 		// Crear la proyeccion para almacenar los agentes GIS (EPSG:4326).
 		GeographyParameters<Object> geoParams = new GeographyParameters<Object>();
@@ -68,12 +72,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 		setBachParameters();
 		
 		// Schedule one shot para agregar infectados
-		ScheduleParameters params = ScheduleParameters.createOneTime(tiempoEntradaCaso, ScheduleParameters.FIRST_PRIORITY);
-		schedule.schedule(params , this , "infectRandos");
+		params = ScheduleParameters.createOneTime(tiempoEntradaCaso, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, this, "infectRandos");
 		
 		// Schedule one shot para iniciar cierre de emergencia (tiempo de primer caso + tiempo inicio cuarentena
 		params = ScheduleParameters.createOneTime(tiempoEntradaCaso + tiempoInicioCuarentena, ScheduleParameters.FIRST_PRIORITY);
-		schedule.schedule(params , this , "initiateLockdown");
+		schedule.schedule(params, this, "initiateLockdown");
 		
 		this.context = context;
 		context.add(new InfeccionReport()); // Unicamente para la grafica en Repast Simphony
@@ -85,10 +89,15 @@ public class ContextCreator implements ContextBuilder<Object> {
 		return context;
 	}
 	
+	public void startSimulation() {
+		simulationStartTime = System.currentTimeMillis();
+	}
+	
 	public void printSimulationDuration() {
-		//-final long simTime = System.currentTimeMillis() - simulationStartTime;
-		//-System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
-		System.out.println("Susceptibles: " + DataSet.cantHumanosFijos);
+		final long simTime = System.currentTimeMillis() - simulationStartTime;
+		System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
+		
+		System.out.println("Susceptibles: " + (DataSet.cantHumanosFijos + DataSet.cantHumanosLocales)); // TODO los extranjeros tambien se suman a susceptibles ???
 		System.out.println("Expuestos: " + InfeccionReport.getExposedCount());
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
@@ -337,14 +346,23 @@ public class ContextCreator implements ContextBuilder<Object> {
 		}
 	}
 	
+	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work) {
+		createHuman(ageGroup, home, work, ageGroup);
+	}
+	
 	/**
 	 * Crea Humanos y asigna a cada uno un lugar aleatorio en la grilla, como posicion del hogar.
 	 */
 	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work, int tmmc) {
-		int[] posJob = null; 
-		if (work instanceof WorkplaceAgent)
-			posJob = ((WorkplaceAgent)work).getWorkPosition();
-		HumanAgent tempHuman = new HumanAgent(ageGroup, home, work, posJob, tmmc);
+		int[] workPos = null;
+		HumanAgent tempHuman;
+		if (work instanceof WorkplaceAgent) {
+			workPos = ((WorkplaceAgent)work).getWorkPosition();
+		}
+		if (home != null) // si tiene hogar es local, si no extranjero
+			tempHuman = new HumanAgent(ageGroup, home, work, workPos, tmmc);
+		else
+			tempHuman = new ForeignHumanAgent(ageGroup, home, work, workPos, tmmc);
 		context.add(tempHuman);
 		tempHuman.setStartLocation();
 	}
@@ -355,6 +373,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * @see DataSet#cantHumanosFijos
 	 */
 	private void initHumans() {
+		// TODO este metodo tiene mas lineas que el Diego! ver de fraccionarlo
 		HumanAgent.initAgentID(); // Reinicio contador de IDs
 		
 		// Matrices de Markov por defecto
@@ -372,33 +391,73 @@ public class ContextCreator implements ContextBuilder<Object> {
 		HumanAgent.infectedAdultTMMC = MarkovChains.ADULT_DEFAULT_TMMC;
 		HumanAgent.infectedElderTMMC = MarkovChains.ELDER_DEFAULT_TMMC;
 		
-		// Crear humanos que viven y trabajan/estudian en OV
-		int age1Count = (int) ((DataSet.cantHumanosFijos) * (DataSet.HUMANS_PER_AGE_GROUP[0] / 100));
-		int age2Count = (int) ((DataSet.cantHumanosFijos) * (DataSet.HUMANS_PER_AGE_GROUP[1] / 100));
-		int age3Count = (DataSet.cantHumanosFijos) - (age1Count + age2Count);
-		// TODO falta implementar los humanos que viajan fuera del contexto (Extranjeros y Locales)
-		
 		// Cntadores
-		int countHumans = DataSet.cantHumanosFijos;
-		int countFuera = 0;
-		int countChori = 0;
-		int countWork = 0;
-		int countSchool = 0;
-		int countRetired = age3Count;
+		int localHumansCount = DataSet.cantHumanosFijos + DataSet.cantHumanosLocales;
+		int unemployedCount = 0;
 		//
+		
+		// Crear humanos que viven y trabajan/estudian en OV
+		int age1Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[0]) / 100);
+		int age2Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[1]) / 100);
+		int age3Count = localHumansCount - (age1Count + age2Count);
+		//
+		
+		// Crear humanos que viven dentro y trabajan o estudian fuera de OV
+		// los de 3era edad no los tengo en cuenta, se suponen que esos no trabajan
+		int age1LocalCount = (int) ((age1Count * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[0]) / 100);
+		int age2LocalCount = (int) ((age2Count * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[1]) / 100);
+		// resto estos de los locales
+		age1Count -= age1LocalCount;
+		age2Count -= age2LocalCount;
+		//
+		
+		// Crear humanos que viven fuera y trabajan o estudian en OV
+		// los de 3era edad no los tengo en cuenta, se suponen que esos no trabajan
+		int age1ForeignCount = (int) ((DataSet.cantHumanosExtranjeros * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[0]) / 100);
+		int age2ForeignCount = (int) ((DataSet.cantHumanosExtranjeros * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[1]) / 100);
+		//
+		
+		//System.out.println("Locals: "+ age1Count + " - " + age2Count + " - " + age3Count);
+		//System.out.println("Local Travelers:   "+ age1LocalCount + " - " + age2LocalCount);
+		//System.out.println("Foreign Travelers: "+ age1ForeignCount + " - " + age2ForeignCount);
 		
 		BuildingAgent tempHome = null;
 		BuildingAgent tempJob = null;
 		
 		// Crear casas ficticias si es que faltan
-		int extraHomes = (countHumans / DataSet.HOUSE_INHABITANTS_MEAN) - homePlaces.size();
+		int extraHomes = (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN) - homePlaces.size();
 		if (extraHomes > 0)
 			createFictitiousHomes(extraHomes);
+		Uniform disUniHomesIndex = RandomHelper.createUniform(0, homePlaces.size()-1);
 		//
 		
-		Uniform disUniHomesIndex = RandomHelper.createUniform(0, homePlaces.size()-1);
+		// Este generador de randoms, se usa para catalogar algunos locales
 		Uniform disUniformWork  = RandomHelper.createUniform(1, 100);
+		
 		int i;
+		// Primero se crean los extranjeros, se asume que hay cupo de lugares de estudio y trabajo
+		for (i = 0; i < age1ForeignCount; i++) {
+			tempJob = findWorkingPlace(schoolPlaces);
+			createHuman(0, null, tempJob, 3);
+		}
+		for (i = 0; i < age2ForeignCount; i++) {
+			tempJob = findWorkingPlace(workPlaces);
+			createHuman(1, null, tempJob, 3);
+		}
+		//
+		
+		// Segundo se crean los locales, pero que trabajan o estudian fuera
+		for (i = 0; i < age1LocalCount; i++) {
+			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
+			createHuman(0, tempHome, null, 3);
+		}
+		for (i = 0; i < age2LocalCount; i++) {
+			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
+			createHuman(1, tempHome, null, 3);
+		}
+		//
+		
+		// Por ultimo se crean los 100% locales
 		for (i = 0; i < age1Count; i++) {
 			// 1era franja etaria -> Escuela
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
@@ -407,27 +466,23 @@ public class ContextCreator implements ContextBuilder<Object> {
 				// Si no estudia, trabaja
 				tempJob = findWorkingPlace(workPlaces);
 				if (tempJob == null) {
-					// No trabaja o trabaja en su domicilio
+					// No encuentra trabajo
 					tempJob = tempHome;
-					++countChori;
+					++unemployedCount;
 				}
-				else ++countWork;
 			}
-			else ++countSchool;
-			createHuman(0, tempHome, tempJob, 0);
+			createHuman(0, tempHome, tempJob);
 		}
 		for (i = 0; i < age2Count; i++) {
 			// 2da franja etaria -> Trabajo
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			if (disUniformWork.nextInt() <= DataSet.HUMANOS_PORCENTAJE_DESEMPLEADO) {
-				// No trabaja o trabaja en su domicilio
+			if (disUniformWork.nextInt() <= DataSet.LAZY_HUMANS_PERCENTAGE) {
+				// Estos no trabaja o trabaja en su domicilio
 				tempJob = tempHome;
-				++countChori;
 			}
-			else if (disUniformWork.nextInt() <= DataSet.HUMANOS_PORCENTAJE_EXTERIOR) {
+			else if (disUniformWork.nextInt() <= DataSet.OUTSIDE_WORKERS_PERCENTAGE) {
 				// Trabaja al exterior
 				tempJob = null;
-				++countFuera;
 			}
 			else {
 				// Trabajador
@@ -435,28 +490,22 @@ public class ContextCreator implements ContextBuilder<Object> {
 				if (tempJob == null) {
 					tempJob = findWorkingPlace(schoolPlaces);
 					if (tempJob == null) {
-						// Trabaja al exterior - Si no hay mas cupos
-						++countFuera;
+						// No encuentra trabajo
+						++unemployedCount;
 					}
-					else ++countSchool;
 				}
-				else ++countWork;
 			}
-			createHuman(1, tempHome, tempJob, 1);
+			createHuman(1, tempHome, tempJob);
 		}
 		for (i = 0; i < age3Count; i++) {
 			// 3era franja etaria -> Casa
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			createHuman(2, tempHome, tempHome, 2);
+			createHuman(2, tempHome, tempHome);
 		}
+		//
 		
-		System.out.println("CANTIDAD HUMANOS: " + countHumans);
-		System.out.println("CANTIDAD TRABAJADORES: " + countWork);
-		System.out.println("CANTIDAD ESTUDIANTES: " + countSchool);
-		System.out.println("CANTIDAD JUBILADOS: " + countRetired);
-		
-		System.out.println("CANTIDAD CHORI: " + countChori);
-		System.out.println("CANTIDAD FUERA: " + countFuera);
+		System.out.println("HUMANOS TOTALES: " + (localHumansCount + DataSet.cantHumanosExtranjeros));
+		System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
 	}
 	
 	/**

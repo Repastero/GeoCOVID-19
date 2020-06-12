@@ -15,11 +15,11 @@ import repast.simphony.random.RandomHelper;
 public class BuildingAgent {
 	// Atributos del GIS
 	private Geometry geometry;
-	private long	id;
-	private long	blockId;
-	private String	type;
-	private int		area;
-	private int		coveredArea;
+	private long id;
+	private long blockId;
+	private String type;
+	private int area;
+	private int coveredArea;
 	//
 	private int capacity;
 	private int size[] = {0,0}; // ancho x largo
@@ -142,8 +142,11 @@ public class BuildingAgent {
 	 */
 	public void removeHuman(HumanAgent human, int[] pos) {
 		int humanId = human.getAgentID();
-		if (pos != null)
-			grid[pos[0]][pos[1]] = 0;
+		// Si quedo afuera, no se continua
+		if (pos == null)
+			return;
+		//
+		grid[pos[0]][pos[1]] = 0;
 		if (!humans.remove(humanId, human))
 			System.out.println("not found "+human.getAgentID());
 		if (human.isContagious()) {

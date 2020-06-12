@@ -1,3 +1,4 @@
+<!DOCTYPE xml>
 <repast.simphony.chart2.engine.TimeSeriesChartDescriptor simphonyVersion="2.7.0">
   <name>Reporte</name>
   <dataSet>Reporte</dataSet>
