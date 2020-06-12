@@ -1,6 +1,7 @@
 package geocovid.agents;
 
-import static repast.simphony.essentials.RepastEssentials.*;
+import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext;
+import static repast.simphony.essentials.RepastEssentials.AddAgentToContext;
 
 import geocovid.BuildingManager;
 import geocovid.DataSet;
@@ -21,11 +22,11 @@ public class HumanAgent {
 	///////////////////////////
 	
 	private BuildingAgent currentBuilding = null;
-	private BuildingAgent homeBuilding;
-	private BuildingAgent jobBuilding;
+	private BuildingAgent homePlace;
+	private BuildingAgent workPlace;
 	
 	private int[] currentPosition = {0,0};
-	private int[] jobFixedPosition = {0,0};
+	private int[] workPosition = {0,0};
 	
 	private int localizActual = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
 	private int indexTMMC;
@@ -34,13 +35,10 @@ public class HumanAgent {
 	private double asxChance = DataSet.ASX_INFECTIOUS_RATE[1];
 	private double travelRadius = -1;
 	
-	private static ISchedule schedule;
+	protected static ISchedule schedule;
 	private static int agentIDCounter = 0;
 	private int agentID = ++agentIDCounter;
 	
-    private ISchedulableAction switchLocationAction = null;
-    private boolean slActionRemoved = true;
-    
     // ESTADOS //
     public boolean exposed			= false;
     public boolean asxInfectious	= false; // Asymptomatic Infectious
@@ -50,10 +48,10 @@ public class HumanAgent {
     public boolean dead				= false;
     /////////////
     
-	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent job, int[] posJob, int tmmc) {
-		this.homeBuilding = home;
-		this.jobBuilding = job;
-		this.jobFixedPosition = posJob;
+	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, int tmmc) {
+		this.homePlace = home;
+		this.workPlace = work;
+		this.workPosition = workPos;
 		this.indexTMMC = tmmc;
 		this.ageGroup = ageGroup;
 		this.icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup];
@@ -68,6 +66,10 @@ public class HumanAgent {
 	
 	public int getAgentID() {
 		return agentID;
+	}
+	
+	public BuildingAgent getPlaceOfWork() {
+		return workPlace;
 	}
 
 	public boolean wasExposed() {
@@ -86,26 +88,15 @@ public class HumanAgent {
 	 * Los Humanos locales empiezan en sus casas por el primer medio tick
 	 */
 	public void setStartLocation() {
-		localizActual = 0;
-    	currentPosition = homeBuilding.insertHuman(this);
-		if (currentPosition != null)
-			currentBuilding = homeBuilding;
-		
-	 	// Schedule one shot
-		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
-		ScheduleParameters params = ScheduleParameters.createOneTime(0.5d, 0.6d);
-		switchLocationAction = schedule.schedule(params, this, "switchLocation");
+		// Schedule one shot
+		ScheduleParameters params = ScheduleParameters.createOneTime(0d, 0.6d);
+		schedule.schedule(params, this, "switchLocation");
 	}
 	
-	public void removeFromContext() {
-		// Estos 2 estados son de contagio
+	public void removeInfectiousFromContext() {
 		if (currentBuilding != null) {
 			currentBuilding.removeHuman(this, currentPosition);
 			currentBuilding = null;
-		}
-		// Si va a salir del contexto, elimino la accion "switchLocation"
-		if (switchLocationAction != null) {
-			slActionRemoved = schedule.removeAction(switchLocationAction);
 		}
 		RemoveAgentFromContext("GeoCOVID-19", this);
 	}
@@ -116,12 +107,9 @@ public class HumanAgent {
 			return;
 		
 		AddAgentToContext("GeoCOVID-19", this);
-		//
-		localizActual = 1; // Trabajo ???
-		currentPosition = homeBuilding.insertHuman(this);
-		if (currentPosition != null)
-			currentBuilding = homeBuilding;
-		//
+		localizActual = 0;
+		currentPosition = homePlace.insertHuman(this);
+		currentBuilding = homePlace;
 		switchLocation();
 	}
 	
@@ -137,7 +125,7 @@ public class HumanAgent {
 		double period = RandomHelper.createNormal(mean, std).nextDouble();
 		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
 		
-		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(GetTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(scheduleParams, this, "setInfectious");
 	}
 	
@@ -157,19 +145,13 @@ public class HumanAgent {
 				// Mover a ICU hasta que se cure o muera
 				hospitalized = true;
 				InfeccionReport.modifyHospitalizedCount(ageGroup, 1);
-				// Sacar del contexto
-				if (currentBuilding != null) {
-					currentBuilding.removeHuman(this, currentPosition);
-					currentBuilding = null;
-				}
-				removeFromContext();
 			}
 			symInfectious = true;
 			InfeccionReport.modifySYMInfectiousCount(ageGroup, 1);
 		}
 		//
 		
-		if (currentBuilding != null) {
+		if (!hospitalized && currentBuilding != null) {
 			currentBuilding.addSpreader(this);
 			// Si no fue a ICU y esta dentro de un Building, se crear el marcador de infeccioso
 			BuildingManager.createInfectiousHuman(agentID, currentBuilding.getGeometry().getCoordinate());
@@ -180,7 +162,7 @@ public class HumanAgent {
 		double period = RandomHelper.createNormal(mean, std).nextDouble();
 		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
 		
-		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(GetTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(scheduleParams, this, "setRecovered");
 	}
 	
@@ -223,24 +205,62 @@ public class HumanAgent {
 		}
 	}
 
+	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
+		BuildingAgent newBuilding;
+    	int mean, stdDev, maxDev, ndValue;
+        switch (activityIndex) {
+	    	case 0: // 0 Casa
+	    		newBuilding = homePlace;
+	    		mean = 100;
+	    		stdDev = 50;
+	    		maxDev = 75;
+	    		break;
+	    	case 1: // 1 Trabajo / Estudio
+	    		newBuilding = workPlace;
+	    		mean = 200;
+	    		stdDev = 10;
+	    		maxDev = 20;
+	    		break;
+	    	case 2: // 2 Ocio
+	    		newBuilding = BuildingManager.findRandomPlace(2, currentBuilding, travelRadius);
+	    		mean = 50;
+	    		stdDev = 10;
+	    		maxDev = 25;
+	    		break;
+	    	default: // 3 Otros (supermercados, farmacias, etc)
+	    		newBuilding = BuildingManager.findRandomPlace(3, currentBuilding, travelRadius);
+	    		mean = 25;
+	    		stdDev = 10;
+	    		maxDev = 20;
+	    		break;
+        }
+        
+        // Calcular tiempo hasta que cambie nuevamente de posicion
+	    ndValue = RandomHelper.createNormal(mean, stdDev).nextInt();
+	    ndValue = (ndValue > mean+maxDev) ? mean+maxDev : (ndValue < mean-maxDev ? mean-maxDev: ndValue);
+	    double temp = schedule.getTickCount() + (ndValue*0.02d);
+	    
+   	 	// Schedule one shot
+		ScheduleParameters params = ScheduleParameters.createOneTime(temp, 0.6d); // ScheduleParameters.FIRST_PRIORITY
+		schedule.schedule(params, this, "switchLocation");
+		
+		return newBuilding;
+	}
+	
+	
     /**
     * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
     */
     public void switchLocation() {
     	// No se mueve si esta internado
-    	if (hospitalized)
+    	if (hospitalized) {
+    		removeInfectiousFromContext();
     		return;
-    	
-    	// Si al salir del contexto no pudo remover esta accion
-	    if (!slActionRemoved) {
-	    	slActionRemoved = true;
-	    	return;
-	    }
+    	}
     	
 	    BuildingAgent newBuilding;
 	    boolean switchBuilding = false;
-    	int mean, stdDev, maxDev, ndValue;
-        final int p = ((int)GetTickCount() % 12) / 3;	// 0 1 2 3
+        final int p = ((int)schedule.getTickCount() % 12) / 3;	// 0 1 2 3
         int r = RandomHelper.nextIntFromTo(1, 1000);
         int i = 0;
         
@@ -256,7 +276,7 @@ public class HumanAgent {
 				matrixTMMC = (!symInfectious ? elderTMMC : infectedElderTMMC);
 				break;
 			default:
-				matrixTMMC = travelerTMMC; // TODO implementar humano que trabaja afuera o vive afuera
+				matrixTMMC = travelerTMMC;
 				break;
 		}
         
@@ -269,66 +289,35 @@ public class HumanAgent {
         // Si el nuevo lugar es del mismo tipo, y no es el hogar o trabajo, lo cambia
         if ((localizActual != i) || (i > 1)) {
         	switchBuilding = true;
+        }
+
+        newBuilding = switchActivity(localizActual, i);
+        localizActual = i;
+        
+        if (switchBuilding) {
         	// Si esta dentro de un inmueble
             if (currentBuilding != null) {
             	currentBuilding.removeHuman(this, currentPosition);
+            	currentBuilding = null;
             }
-        }
-        
-        localizActual = i;
-        switch (localizActual) {
-        	case 0: // 0 Casa
-        		newBuilding = homeBuilding;
-        		mean = 100;
-        		stdDev = 50;
-        		maxDev = 75;
-        		break;
-        	case 1: // 1 Trabajo / Estudio
-        		newBuilding = jobBuilding;
-        		mean = 200;
-        		stdDev = 10;
-        		maxDev = 20;
-        		break;
-        	case 2: // 2 Ocio
-        		newBuilding = BuildingManager.findRandomPlace(2, currentBuilding, travelRadius);
-        		mean = 50;
-        		stdDev = 10;
-        		maxDev = 25;
-        		break;
-        	default: // 3 Otros (supermercados, farmacias, etc)
-        		newBuilding = BuildingManager.findRandomPlace(3, currentBuilding, travelRadius);
-        		mean = 25;
-        		stdDev = 10;
-        		maxDev = 20;
-        		break;
-        }
-        
-        if (switchBuilding) {
-        	currentBuilding = null;
         	// Si el nuevo lugar es un inmueble
         	if (newBuilding != null) {
-        		if (localizActual == 1 && (homeBuilding != jobBuilding))
-        			currentPosition = newBuilding.insertHuman(this, jobFixedPosition);
+        		if ((localizActual == 1) && (workPosition != null)) {
+        			currentPosition = newBuilding.insertHuman(this, workPosition);
+        		}
         		else
         			currentPosition = newBuilding.insertHuman(this);
-    			if (currentPosition != null) {
-    				currentBuilding = newBuilding;
-    				if (isContagious()) {
-    					// Si en periodo de contagio, mover el marcador
-    					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getGeometry().getCoordinate());
-    				}
+        		currentBuilding = newBuilding;
+
+        		if (isContagious() && currentPosition != null) {
+   					// Si en periodo de contagio y dentro del edificio, mover el marcador
+   					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getGeometry().getCoordinate());
     			}
         	}
+        	else if (isContagious() && localizActual == 1) {
+        		// Si va afuera a trabajar y es contagioso, oculto el marcador
+        		BuildingManager.hideInfectiousHuman(agentID);
+        	}
         }
-        
-        // Calcular tiempo hasta que cambie nuevamente de posicion
-	    ndValue = RandomHelper.createNormal(mean, stdDev).nextInt();
-	    ndValue = (ndValue > mean+maxDev) ? mean+maxDev : (ndValue < mean-maxDev ? mean-maxDev: ndValue);
-	    double temp = GetTickCount() + (ndValue*0.02d);
-	    
-   	 	// Schedule one shot
-		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
-		ScheduleParameters params = ScheduleParameters.createOneTime(temp, 0.6d); // ScheduleParameters.FIRST_PRIORITY
-		switchLocationAction = schedule.schedule(params, this, "switchLocation");
     }
 }

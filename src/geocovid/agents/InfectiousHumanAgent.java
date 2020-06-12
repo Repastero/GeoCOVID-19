@@ -4,20 +4,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 public class InfectiousHumanAgent {
 	
-	private int humanAgentID; 
+	private int humanAgentID;
 	private Coordinate currentCoordinate;
+	private boolean hidden = false;
 
 	public InfectiousHumanAgent(int agentID, Coordinate coordinate) {
-		this.setAgentID(agentID);
-		this.setCurrentCoordinate(coordinate);
+		this.humanAgentID = agentID;
+		this.currentCoordinate = coordinate;
 	}
 
 	public int getAgentID() {
 		return humanAgentID;
-	}
-
-	public void setAgentID(int humanAgentID) {
-		this.humanAgentID = humanAgentID;
 	}
 	
 	public Coordinate getCurrentCoordinate() {
@@ -28,4 +25,11 @@ public class InfectiousHumanAgent {
 		this.currentCoordinate = currentCoordinate;
 	}
 
+	public boolean isHidden() {
+		return hidden;
+	}
+
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
+	}
 }

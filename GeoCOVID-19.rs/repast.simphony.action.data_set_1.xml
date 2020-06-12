@@ -1,3 +1,4 @@
+<!DOCTYPE xml>
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.7.0">
   <name>Humanos</name>
   <type>AGGREGATE</type>

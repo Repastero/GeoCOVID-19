@@ -173,21 +173,41 @@ public final class BuildingManager {
 	 */
 	public static void moveInfectiousHuman(int agentID, Coordinate newCoordinate) {
 		InfectiousHumanAgent infHuman = InfectiousHumans.get(agentID);
-		// Si paso a infeccioso no estando dentro de un building, no se encuentra en Map
+		// Si aun no tiene marcador, se crea desde cero
 		if (infHuman == null) {
 			createInfectiousHuman(agentID, newCoordinate);
+			return;
 		}
-		// Si ya tiene marcador, se traslada
-		else {
-			// TODO ver si hay diferencia en rendimiento entre mover por displacement y mover geometria original del punto 
+		// Si la posicion del marcador es reciente, se traslada a la nueva
+		if (!infHuman.isHidden()) {
 			double lonShift = newCoordinate.x - infHuman.getCurrentCoordinate().x;
 			double latShift = newCoordinate.y - infHuman.getCurrentCoordinate().y;
 			geography.moveByDisplacement(infHuman, lonShift, latShift);
-			infHuman.setCurrentCoordinate(newCoordinate);
 		}
+		// Si dejo de trackear al humano, crea nuevo marcador (geometria)
+		else {
+			infHuman.setHidden(false);
+			//
+			Point pointGeom = geometryFactory.createPoint(newCoordinate);
+			Geometry geomCircle = pointGeom.buffer(0.00045d); // Crear circunferencia de 50 metros aprox (lat 110540 lon 111320)
+			geography.move(infHuman, geomCircle);
+			context.add(infHuman);
+		}
+		infHuman.setCurrentCoordinate(newCoordinate);
 	}
 	
 	public static void deleteInfectiousHuman(int agentID) {
-		context.remove(InfectiousHumans.remove(agentID));
+		InfectiousHumanAgent infHuman = InfectiousHumans.remove(agentID);
+		if (infHuman != null) // si es viajero, puede ser que nunca se creo el marcador
+			context.remove(infHuman);
+	}
+	
+	public static void hideInfectiousHuman(int agentID) {
+		InfectiousHumanAgent infHuman = InfectiousHumans.get(agentID);
+		if (infHuman != null) {
+			infHuman.setHidden(true);
+			//-geography.move(infHuman, null); // no lo saca del mapa
+			context.remove(infHuman);
+		}
 	}
 }
