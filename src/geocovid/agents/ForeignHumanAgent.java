@@ -42,7 +42,7 @@ public class ForeignHumanAgent extends HumanAgent {
         switch (activityIndex) {
 	    	case 1: // 1 Trabajo / Estudio
 	    		newBuilding = getPlaceOfWork();
-	    		endTime += 4; // la actividad de trabajo dura 4 ticks
+	    		endTime += 3; // la actividad de trabajo dura 4 ticks
 	    		AddAgentToContext("GeoCOVID-19", this);
 	    		inContext = true;
 	    		break;

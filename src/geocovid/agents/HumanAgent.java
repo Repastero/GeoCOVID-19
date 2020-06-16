@@ -188,16 +188,15 @@ public class HumanAgent {
 			BuildingManager.deleteInfectiousHuman(agentID);
 		}
 		else {
+			hospitalized = false;
 			InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
 			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
 				// Se muere en ICU
-				hospitalized = false;
 				dead = true; // flag por si quiere volver al contexto
 				InfeccionReport.modifyDeathsCount(ageGroup, 1);
 			}
 			else {
 				// Sale de ICU - continua vida normal
-				hospitalized = false;
 				recovered = true;
 				InfeccionReport.modifyRecoveredCount(ageGroup, 1);
 				addRecoveredToContext();
@@ -217,7 +216,7 @@ public class HumanAgent {
 	    		break;
 	    	case 1: // 1 Trabajo / Estudio
 	    		newBuilding = workPlace;
-	    		mean = 200;
+	    		mean = 150;
 	    		stdDev = 10;
 	    		maxDev = 20;
 	    		break;
