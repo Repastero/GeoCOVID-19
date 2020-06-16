@@ -30,7 +30,7 @@ git pull
 - Confirmar cambios en repositorio local y luego actualizar repositoro remoto.
 ```
 git commit -a -m "Descripcion de cambios"
-git push
+git push origin nueva-branch
 ```
 - En web github crear Pull request de la branch modificada a branch principal (ej: master).
 - Escribir los comentarios que se crean necesarios y referenciar Issue.
