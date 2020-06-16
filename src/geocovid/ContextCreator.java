@@ -102,9 +102,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
 		
-		System.out.println("Expuestos Niños y Jovenes: " + InfeccionReport.getYoungExposedCount());
-		System.out.println("Recuperados Niños y Jovenes: " + InfeccionReport.getYoungRecoveredCount());
-		System.out.println("Muertos Niños y Jovenes: " + InfeccionReport.getYoungDeathsCount());
+		System.out.println("Expuestos Niños: " + InfeccionReport.getYoungExposedCount());
+		System.out.println("Recuperados Niños: " + InfeccionReport.getYoungRecoveredCount());
+		System.out.println("Muertos Niños: " + InfeccionReport.getYoungDeathsCount());
+		
+		System.out.println("Expuestos Jovenes: " + InfeccionReport.getYoungExposedCount());
+		System.out.println("Recuperados Jovenes: " + InfeccionReport.getYoungRecoveredCount());
+		System.out.println("Muertos Jovenes: " + InfeccionReport.getYoungDeathsCount());
 		
 		System.out.println("Expuestos Adultos: " + InfeccionReport.getAdultExposedCount());
 		System.out.println("Recuperados Adultos: " + InfeccionReport.getAdultRecoveredCount());
@@ -113,6 +117,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 		System.out.println("Expuestos Mayores: " + InfeccionReport.getElderExposedCount());
 		System.out.println("Recuperados Mayores: " + InfeccionReport.getElderRecoveredCount());
 		System.out.println("Muertos Mayores: " + InfeccionReport.getElderDeathsCount());
+		
+		System.out.println("Expuestos Muy Mayores: " + InfeccionReport.getElderExposedCount());
+		System.out.println("Recuperados Muy Mayores: " + InfeccionReport.getElderRecoveredCount());
+		System.out.println("Muertos Muy Mayores: " + InfeccionReport.getElderDeathsCount());
 		
 		System.out.println("Dias de epidemia: " + (int) (RunEnvironment.getInstance().getCurrentSchedule().getTickCount() - outbreakStartTime) / 12);
 	}
