@@ -28,6 +28,8 @@ public class BuildingAgent {
 	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent trasmisores
 	private Map<Integer, HumanAgent> humans = new HashMap<>();
 	
+	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
+	
 	public BuildingAgent(Geometry geo, long id, long blockId, String type, int area, int coveredArea) {
 		this.geometry = geo;
 		this.id = id;
@@ -115,7 +117,7 @@ public class BuildingAgent {
 	}
 	
 	/**
-	 * Inserta el humano en la posicion de la grilla dada y en Map humans
+	 * Inserta el humano en la posicion de la grilla dada y en humansMap
 	 * @param human
 	 * @param pos
 	 * @return
@@ -129,8 +131,11 @@ public class BuildingAgent {
 			if ((humans.size() - spreadersList.size()) != 0)
 				spreadVirus(human.getAgentID(), pos);
 		}
-		else if (!human.wasExposed() && !spreadersList.isEmpty()) {
-			catchVirus(human, pos);
+		else if (!human.wasExposed()) {
+			if (!spreadersList.isEmpty())
+				findNearbySpreaders(human, pos);
+			if (!human.wasExposed() && !surfacesMap.isEmpty())
+				checkIfSurfaceContaminated(human, pos);
 		}
 		return pos;
 	}
@@ -150,8 +155,7 @@ public class BuildingAgent {
 		if (!humans.remove(humanId, human))
 			System.out.println("not found "+human.getAgentID());
 		if (human.isContagious()) {
-			// TODO aca se tendria que crear la estela del virus
-			spreadersList.remove(human);
+			removeSpreader(human, pos);
 		}
 	}
 	
@@ -162,9 +166,19 @@ public class BuildingAgent {
 			spreadVirus(human.getAgentID(), human.getCurrentPosition());
 	}
 	
-	public void removeSpreader(HumanAgent human) {
-		// Si se pasa el periodo de contagio mientras esta en el building
+	public void removeSpreader(HumanAgent human, int[] pos) {
 		spreadersList.remove(human);
+		// Se crea la estela cuando el contagioso sale de la parcela
+		int csId = getSurfaceId(pos);
+		SurfaceAgent surface = surfacesMap.get(csId);
+		if (surface == null) {
+			// Se crea una superficie con la posicion como ID
+			surfacesMap.put(csId, new SurfaceAgent(csId));
+		}
+		else {
+			// Si la superficie ya estaba contaminada, se 'renueva' el virus
+			surface.updateLifespan();
+		}
 	}
 	
     /**
@@ -205,9 +219,9 @@ public class BuildingAgent {
     /**
      * Busca en la lista de trasmisores los que estan dentro del radio de contagio, y se contagia.
      * @see DataSet#INFECTION_RADIUS
-     * @see DataSet.INFECTION_RATE
+     * @see DataSet#INFECTION_RATE
      */
-    public void catchVirus(HumanAgent human, int[] pos) {
+    public void findNearbySpreaders(HumanAgent human, int[] pos) {
     	// TODO ver que es mas rapido -> calcular distancia con infectados o buscar en grid
     	int[] spPos = new int[2];
     	for (HumanAgent spreader : spreadersList) {
@@ -219,6 +233,32 @@ public class BuildingAgent {
 				}
             }
     	}
+    }
+    
+    /**
+     * Verifica si la superficie donde esta parado el Humano esta contaminada y checkea si el Humano se contagia.
+     */
+    public void checkIfSurfaceContaminated(HumanAgent human, int[] pos) {
+    	int csId = getSurfaceId(pos);
+    	SurfaceAgent surface = surfacesMap.get(csId);
+    	if (surface != null) {
+    		// Si en el ultimo checkeo la superficie seguia contaminada
+    		if (surface.isContaminated()) {
+    			if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
+    				human.setExposed();
+    			}
+			}
+    		// Es preferible no eliminar la superficie contaminada, para utilizar el objeto posteriormente
+    	}
+    }
+    
+    /**
+     * El ID de superficie se calcula como: (Y * ANCHO) + X.
+     * @param pos de superficie
+     * @return id superficie
+     */
+    private int getSurfaceId(int[] pos) {
+    	return (pos[1]*size[0])+pos[0];
     }
     
 	public int[] getSize() {

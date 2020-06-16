@@ -183,7 +183,7 @@ public class HumanAgent {
 			InfeccionReport.modifyRecoveredCount(ageGroup, 1);
 			
 			if (currentBuilding != null)
-				currentBuilding.removeSpreader(this);
+				currentBuilding.removeSpreader(this, currentPosition);
 			// Se borra el marcador de infectado
 			BuildingManager.deleteInfectiousHuman(agentID);
 		}
