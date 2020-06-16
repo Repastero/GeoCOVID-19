@@ -32,17 +32,17 @@ public class HomeStyle implements MarkStyle<BuildingAgent>{
 		textureMap = new HashMap<Integer, WWTexture>();
 		BufferedImage image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(6, 6), .75f, new Color(0xFFFFFF), Color.BLACK);
 		textureMap.put(0, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFCCCC), Color.BLACK);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF99), Color.BLACK);
 		textureMap.put(1, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF9999), Color.BLACK);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF66), Color.BLACK);
 		textureMap.put(2, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF6666), Color.BLACK);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF33), Color.BLACK);
 		textureMap.put(3, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF3333), Color.BLACK);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF00), Color.BLACK);
 		textureMap.put(4, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF0000), Color.BLACK);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFCC00), Color.BLACK);
 		textureMap.put(5, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xCC0000), Color.BLACK);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xCC9900), Color.BLACK);
 		textureMap.put(6, new BasicWWTexture(image));
 	}
 	
