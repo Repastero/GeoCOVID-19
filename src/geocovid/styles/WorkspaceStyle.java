@@ -31,23 +31,23 @@ public class WorkspaceStyle implements MarkStyle<WorkplaceAgent>{
 		textureMap = new HashMap<Integer, WWTexture>();
 		BufferedImage image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(6, 6), .75f, new Color(0xFFFFFF), Color.BLUE);
 		textureMap.put(0, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFCCCC), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFFCC), Color.BLUE);
 		textureMap.put(1, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF9999), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF99), Color.BLUE);
 		textureMap.put(2, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF6666), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF66), Color.BLUE);
 		textureMap.put(3, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF3333), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF33), Color.BLUE);
 		textureMap.put(4, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFF0000), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF00), Color.BLUE);
 		textureMap.put(5, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xCC0000), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFCC00), Color.BLUE);
 		textureMap.put(6, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0x990000), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xCC9933), Color.BLUE);
 		textureMap.put(7, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0x660000), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xCC9900), Color.BLUE);
 		textureMap.put(8, new BasicWWTexture(image));
-		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0x330000), Color.BLUE);
+		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0x996633), Color.BLUE);
 		textureMap.put(9, new BasicWWTexture(image));
 	}
 	
