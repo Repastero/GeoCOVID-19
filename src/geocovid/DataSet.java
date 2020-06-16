@@ -32,7 +32,8 @@ public final class DataSet {
 	public static final int INFECTED_PERIOD_DEVIATION= 12;	// 1 dia desvio standard
 	
 	/** % sobre 100 de casos asintomaticos con respecto a los sintomatcos*/
-	public static final double[] ASX_INFECTIOUS_RATE = {74d, 42d, 10d};	// % 42 en total de ser infectado asintomatico
+	//TODO aca no supe que porcentajes poner
+	public static final double[] ASX_INFECTIOUS_RATE = {74d, 42d, 10d, 0d, 0d};	// % 42 en total de ser infectado asintomatico
 	
 	/** % sobre 100 de cada grupo etario <p> 5-15 años / 16-25 años / 26-40 años / 41-64 años / 65 o mas años */
 	public static final double[] HUMANS_PER_AGE_GROUP			= {30d, 29d, 21d, 10d, 10d };	// Humanos con hogar y trabajo dentro
