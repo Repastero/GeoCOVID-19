@@ -1,30 +1,76 @@
-<!DOCTYPE xml>
-<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.7.0">
-  <name>Humanos</name>
+<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.6.0">
+  <name>Reporte</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>false</inclRandomSeed>
   <scheduleParams>
-    <start>0.0</start>
-    <interval>1.0</interval>
+    <start>1.0</start>
+    <interval>12.0</interval>
     <priority>-Infinity</priority>
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-614267772</hashCode>
+    <hashCode>355055598</hashCode>
   </scheduleParams>
-  <atEnd>false</atEnd>
-  <methodDataSources class="linked-hash-map"/>
-  <countSources class="linked-hash-map">
+  <atEnd>true</atEnd>
+  <methodDataSources class="linked-hash-map">
     <entry>
-      <string>Cantidad</string>
-      <repast.simphony.data2.engine.CountSourceDefinition>
-        <typeName>geocovid.agents.HumanAgent</typeName>
-        <id>Cantidad</id>
-      </repast.simphony.data2.engine.CountSourceDefinition>
+      <string>Expuestos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Expuestos</id>
+        <className>geocovid.InfeccionReport</className>
+        <methodName>getExposedCount</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
-  </countSources>
+    <entry>
+      <string>Infectados Asintomaticos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Asintomaticos</id>
+        <className>geocovid.InfeccionReport</className>
+        <methodName>getASXInfectiousCount</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Infectados Sintomaticos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Sintomaticos</id>
+        <className>geocovid.InfeccionReport</className>
+        <methodName>getSYMInfectiousCount</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Hospitalizados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Hospitalizados</id>
+        <className>geocovid.InfeccionReport</className>
+        <methodName>getHospitalizedCount</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Recuperados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Recuperados</id>
+        <className>geocovid.InfeccionReport</className>
+        <methodName>getRecoveredCount</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Muertos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Muertos</id>
+        <className>geocovid.InfeccionReport</className>
+        <methodName>getDeathsCount</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+  </methodDataSources>
+  <countSources class="linked-hash-map"/>
   <customNADataSources class="linked-hash-map"/>
   <customAggDataSources class="linked-hash-map"/>
 </repast.simphony.data2.engine.DataSetDescriptor>

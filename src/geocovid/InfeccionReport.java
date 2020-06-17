@@ -30,12 +30,12 @@ public class InfeccionReport {
 		deathsTotalCount = 0;
 		
 		// TODO la cantidad de franjas etarias tendria que ser dinamica
-		exposedCount = new int[3];
-		asxInfectiousCount = new int[3];
-		symInfectiousCount = new int[3];
-		hospitalizedCount = new int[3];
-		recoveredCount = new int[3];
-		deathsCount = new int[3];
+		exposedCount = new int[DataSet.ageGroup];
+		asxInfectiousCount = new int[DataSet.ageGroup];
+		symInfectiousCount = new int[DataSet.ageGroup];
+		hospitalizedCount = new int[DataSet.ageGroup];
+		recoveredCount = new int[DataSet.ageGroup];
+		deathsCount = new int[DataSet.ageGroup];
 	}
 	
 	/**
@@ -86,25 +86,39 @@ public class InfeccionReport {
 	public static int getRecoveredCount()			{ return recoveredTotalCount; }
 	public static int getDeathsCount()				{ return deathsTotalCount; }
 	
-	public static int getYoungExposedCount()		{ return exposedCount[0]; }
-	public static int getYoungASXInfectiousCount()	{ return asxInfectiousCount[0]; }
-	public static int getYoungSYMInfectiousCount()	{ return symInfectiousCount[0]; }
-	public static int getYoungHospitalizedCount()	{ return hospitalizedCount[0]; }
-	public static int getYoungRecoveredCount()		{ return recoveredCount[0]; }
-	public static int getYoungDeathsCount()			{ return deathsCount[0]; }
+	public static int getChildExposedCount()		{ return exposedCount[0]; }
+	public static int getChildASXInfectiousCount()	{ return asxInfectiousCount[0]; }
+	public static int getChildSYMInfectiousCount()	{ return symInfectiousCount[0]; }
+	public static int getChildHospitalizedCount()	{ return hospitalizedCount[0]; }
+	public static int getChildRecoveredCount()		{ return recoveredCount[0]; }
+	public static int getChildDeathsCount()			{ return deathsCount[0]; }
 	
-	public static int getAdultExposedCount()		{ return exposedCount[1]; }
-	public static int getAdultASXInfectiousCount() 	{ return asxInfectiousCount[1]; }
-	public static int getAdultSYMInfectiousCount() 	{ return symInfectiousCount[1]; }
-	public static int getAdultHospitalizedCount() 	{ return hospitalizedCount[1]; }
-	public static int getAdultRecoveredCount()		{ return recoveredCount[1]; }
-	public static int getAdultDeathsCount()			{ return deathsCount[1]; }
+	public static int getYoungExposedCount()		{ return exposedCount[1]; }
+	public static int getYoungASXInfectiousCount()	{ return asxInfectiousCount[1]; }
+	public static int getYoungSYMInfectiousCount()	{ return symInfectiousCount[1]; }
+	public static int getYoungHospitalizedCount()	{ return hospitalizedCount[1]; }
+	public static int getYoungRecoveredCount()		{ return recoveredCount[1]; }
+	public static int getYoungDeathsCount()			{ return deathsCount[1]; }
 	
-	public static int getElderExposedCount()		{ return exposedCount[2]; }
-	public static int getElderASXInfectiousCount()	{ return asxInfectiousCount[2]; }
-	public static int getElderInfectedCount()		{ return symInfectiousCount[2]; }
-	public static int getElderHospitalizedCount()	{ return hospitalizedCount[2]; }
-	public static int getElderRecoveredCount()		{ return recoveredCount[2]; }
-	public static int getElderDeathsCount()			{ return deathsCount[2]; }
+	public static int getAdultExposedCount()		{ return exposedCount[2]; }
+	public static int getAdultASXInfectiousCount() 	{ return asxInfectiousCount[2]; }
+	public static int getAdultSYMInfectiousCount() 	{ return symInfectiousCount[2]; }
+	public static int getAdultHospitalizedCount() 	{ return hospitalizedCount[2]; }
+	public static int getAdultRecoveredCount()		{ return recoveredCount[2]; }
+	public static int getAdultDeathsCount()			{ return deathsCount[2]; }
+	
+	public static int getElderExposedCount()		{ return exposedCount[3]; }
+	public static int getElderASXInfectiousCount()	{ return asxInfectiousCount[3]; }
+	public static int getElderInfectedCount()		{ return symInfectiousCount[3]; }
+	public static int getElderHospitalizedCount()	{ return hospitalizedCount[3]; }
+	public static int getElderRecoveredCount()		{ return recoveredCount[3]; }
+	public static int getElderDeathsCount()			{ return deathsCount[3]; }
+	
+	public static int getHigherExposedCount()		{ return exposedCount[4]; }
+	public static int getHigherASXInfectiousCount()	{ return asxInfectiousCount[4]; }
+	public static int getHigherInfectedCount()		{ return symInfectiousCount[4]; }
+	public static int getHigherHospitalizedCount()	{ return hospitalizedCount[4]; }
+	public static int getHigherRecoveredCount()		{ return recoveredCount[4]; }
+	public static int getHigherDeathsCount()			{ return deathsCount[4]; }
 	//
 }

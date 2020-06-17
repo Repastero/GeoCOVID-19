@@ -12,13 +12,20 @@ import repast.simphony.random.RandomHelper;
 
 public class HumanAgent {
 	// Puntero matriz markov //
+	public static int[][][] childTMMC;
 	public static int[][][] youngTMMC;
 	public static int[][][] adultTMMC;
 	public static int[][][] elderTMMC;
+	public static int[][][] higherTMMC;
+
 	public static int[][][] travelerTMMC;
+	public static int[][][] infectedChildTMMC;
 	public static int[][][] infectedYoungTMMC;
 	public static int[][][] infectedAdultTMMC;
 	public static int[][][] infectedElderTMMC;
+	public static int[][][] infectedHigherTMMC;
+
+	
 	///////////////////////////
 	
 	private BuildingAgent currentBuilding = null;
@@ -87,6 +94,7 @@ public class HumanAgent {
 	/**
 	 * Los Humanos locales empiezan en sus casas por el primer medio tick
 	 */
+	
 	public void setStartLocation() {
 		// Schedule one shot
 		ScheduleParameters params = ScheduleParameters.createOneTime(0d, 0.6d);
@@ -100,6 +108,7 @@ public class HumanAgent {
 		}
 		RemoveAgentFromContext("GeoCOVID-19", this);
 	}
+	
 	
 	public void addRecoveredToContext() {
 		// Si esta hospitalizado o vive afuera no vuelve a entrar
@@ -249,7 +258,7 @@ public class HumanAgent {
 	
     /**
     * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
-    */
+    **/
     public void switchLocation() {
     	// No se mueve si esta internado
     	if (hospitalized) {
@@ -266,25 +275,31 @@ public class HumanAgent {
         int[][][] matrixTMMC;
         switch (indexTMMC) {
 			case 0:
-				matrixTMMC = (!symInfectious ? youngTMMC : infectedYoungTMMC);
+				matrixTMMC = (!symInfectious ? childTMMC : infectedChildTMMC);
 				break;
 			case 1:
-				matrixTMMC = (!symInfectious ? adultTMMC : infectedAdultTMMC);
+				matrixTMMC = (!symInfectious ? youngTMMC : infectedYoungTMMC);
 				break;
 			case 2:
+				matrixTMMC = (!symInfectious ? adultTMMC : infectedAdultTMMC);
+				break;
+			case 3:
 				matrixTMMC = (!symInfectious ? elderTMMC : infectedElderTMMC);
+				break;
+			case 4:
+				matrixTMMC = (!symInfectious ? higherTMMC : infectedChildTMMC);
 				break;
 			default:
 				matrixTMMC = travelerTMMC;
 				break;
 		}
-        
+                
         while (r > matrixTMMC[p][currentActivity][i]) {
         	// La suma de las pobabilidades no debe dar mas de 1000
         	r -= matrixTMMC[p][currentActivity][i];
         	++i;
         }
-        
+       
         // Si el nuevo lugar es del mismo tipo, y no es el hogar o trabajo, lo cambia
         if ((currentActivity != i) || (i > 1)) {
         	switchBuilding = true;
@@ -299,6 +314,7 @@ public class HumanAgent {
             	currentBuilding.removeHuman(this, currentPosition);
             	currentBuilding = null;
             }
+            
         	// Si el nuevo lugar es un inmueble
         	if (newBuilding != null) {
         		// Si tiene un lugar de trabajo especifico
@@ -314,6 +330,7 @@ public class HumanAgent {
    					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getGeometry().getCoordinate());
     			}
         	}
+        	
         	else if (isContagious() && currentActivity == 1) {
         		// Si va afuera a trabajar y es contagioso, oculto el marcador
         		BuildingManager.hideInfectiousHuman(agentID);
