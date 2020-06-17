@@ -97,7 +97,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
 		System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
 		
-		System.out.println("Susceptibles: " + (DataSet.localHumans + DataSet.localTravelerHumans)); // TODO los extranjeros tambien se suman a susceptibles ???
+		System.out.println("Susceptibles: " + (DataSet.localHumans + DataSet.localTravelerHumans + DataSet.foreignTravelerHumans));
 		System.out.println("Expuestos: " + InfeccionReport.getExposedCount());
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
@@ -382,7 +382,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		HumanAgent.initAgentID(); // Reinicio contador de IDs
 		
 		// Matrices de Markov por defecto
-		
 		HumanAgent.childTMMC = MarkovChains.CHILD_DEFAULT_TMMC;
 		HumanAgent.youngTMMC = MarkovChains.YOUNG_DEFAULT_TMMC;
 		HumanAgent.adultTMMC = MarkovChains.ADULT_DEFAULT_TMMC;
@@ -390,25 +389,22 @@ public class ContextCreator implements ContextBuilder<Object> {
 		HumanAgent.higherTMMC = MarkovChains.HIGHER_DEFAULT_TMMC;
 
 		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_DEFAULT_TMMC;
-
 		HumanAgent.infectedChildTMMC = MarkovChains.CHILD_DEFAULT_TMMC;
 		HumanAgent.infectedYoungTMMC = MarkovChains.YOUNG_DEFAULT_TMMC;
 		HumanAgent.infectedAdultTMMC = MarkovChains.ADULT_DEFAULT_TMMC;
 		HumanAgent.infectedElderTMMC = MarkovChains.ELDER_DEFAULT_TMMC;
 		HumanAgent.infectedHigherTMMC = MarkovChains.HIGHER_DEFAULT_TMMC;
 
-		// Cntadores
+		// Contadores
 		int localHumansCount = DataSet.localHumans + DataSet.localTravelerHumans;
 		int unemployedCount = 0;
 		//
-		
 		
 		// Crear humanos que viven y trabajan/estudian en OV
 		int age1Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[0]) / 100);
 		int age2Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[1]) / 100);
 		int age3Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[2]) / 100);
 		int age4Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[3]) / 100);
-
 		int age5Count = localHumansCount - (age1Count + age2Count + age3Count + age4Count);
 		//
 		
@@ -428,17 +424,15 @@ public class ContextCreator implements ContextBuilder<Object> {
 		//
 		
 		// Crear humanos que viven fuera y trabajan o estudian en OV
-		// los de 3era edad no los tengo en cuenta, se suponen que esos no trabajan
-		int age1ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[0]) / 100);
+		// los de la primer y ultima franja etaria no se tienen en cuenta
 		int age2ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[1]) / 100);
 		int age3ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[2]) / 100);
 		int age4ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[3]) / 100);
-//		int age5ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[4]) / 100);
 		//
 		
-		//System.out.println("Locals: "+ age1Count + " - " + age2Count + " - " + age3Count);
-		//System.out.println("Local Travelers:   "+ age1LocalCount + " - " + age2LocalCount);
-		//System.out.println("Foreign Travelers: "+ age1ForeignCount + " - " + age2ForeignCount);
+		//System.out.println("Locals: "+ age1Count + " - " + age2Count + " - " + age3Count + " - " + age4Count + " - " + age5Count);
+		//System.out.println("Local Travelers:   "+ age1LocalCount + " - " + age2LocalCount + " - " + age3LocalCount + " - " + age4LocalCount);
+		//System.out.println("Foreign Travelers: "+ age2ForeignCount + " - " + age3ForeignCount + " - " + age4ForeignCount);
 		
 		BuildingAgent tempHome = null;
 		BuildingAgent tempJob = null;
@@ -455,40 +449,36 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		int i;
 		// Primero se crean los extranjeros, se asume que hay cupo de lugares de estudio y trabajo
-		for (i = 0; i < age1ForeignCount; i++) {
-			tempJob = findWorkingPlace(schoolPlaces);
-			createHuman(0, null, tempJob, 3);
-		}
 		for (i = 0; i < age2ForeignCount; i++) {
-			tempJob = findWorkingPlace(workPlaces);
-			createHuman(1, null, tempJob, 3);
+			tempJob = findWorkingPlace(schoolPlaces);
+			createHuman(1, null, tempJob, -1);
 		}
 		for (i = 0; i < age3ForeignCount; i++) {
 			tempJob = findWorkingPlace(workPlaces);
-			createHuman(2, null, tempJob, 3);
+			createHuman(2, null, tempJob, -1);
 		}
 		for (i = 0; i < age4ForeignCount; i++) {
 			tempJob = findWorkingPlace(workPlaces);
-			createHuman(3, null, tempJob, 3);
+			createHuman(3, null, tempJob, -1);
 		}
 		//
 		
 		// Segundo se crean los locales, pero que trabajan o estudian fuera
 		for (i = 0; i < age1LocalCount; i++) {
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(0, tempHome, null, 3);
+			createHuman(0, tempHome, null, -1);
 		}
 		for (i = 0; i < age2LocalCount; i++) {
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(1, tempHome, null, 3);
+			createHuman(1, tempHome, null, -1);
 		}
 		for (i = 0; i < age3LocalCount; i++) {
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(2, tempHome, null, 3);
+			createHuman(2, tempHome, null, -1);
 		}
 		for (i = 0; i < age4LocalCount; i++) {
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(3, tempHome, null, 3);
+			createHuman(3, tempHome, null, -1);
 		}
 		//
 		
@@ -497,15 +487,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 			// 1era franja etaria -> Escuela
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
 			tempJob = findWorkingPlace(schoolPlaces);
-			if (tempJob == null) {
-				// Si no estudia, trabaja
-				tempJob = findWorkingPlace(workPlaces);
-				if (tempJob == null) {
-					// No encuentra trabajo
-					tempJob = tempHome;
-					++unemployedCount;
-				}
-			}
 			createHuman(0, tempHome, tempJob);
 		}
 		for (i = 0; i < age2Count; i++) {
@@ -523,8 +504,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 			}
 			createHuman(1, tempHome, tempJob);
 		}
-		
-		
 		for (i = 0; i < age3Count; i++) {
 			// 3da franja etaria -> Trabajo
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
@@ -549,12 +528,31 @@ public class ContextCreator implements ContextBuilder<Object> {
 			}
 			createHuman(2, tempHome, tempJob);
 		}
-		for (i = 0; i < age3Count; i++) {
-			// 4ta franja etaria -> Casa
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			createHuman(3, tempHome, tempHome);
-		}
 		for (i = 0; i < age4Count; i++) {
+			// 4ta franja etaria -> Trabajo
+			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
+			if (disUniformWork.nextInt() <= DataSet.LAZY_HUMANS_PERCENTAGE) {
+				// Estos no trabaja o trabaja en su domicilio
+				tempJob = tempHome;
+			}
+			else if (disUniformWork.nextInt() <= DataSet.OUTSIDE_WORKERS_PERCENTAGE) {
+				// Trabaja al exterior
+				tempJob = null;
+			}
+			else {
+				// Trabajador
+				tempJob = findWorkingPlace(workPlaces);
+				if (tempJob == null) {
+					tempJob = findWorkingPlace(schoolPlaces);
+					if (tempJob == null) {
+						// No encuentra trabajo
+						++unemployedCount;
+					}
+				}
+			}
+			createHuman(3, tempHome, tempJob);
+		}
+		for (i = 0; i < age5Count; i++) {
 			// 5ta franja etaria -> Casa
 			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
 			createHuman(4, tempHome, tempHome);

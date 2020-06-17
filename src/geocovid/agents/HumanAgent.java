@@ -24,8 +24,6 @@ public class HumanAgent {
 	public static int[][][] infectedAdultTMMC;
 	public static int[][][] infectedElderTMMC;
 	public static int[][][] infectedHigherTMMC;
-
-	
 	///////////////////////////
 	
 	private BuildingAgent currentBuilding = null;
@@ -94,7 +92,6 @@ public class HumanAgent {
 	/**
 	 * Los Humanos locales empiezan en sus casas por el primer medio tick
 	 */
-	
 	public void setStartLocation() {
 		// Schedule one shot
 		ScheduleParameters params = ScheduleParameters.createOneTime(0d, 0.6d);
@@ -108,7 +105,6 @@ public class HumanAgent {
 		}
 		RemoveAgentFromContext("GeoCOVID-19", this);
 	}
-	
 	
 	public void addRecoveredToContext() {
 		// Si esta hospitalizado o vive afuera no vuelve a entrar
@@ -255,7 +251,6 @@ public class HumanAgent {
 		return newBuilding;
 	}
 	
-	
     /**
     * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
     **/
@@ -287,7 +282,7 @@ public class HumanAgent {
 				matrixTMMC = (!symInfectious ? elderTMMC : infectedElderTMMC);
 				break;
 			case 4:
-				matrixTMMC = (!symInfectious ? higherTMMC : infectedChildTMMC);
+				matrixTMMC = (!symInfectious ? higherTMMC : infectedHigherTMMC);
 				break;
 			default:
 				matrixTMMC = travelerTMMC;

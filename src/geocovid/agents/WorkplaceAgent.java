@@ -121,8 +121,8 @@ public class WorkplaceAgent extends BuildingAgent {
 	    workersPerTypeAndArea.put("public_medical_center", 40);
 	    workersPerTypeAndArea.put("sport_club", 80);
 	    workersPerTypeAndArea.put("sports_complex", 180);
-	    workersPerTypeAndArea.put("grocery_or_supermarket", 80);
-	    workersPerTypeAndArea.put("supermarket+grocery_or_supermarket", 80);
+	    workersPerTypeAndArea.put("grocery_or_supermarket", 60);
+	    workersPerTypeAndArea.put("supermarket+grocery_or_supermarket", 60);
 	    workersPerTypeAndArea.put("electronics_store+home_goods_store", 40);
 	}
 	
