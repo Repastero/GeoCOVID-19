@@ -10,6 +10,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import geocovid.DataSet;
+import geocovid.InfeccionReport;
 import repast.simphony.random.RandomHelper;
 
 public class BuildingAgent {
@@ -27,9 +28,9 @@ public class BuildingAgent {
 	private boolean outdoor;
 	
 	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent trasmisores
-	private Map<Integer, HumanAgent> humans = new HashMap<>();
+	private Map<Integer, HumanAgent> humansMap = new HashMap<>(); // Mapa <Id Humano, HumanAgent>
 	
-	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
+	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>(); // Mapa <Id Superficie, SurfaceAgent>
 	
 	public BuildingAgent(Geometry geo, long id, long blockId, String type, int area, int coveredArea) {
 		this.geometry = geo;
@@ -109,7 +110,7 @@ public class BuildingAgent {
 	 */
 	public int[] insertHuman(HumanAgent human) {
 		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
-		if (humans.size() >= capacity) {
+		if (humansMap.size() >= capacity) {
 			System.out.println("building full "+human.getAgentID());
 			// TODO ver que hacer con el humano si no hay lugar
 			return null;
@@ -134,10 +135,10 @@ public class BuildingAgent {
 	public int[] insertHuman(HumanAgent human, int[] pos) {
 		int humanId = human.getAgentID();
 		grid[pos[0]][pos[1]] = humanId;
-		humans.put(humanId, human);
+		humansMap.put(humanId, human);
 		if (human.isContagious()) {
 			spreadersList.add(human);
-			if ((humans.size() - spreadersList.size()) != 0)
+			if ((humansMap.size() - spreadersList.size()) != 0)
 				spreadVirus(human.getAgentID(), pos);
 		}
 		else if (!human.wasExposed()) {
@@ -162,7 +163,7 @@ public class BuildingAgent {
 			return;
 		//
 		grid[pos[0]][pos[1]] = 0;
-		if (!humans.remove(humanId, human))
+		if (!humansMap.remove(humanId, human))
 			System.out.println("not found "+human.getAgentID());
 		if (human.isContagious()) {
 			removeSpreader(human, pos);
@@ -172,7 +173,7 @@ public class BuildingAgent {
 	public void addSpreader(HumanAgent human) {
 		// Si comienza a contagiar luego de ingresar al building
 		spreadersList.add(human);
-		if ((humans.size() - spreadersList.size()) != 0)
+		if ((humansMap.size() - spreadersList.size()) != 0)
 			spreadVirus(human.getAgentID(), human.getCurrentPosition());
 	}
 	
@@ -186,7 +187,7 @@ public class BuildingAgent {
 		SurfaceAgent surface = surfacesMap.get(csId);
 		if (surface == null) {
 			// Se crea una superficie con la posicion como ID
-			surfacesMap.put(csId, new SurfaceAgent(csId));
+			surfacesMap.put(csId, new SurfaceAgent());
 		}
 		else {
 			// Si la superficie ya estaba contaminada, se 'renueva' el virus
@@ -218,12 +219,18 @@ public class BuildingAgent {
 		    for (int col = startY; col < endY; col++) {
 	    		preyId = grid[row][col];
 		    	if ((preyId != 0) && (preyId != spId)) { // Si no esta vacio o es el mismo
-		    		prey = humans.get(preyId);
-					if (!prey.wasExposed()) {
-						if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-							prey.setExposed();
+		    		prey = humansMap.get(preyId);
+		    		if (prey != null) {
+						if (!prey.wasExposed()) {
+							if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
+								prey.setExposed();
+							}
 						}
-					}
+		    		}
+		    		else {
+		    			System.out.println("prey not found "+preyId); // TODO aca hay algo raro, falla cada tanto, mas que nada con viajeros extranjeros
+		    			grid[row][col] = 0;
+		    		}
 		    	}
 		    }
 		}
@@ -259,6 +266,7 @@ public class BuildingAgent {
     		if (surface.isContaminated()) {
     			if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
     				human.setExposed();
+    				InfeccionReport.addExposedToCS();
     			}
 			}
     		// Es preferible no eliminar la superficie contaminada, para utilizar el objeto posteriormente
@@ -343,6 +351,6 @@ public class BuildingAgent {
 	}
 	
 	public int getHumansAmount() {
-		return humans.size();
+		return humansMap.size();
 	}
 }
