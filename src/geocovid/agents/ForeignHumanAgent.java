@@ -9,8 +9,8 @@ public class ForeignHumanAgent extends HumanAgent {
 	
 	private boolean inContext = true;
 
-	public ForeignHumanAgent(int ageGroup, BuildingAgent home, BuildingAgent job, int[] posJob, int tmmc) {
-		super(ageGroup, home, job, posJob, tmmc);
+	public ForeignHumanAgent(int ageGroup, BuildingAgent home, BuildingAgent job, int[] posJob) {
+		super(ageGroup, home, job, posJob, true);
 	}
 	
 	@Override

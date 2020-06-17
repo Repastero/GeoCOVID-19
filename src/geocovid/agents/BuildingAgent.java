@@ -185,7 +185,7 @@ public class BuildingAgent {
      * Esparce el virus a los humanos susceptibles a su alrededor.
      * @param id 
      * @see DataSet#INFECTION_RADIUS
-     * @see DataSet.INFECTION_RATE
+     * @see DataSet#INFECTION_RATE
      */
     public void spreadVirus(int spId, int[] spPos) {
     	// Buscar vecinos

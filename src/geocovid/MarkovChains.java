@@ -75,25 +75,27 @@ public final class MarkovChains {
 		{ {875,60,0, 65},{875,60,0, 65},{875,60,0, 65},{875,60,0, 65} }
 	};
 	
-	public static final int INFECTION_CHILD_TMMC[][][] = {
+	public static final int INFECTED_CHILD_TMMC[][][] = {
 		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
 		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
 		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
 		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}}
 	};
 	
-	public static final int INFECTION_YOUNG_TMMC[][][] = INFECTION_CHILD_TMMC;
+	public static final int INFECTED_YOUNG_TMMC[][][] = INFECTED_CHILD_TMMC;
 	
-	public static final int INFECTION_ADULT_TMMC[][][] = INFECTION_YOUNG_TMMC;
+	public static final int INFECTED_ADULT_TMMC[][][] = INFECTED_YOUNG_TMMC;
 
-	public static final int INFECTION_ELDER_TMMC[][][] = {
+	public static final int INFECTED_ELDER_TMMC[][][] = {
 		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}},
 		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}},
 		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}},
 		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}}
 	};
 	
-	public static final int INFECTION_HIGHER_TMMC[][][] = INFECTION_ELDER_TMMC;
+	public static final int INFECTED_HIGHER_TMMC[][][] = INFECTED_ELDER_TMMC;
+	
+	public static final int INFECTED_TRAVELER_TMMC[][][] = INFECTED_ELDER_TMMC;
 	
 	/////*******************************CUARENTENA MAS SEVERA*******************************
 	
@@ -191,7 +193,10 @@ public final class MarkovChains {
 	};
 	
 	// Mayores
-	public static final int ELDER_SPAIN_TMMC[][][] = {
+	public static final int ELDER_SPAIN_TMMC[][][] = ADULT_SPAIN_TMMC;
+	
+	// Mayores 65
+	public static final int HIGHER_SPAIN_TMMC[][][] = {
 		{ {980,0,0,20},{980,0,0,20},{980,0,0,20},{980,0,0,20} },
 		{ {980,0,0,20},{980,0,0,20},{980,0,0,20},{980,0,0,20} },
 		{ {980,0,0,20},{980,0,0,20},{980,0,0,20},{980,0,0,20} },
