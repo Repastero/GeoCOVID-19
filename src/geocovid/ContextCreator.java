@@ -98,27 +98,27 @@ public class ContextCreator implements ContextBuilder<Object> {
 		System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
 		
 		System.out.println("Susceptibles: " + (DataSet.localHumans + DataSet.localTravelerHumans)); // TODO los extranjeros tambien se suman a susceptibles ???
-		System.out.println("Expuestos: " + InfeccionReport.getExposedCount());
+		System.out.println("Infectados acumulados: " + InfeccionReport.getExposedCount());
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
 		
-		System.out.println("Expuestos Niños: " + InfeccionReport.getYoungExposedCount());
+		System.out.println("Infectados acumulados Niños: " + InfeccionReport.getYoungExposedCount());
 		System.out.println("Recuperados Niños: " + InfeccionReport.getYoungRecoveredCount());
 		System.out.println("Muertos Niños: " + InfeccionReport.getYoungDeathsCount());
 		
-		System.out.println("Expuestos Jovenes: " + InfeccionReport.getYoungExposedCount());
+		System.out.println("Infectados acumulados Jovenes: " + InfeccionReport.getYoungExposedCount());
 		System.out.println("Recuperados Jovenes: " + InfeccionReport.getYoungRecoveredCount());
 		System.out.println("Muertos Jovenes: " + InfeccionReport.getYoungDeathsCount());
 		
-		System.out.println("Expuestos Adultos: " + InfeccionReport.getAdultExposedCount());
+		System.out.println("Infectados acumulados Adultos: " + InfeccionReport.getAdultExposedCount());
 		System.out.println("Recuperados Adultos: " + InfeccionReport.getAdultRecoveredCount());
 		System.out.println("Muertos Adultos: " + InfeccionReport.getAdultDeathsCount());
 		
-		System.out.println("Expuestos Mayores: " + InfeccionReport.getElderExposedCount());
+		System.out.println("Infectados acumulados Mayores: " + InfeccionReport.getElderExposedCount());
 		System.out.println("Recuperados Mayores: " + InfeccionReport.getElderRecoveredCount());
 		System.out.println("Muertos Mayores: " + InfeccionReport.getElderDeathsCount());
 		
-		System.out.println("Expuestos Muy Mayores: " + InfeccionReport.getElderExposedCount());
+		System.out.println("Infectados acumulados Muy Mayores: " + InfeccionReport.getElderExposedCount());
 		System.out.println("Recuperados Muy Mayores: " + InfeccionReport.getElderRecoveredCount());
 		System.out.println("Muertos Muy Mayores: " + InfeccionReport.getElderDeathsCount());
 		
