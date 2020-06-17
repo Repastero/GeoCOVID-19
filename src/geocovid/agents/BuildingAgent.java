@@ -24,6 +24,7 @@ public class BuildingAgent {
 	private int capacity;
 	private int size[] = {0,0}; // ancho x largo
 	private int grid[][];
+	private boolean outdoor;
 	
 	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent trasmisores
 	private Map<Integer, HumanAgent> humans = new HashMap<>();
@@ -57,7 +58,15 @@ public class BuildingAgent {
 	 */
 	private void setBuildingShape() {
 		// Si es espacio verde tomo toda el area
-		int realArea = (coveredArea > 0 ? coveredArea : area);
+		int realArea;
+		if (coveredArea > 0) {
+			realArea = coveredArea;
+			outdoor = false;
+		}
+		else {
+			realArea = area;
+			outdoor = true;
+		}
 		// Se resta un porcentaje del area para paredes, muebles, etc.
 		realArea *= DataSet.BUILDING_AVAILABLE_AREA;
 		if (geometry instanceof Point) {
@@ -134,7 +143,8 @@ public class BuildingAgent {
 		else if (!human.wasExposed()) {
 			if (!spreadersList.isEmpty())
 				findNearbySpreaders(human, pos);
-			if (!human.wasExposed() && !surfacesMap.isEmpty())
+			// Se omite la estela en caso de espacios abiertos
+			if (!outdoor && !human.wasExposed() && !surfacesMap.isEmpty())
 				checkIfSurfaceContaminated(human, pos);
 		}
 		return pos;
@@ -168,6 +178,9 @@ public class BuildingAgent {
 	
 	public void removeSpreader(HumanAgent human, int[] pos) {
 		spreadersList.remove(human);
+		// Se omite la estela en caso de espacios abiertos
+		if (outdoor)
+			return;
 		// Se crea la estela cuando el contagioso sale de la parcela
 		int csId = getSurfaceId(pos);
 		SurfaceAgent surface = surfacesMap.get(csId);
