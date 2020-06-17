@@ -22,8 +22,8 @@ public final class DataSet {
 	public static final int	INFECTION_RADIUS		= 2;	// radio en metros de contagio
 	
 	/** % de contagio al estar en contacto con una superficie contaminada */
-	public static final int	CS_INIT_INFECTION_RATE	= 12;	// % de contagio inicial sobre 100 de superficie contaminada
-	public static final int	CS_INFECTION_LIFESPAN	= 24;	// 2 dias de vida del virus en superficie contaminada
+	public static final int	CS_INFECTION_RATE		= 100;	// % de contagio inicial sobre 100
+	public static final int	CS_MEAN_TEMPERATURE		= 25;	// temperatura media ambiente en grados centigrados
 		
 	/** duracion de periodo de incubacion */
 	public static final int EXPOSED_PERIOD_MEAN		= 60;	// 5 dias

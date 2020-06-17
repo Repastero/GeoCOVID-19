@@ -8,6 +8,7 @@ import repast.simphony.engine.schedule.ScheduledMethod;
  */
 public class InfeccionReport {
 	private static int exposedTotalCount;
+	private static int exposedToCSCount;
 	private static int asxInfectiousTotalCount;
 	private static int symInfectiousTotalCount;
 	private static int hospitalizedTotalCount;
@@ -23,6 +24,7 @@ public class InfeccionReport {
 	//
 	public InfeccionReport() {
 		exposedTotalCount = 0;
+		exposedToCSCount = 0;
 		asxInfectiousTotalCount = 0;
 		symInfectiousTotalCount = 0;
 		hospitalizedTotalCount = 0;
@@ -45,6 +47,10 @@ public class InfeccionReport {
 		// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
 		if ((recoveredTotalCount != 0 || deathsTotalCount != 0) && ((deathsTotalCount + recoveredTotalCount) == exposedTotalCount))
 			RunEnvironment.getInstance().endRun();
+	}
+	
+	public static void addExposedToCS() {
+		++exposedToCSCount;
 	}
 	
 	public static void modifyExposedCount(int agIndex, int value) {
@@ -79,6 +85,7 @@ public class InfeccionReport {
 	
 	// Getters para usar en reportes de Repast Simphony
 	public static int getExposedCount()				{ return exposedTotalCount; }
+	public static int getExposedToCSCount()			{ return exposedToCSCount; }
 	public static int getASXInfectiousCount()		{ return asxInfectiousTotalCount; }
 	public static int getSYMInfectiousCount()		{ return symInfectiousTotalCount; }
 	public static int getHospitalizedCount()		{ return hospitalizedTotalCount; }
@@ -118,6 +125,6 @@ public class InfeccionReport {
 	public static int getHigherInfectedCount()		{ return symInfectiousCount[4]; }
 	public static int getHigherHospitalizedCount()	{ return hospitalizedCount[4]; }
 	public static int getHigherRecoveredCount()		{ return recoveredCount[4]; }
-	public static int getHigherDeathsCount()			{ return deathsCount[4]; }
+	public static int getHigherDeathsCount()		{ return deathsCount[4]; }
 	//
 }

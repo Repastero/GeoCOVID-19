@@ -102,6 +102,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		System.out.println("Susceptibles: " + (DataSet.localHumans + DataSet.localTravelerHumans + DataSet.foreignTravelerHumans));
 		System.out.println("Expuestos: " + InfeccionReport.getExposedCount());
+		System.out.println("Expuestos por estela: " + InfeccionReport.getExposedToCSCount());
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
 		
