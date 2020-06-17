@@ -36,20 +36,18 @@ public final class DataSet {
 	public static final double[] ASX_INFECTIOUS_RATE = {74d, 42d, 10d, 0d, 0d};	// % 42 en total de ser infectado asintomatico
 	
 	/** % sobre 100 de cada grupo etario <p> 5-15 años / 16-25 años / 26-40 años / 41-64 años / 65 o mas años */
-	public static final double[] HUMANS_PER_AGE_GROUP			= {30d, 29d, 21d, 10d, 10d };	// Humanos con hogar y trabajo dentro
+	public static final double[] HUMANS_PER_AGE_GROUP			= {22d, 27d, 27d, 16d, 8d };	// Humanos con hogar y trabajo dentro
 	
-	/** % sobre 100 de cada grupo etario <p> 5 a 24 / 25 a 64 / > 65 anos */
-//	public static final double[] HUMANS_PER_AGE_GROUP			= {59d, 31d, 10d};	// Humanos con hogar y trabajo dentro
 	
 	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {0d, 35d, 45d, 20d,  0d};	// Humanos con hogar dentro y trabajo/estudio fuera
-//	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {35d, 65d,  0d};	// Humanos con hogar dentro y trabajo/estudio fuera
+//	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {35d, 65d,  0d};	
 	
 	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {40d, 30d,20d, 10d,  0d};	// Humanos con hogar fuera y trabajo/estudio dentro
-//	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {70d, 30d,  0d};	// Humanos con hogar fuera y trabajo/estudio dentro
+//	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {70d, 30d,  0d};	
 	
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
 	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750d / 111320,1000d / 111320, -1d, -1d, 500d / 111320}; // metros div metros por grado (longitud)
-//	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750d / 111320, -1d, 500d / 111320}; // metros div metros por grado (longitud)
+//	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750d / 111320, -1d, 500d / 111320}; 
 	
 	/** % sobre 100 de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};
