@@ -35,11 +35,11 @@ public final class DataSet {
 	//TODO aca no supe que porcentajes poner
 	public static final double[] ASX_INFECTIOUS_RATE = {74d, 42d, 10d, 0d, 0d};	// % 42 en total de ser infectado asintomatico
 	
-	/** % sobre 100 de cada grupo etario <p> 5-15 años / 16-25 años / 26-40 años / 41-64 años / 65 o mas años */
+	/** % sobre 100 de cada grupo etario <p> 5-15 aÃ±os / 16-25 aÃ±os / 26-40 aÃ±os / 41-64 aÃ±os / 65 o mas aÃ±os */
 	public static final double[] HUMANS_PER_AGE_GROUP			= {22d, 27d, 27d, 16d, 8d };	// Humanos con hogar y trabajo dentro
 	
 	
-	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {0d, 35d, 45d, 20d,  0d};	// Humanos con hogar dentro y trabajo/estudio fuera
+	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {15d, 25d, 40d, 20d,  0d}; // Humanos con hogar dentro y trabajo/estudio fuera
 //	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {35d, 65d,  0d};	
 	
 	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {40d, 30d,20d, 10d,  0d};	// Humanos con hogar fuera y trabajo/estudio dentro
