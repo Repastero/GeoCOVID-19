@@ -34,20 +34,19 @@ public final class DataSet {
 	public static final int INFECTED_PERIOD_DEVIATION= 12;	// 1 dia desvio standard
 	
 	/** % sobre 100 de casos asintomaticos con respecto a los sintomatcos*/
-	public static final double[] ASX_INFECTIOUS_RATE = {74d, 74d, 42d, 42d, 10d};	// % 42 en total de ser infectado asintomatico
+	public static final double[] ASX_INFECTIOUS_RATE = {74d, 74d, 42d, 42d, 10d};	// % total de ser infectado asintomatico
 	
 	/** % sobre 100 de cada grupo etario <p> 5-15 anos / 16-25 anos / 26-40 anos / 41-64 anos / 65 o mas anos */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
 	public static final double[] HUMANS_PER_AGE_GROUP			= {30d, 29d, 21d, 10d, 10d}; // Humanos con hogar y trabajo dentro
-	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {10d, 30d, 40d, 20d,  0d}; // Humanos con hogar dentro y trabajo/estudio fuera
+	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {15d, 25d, 40d, 20d,  0d}; // Humanos con hogar dentro y trabajo/estudio fuera
 	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= { 0d, 45d, 35d, 20d,  0d}; // Humanos con hogar fuera y trabajo/estudio dentro
 	
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
-	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750d / 111320, 1000d / 111320, -1d, -1d, 500d / 111320}; // metros div metros por grado (longitud)
+	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {500d / 111320, 750d / 111320, -1d, -1d, 500d / 111320}; // metros div metros por grado (longitud)
 	
 	/** % sobre 100 de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};
 	/** % sobre 100 de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE					= 42d;	// % que muere en UTI
-	
 }

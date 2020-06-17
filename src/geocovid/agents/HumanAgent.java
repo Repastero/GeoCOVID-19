@@ -12,18 +12,11 @@ import repast.simphony.random.RandomHelper;
 
 public class HumanAgent {
 	// Puntero matriz markov //
-	public static int[][][] childTMMC;
-	public static int[][][] youngTMMC;
-	public static int[][][] adultTMMC;
-	public static int[][][] elderTMMC;
-	public static int[][][] higherTMMC;
-
+	public static int[][][][] localTMMC			= new int[DataSet.AGE_GROUPS][][][];
+	public static int[][][][] infectedLocalTMMC	= new int[DataSet.AGE_GROUPS][][][];
+	
 	public static int[][][] travelerTMMC;
-	public static int[][][] infectedChildTMMC;
-	public static int[][][] infectedYoungTMMC;
-	public static int[][][] infectedAdultTMMC;
-	public static int[][][] infectedElderTMMC;
-	public static int[][][] infectedHigherTMMC;
+	public static int[][][] infectedTravelerTMMC;
 	///////////////////////////
 	
 	private BuildingAgent currentBuilding = null;
@@ -36,6 +29,7 @@ public class HumanAgent {
 	private int currentActivity = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
 	private int indexTMMC;
 	private int ageGroup = 0;
+	private boolean foreignTraveler = false;
 	private double icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[1];
 	private double asxChance = DataSet.ASX_INFECTIOUS_RATE[1];
 	private double travelRadius = -1;
@@ -53,12 +47,12 @@ public class HumanAgent {
     public boolean dead				= false;
     /////////////
     
-	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, int tmmc) {
+	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign) {
 		this.homePlace = home;
 		this.workPlace = work;
 		this.workplacePosition = workPos;
-		this.indexTMMC = tmmc;
 		this.ageGroup = ageGroup;
+		this.foreignTraveler = foreign;
 		this.icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup];
 		this.travelRadius = DataSet.TRAVEL_RADIUS_PER_AGE_GROUP[ageGroup];
 		this.asxChance = DataSet.ASX_INFECTIOUS_RATE[ageGroup];
@@ -268,27 +262,11 @@ public class HumanAgent {
         int i = 0;
         
         int[][][] matrixTMMC;
-        switch (indexTMMC) {
-			case 0:
-				matrixTMMC = (!symInfectious ? childTMMC : infectedChildTMMC);
-				break;
-			case 1:
-				matrixTMMC = (!symInfectious ? youngTMMC : infectedYoungTMMC);
-				break;
-			case 2:
-				matrixTMMC = (!symInfectious ? adultTMMC : infectedAdultTMMC);
-				break;
-			case 3:
-				matrixTMMC = (!symInfectious ? elderTMMC : infectedElderTMMC);
-				break;
-			case 4:
-				matrixTMMC = (!symInfectious ? higherTMMC : infectedHigherTMMC);
-				break;
-			default:
-				matrixTMMC = travelerTMMC;
-				break;
-		}
-                
+        if (!foreignTraveler)
+        	matrixTMMC = (!symInfectious ? localTMMC[indexTMMC] : infectedLocalTMMC[indexTMMC]);
+        else
+        	matrixTMMC = (!symInfectious ? travelerTMMC : infectedTravelerTMMC);
+        
         while (r > matrixTMMC[p][currentActivity][i]) {
         	// La suma de las pobabilidades no debe dar mas de 1000
         	r -= matrixTMMC[p][currentActivity][i];
