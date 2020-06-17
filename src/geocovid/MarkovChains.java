@@ -9,14 +9,13 @@ package geocovid;
  * Ej: probabilidadTMMC[1][1][2] es la probabilidad de que en el periodo 1 salga del trabajo 1 al lugar de ocio 2</i>
  */
 public final class MarkovChains {
-	
 	/** Matriz modificada para los Humanos que estan en la 1er franja etaria. */
 	public static final int CHILD_DEFAULT_TMMC[][][] = {
-			{ {100,700,100,100},{ 25,925, 25, 25},{100,700,100,100},{100,700,100,100} },
-			{ {925, 25, 25, 25},{800,  0,100,100},{800,  0,100,100},{800,  0,100,100} },
-			{ { 25,925, 25, 25},{ 25,925, 25, 25},{ 25,925, 25, 25},{ 25,925, 25, 25} },
-			{ {925, 25, 25, 25},{ 50, 50,450,450},{700,  0,300,  0},{700,  0,  0,300} }
-		};
+		{ {100,700,100,100},{ 25,925, 25, 25},{100,700,100,100},{100,700,100,100} },
+		{ {925, 25, 25, 25},{800,  0,100,100},{800,  0,100,100},{800,  0,100,100} },
+		{ { 25,925, 25, 25},{ 25,925, 25, 25},{ 25,925, 25, 25},{ 25,925, 25, 25} },
+		{ {925, 25, 25, 25},{ 50, 50,450,450},{700,  0,300,  0},{700,  0,  0,300} }
+	};
 	
 	/** Matriz modificada para los Humanos que estan en la 2er franja etaria. */
 	public static final int YOUNG_DEFAULT_TMMC[][][] = CHILD_DEFAULT_TMMC;
@@ -35,7 +34,6 @@ public final class MarkovChains {
 	/** Matriz modificada para los Humanos que estan en la 5ta franja etaria. */
 	public static final int HIGHER_DEFAULT_TMMC[][][]= ELDER_DEFAULT_TMMC;
 	
-	
 	/** Matriz modificada para los Humanos que trabajan afuera o viven afuera. */
 	public static final int TRAVELER_DEFAULT_TMMC[][][] = {
 		{ {  0,1000,  0,  0},{  0,1000,  0,  0},{  0,1000,  0,  0},{  0,1000,  0,  0} },
@@ -47,11 +45,11 @@ public final class MarkovChains {
 	///*******************************CUARENTENA1*******************************
 	// Confinamiento con salida a compras.
 	public static final int CHILD_CONFINEMENT_TMMC[][][] = {
-			{ {935,0,1, 64},{935,0,1, 64},{935,0,1, 64},{935,0,1, 64} },
-			{ {880,0,1,119},{880,0,1,119},{880,0,1,119},{880,0,1,119} },
-			{ {880,0,1,129},{880,0,1,119},{880,0,1,119},{880,0,1,119} },
-			{ {935,0,1, 64},{935,0,1, 64},{935,0,1, 64},{935,0,1, 64} }
-		};
+		{ {935,0,1, 64},{935,0,1, 64},{935,0,1, 64},{935,0,1, 64} },
+		{ {880,0,1,119},{880,0,1,119},{880,0,1,119},{880,0,1,119} },
+		{ {880,0,1,129},{880,0,1,119},{880,0,1,119},{880,0,1,119} },
+		{ {935,0,1, 64},{935,0,1, 64},{935,0,1, 64},{935,0,1, 64} }
+	};
 	
 	public static final int YOUNG_CONFINEMENT_TMMC[][][] = CHILD_CONFINEMENT_TMMC;
 	
@@ -61,8 +59,6 @@ public final class MarkovChains {
 		{ {854,25,1,120},{854,25,1,120},{854,25,1,120},{854,25,1,120} },
 		{ {904,30,1, 65},{904,30,1, 65},{904,30,1, 65},{904,30,1, 65} }
 	};
-	
-	
 	
 	public static final int ELDER_CONFINEMENT_TMMC[][][] = {
 		{ {850,0,0,150},{850,0,0,150},{850,0,0,150},{975,0,0,25}},
@@ -78,7 +74,6 @@ public final class MarkovChains {
 		{ {830,50,0,120},{830,50,0,120},{830,50,0,120},{830,50,0,120} },
 		{ {875,60,0, 65},{875,60,0, 65},{875,60,0, 65},{875,60,0, 65} }
 	};
-	
 	
 	public static final int INFECTION_CHILD_TMMC[][][] = {
 		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
@@ -103,11 +98,11 @@ public final class MarkovChains {
 	/////*******************************CUARENTENA MAS SEVERA*******************************
 	
 	public static final int CHILD_HARD_CONFINEMENT_TMMC[][][] = {
-			{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
-			{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
-			{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
-			{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} }
-		};
+		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
+		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
+		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
+		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} }
+	};
 	
 	public static final int YOUNG_HARD_CONFINEMENT_TMMC[][][] = CHILD_HARD_CONFINEMENT_TMMC;
 	
