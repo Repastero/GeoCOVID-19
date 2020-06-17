@@ -42,7 +42,7 @@ public final class DataSet {
 	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {15d, 25d, 40d, 20d,  0d}; // Humanos con hogar dentro y trabajo/estudio fuera
 //	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {35d, 65d,  0d};	
 	
-	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {40d, 30d,20d, 10d,  0d};	// Humanos con hogar fuera y trabajo/estudio dentro
+	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {15d, 30d, 35d, 20d, 0d}; // Humanos con hogar fuera y trabajo/estudio dentro
 //	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {70d, 30d,  0d};	
 	
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
