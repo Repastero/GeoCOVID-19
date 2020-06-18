@@ -40,6 +40,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private List<BuildingAgent> homePlaces = new ArrayList<BuildingAgent>();
 	private List<WorkplaceAgent>workPlaces = new ArrayList<WorkplaceAgent>();
 	private List<WorkplaceAgent>schoolPlaces = new ArrayList<WorkplaceAgent>();
+	private List<WorkplaceAgent>universityPlaces = new ArrayList<WorkplaceAgent>();
 	
 	private Map<Long, String> placesType = new HashMap<>();
 	
@@ -52,6 +53,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private long simulationStartTime;
 	
 	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
+	private int unemployedCount; // Contador de empleos faltantes
+	private int unschooledCount; // Contador de bancos faltantes en escuelas
 
 	static final String SHP_FILE_PARCELS = "./data/ov-4326.shp";
 	static final String SHP_FILE_PLACES = "./data/places-matched-4326.shp";
@@ -97,8 +100,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
 		System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
 		
-		System.out.println("Susceptibles: " + (DataSet.localHumans + DataSet.localTravelerHumans)); // TODO los extranjeros tambien se suman a susceptibles ???
+		System.out.println("Susceptibles: " + (DataSet.localHumans + DataSet.localTravelerHumans + DataSet.foreignTravelerHumans));
 		System.out.println("Infectados acumulados: " + InfeccionReport.getExposedCount());
+		System.out.println("Infectados por estela: " + InfeccionReport.getExposedToCSCount());
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
 		
@@ -137,29 +141,58 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
+	 * Asignar las matrices de markov que se utilizan al principio de simulacion.<p>
+	 * Ver {@link #initHumans()}
+	 */
+	private void setHumansDefaultTMMC() {
+		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_DEFAULT_TMMC;
+		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_DEFAULT_TMMC;
+		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_DEFAULT_TMMC;
+		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_DEFAULT_TMMC;
+		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_DEFAULT_TMMC;
+
+		HumanAgent.infectedLocalTMMC[0] = MarkovChains.CHILD_DEFAULT_TMMC;
+		HumanAgent.infectedLocalTMMC[1] = MarkovChains.YOUNG_DEFAULT_TMMC;
+		HumanAgent.infectedLocalTMMC[2] = MarkovChains.ADULT_DEFAULT_TMMC;
+		HumanAgent.infectedLocalTMMC[3] = MarkovChains.ELDER_DEFAULT_TMMC;
+		HumanAgent.infectedLocalTMMC[4] = MarkovChains.HIGHER_DEFAULT_TMMC;
+		
+		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_DEFAULT_TMMC;
+		HumanAgent.infectedTravelerTMMC	= MarkovChains.TRAVELER_DEFAULT_TMMC;
+	}
+	
+	/**
 	 * Asignar las matrices de markov que se van a utilizar al comenzar la cuarentena.
 	 */
 	public void initiateLockdown() {
-		/*
 		// Confinamiento con salida a compras.
-		HumanAgent.youngTMMC = MarkovChains.YOUNG_HARD_CONFINEMENT_TMMC;
-		HumanAgent.adultTMMC = MarkovChains.ADULT_HARD_CONFINEMENT_TMMC;
-		HumanAgent.elderTMMC = MarkovChains.ELDER_HARD_CONFINEMENT_TMMC;
+		/*
+		HumanAgent.localTMMC[0] = MarkovChains.CHILD_HARD_CONFINEMENT_TMMC;
+		HumanAgent.localTMMC[1] = MarkovChains.YOUNG_HARD_CONFINEMENT_TMMC;
+		HumanAgent.localTMMC[2] = MarkovChains.ADULT_HARD_CONFINEMENT_TMMC;
+		HumanAgent.localTMMC[3] = MarkovChains.ELDER_HARD_CONFINEMENT_TMMC;
+		HumanAgent.localTMMC[4] = MarkovChains.HIGHER_HARD_CONFINEMENT_TMMC;
 		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_CONFINEMENT_TMMC;
-		HumanAgent.infectedYoungTMMC = MarkovChains.INFECTION_YOUNG_TMMC;
-		HumanAgent.infectedAdultTMMC = MarkovChains.INFECTION_ADULT_TMMC;
-		HumanAgent.infectedElderTMMC = MarkovChains.INFECTION_ELDER_TMMC;
 		*/
 		
+		// Cuarentena en españa
 		/*
-		//cuarentena en españa
-		HumanAgent.youngTMMC = MarkovChains.YOUNG_SPAIN_TMMC;
-		HumanAgent.adultTMMC = MarkovChains.ADULT_SPAIN_TMMC;
-		HumanAgent.elderTMMC = MarkovChains.ELDER_SPAIN_TMMC;
-		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_CONFINEMENT_TMMC;
-		HumanAgent.infectedYoungTMMC = MarkovChains.INFECTION_YOUNG_TMMC;
-		HumanAgent.infectedAdultTMMC = MarkovChains.INFECTION_ADULT_TMMC;
-		HumanAgent.infectedElderTMMC = MarkovChains.INFECTION_ELDER_TMMC;
+		HumanAgent.localTMMC[0] = MarkovChains.YOUNG_SPAIN_TMMC;
+		HumanAgent.localTMMC[1] = MarkovChains.YOUNG_SPAIN_TMMC;
+		HumanAgent.localTMMC[2] = MarkovChains.ADULT_SPAIN_TMMC;
+		HumanAgent.localTMMC[3] = MarkovChains.ELDER_SPAIN_TMMC;
+		HumanAgent.localTMMC[4] = MarkovChains.HIGHER_SPAIN_TMMC;
+		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_FULL_DAY_CONFINEMENT_TMMC;
+		*/
+		
+		// Infectados sintomaticos
+		/*
+		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
+		HumanAgent.infectedLocalTMMC[1] = MarkovChains.INFECTED_YOUNG_TMMC;
+		HumanAgent.infectedLocalTMMC[2] = MarkovChains.INFECTED_ADULT_TMMC;
+		HumanAgent.infectedLocalTMMC[3] = MarkovChains.INFECTED_ELDER_TMMC;
+		HumanAgent.infectedLocalTMMC[4] = MarkovChains.INFECTED_HIGHER_TMMC;
+		HumanAgent.infectedTravelerTMMC = MarkovChains.INFECTED_TRAVELER_TMMC;
 		*/
 	}
 
@@ -274,11 +307,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 					}
 					else {
 						tempWorkspace = new WorkplaceAgent(geom, id, blockId, type, area, coveredArea, placeType);
-						if (placeType.contains("school") || placeType.contains("university"))
+						if (placeType.contains("school"))
 							schoolPlaces.add(tempWorkspace);
+						else if (placeType.contains("university"))
+							universityPlaces.add(tempWorkspace);
 						else {
 							workPlaces.add(tempWorkspace);
-							
+							// Si es lugar con atencion al publico, se agrega a la lista de actividades
 							if (placesTypeList.contains(placeType))
 								BuildingManager.addPlace(placeType, tempWorkspace);
 						}
@@ -352,97 +387,35 @@ public class ContextCreator implements ContextBuilder<Object> {
 		}
 	}
 	
-	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work) {
-		createHuman(ageGroup, home, work, ageGroup);
-	}
-	
 	/**
 	 * Crea Humanos y asigna a cada uno un lugar aleatorio en la grilla, como posicion del hogar.
 	 */
-	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work, int tmmc) {
+	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work) {
 		int[] workPos = null;
 		HumanAgent tempHuman;
-		if (work instanceof WorkplaceAgent)
+		// Se le asigna una posicion fija en el trabajo, si es que trabaja
+		if (work instanceof WorkplaceAgent) {
 			workPos = ((WorkplaceAgent)work).getWorkPosition();
-		if (home != null) // si tiene hogar es local, si no extranjero
-			tempHuman = new HumanAgent(ageGroup, home, work, workPos, tmmc);
+		}
+		// Si tiene hogar es local, si no extranjero
+		if (home != null)
+			tempHuman = new HumanAgent(ageGroup, home, work, workPos, false);
 		else
-			tempHuman = new ForeignHumanAgent(ageGroup, home, work, workPos, tmmc);
+			tempHuman = new ForeignHumanAgent(ageGroup, home, work, workPos);
 		context.add(tempHuman);
 		tempHuman.setStartLocation();
 	}
 
 	/**
-	 * Crea Humanos dependiendo la franja etaria.
+	 * Crea Humanos dependiendo la franja etaria, lugar de trabajo y vivienda.
 	 * @see DataSet#HUMANS_PER_AGE_GROUP
 	 * @see DataSet#localHumans
 	 */
 	private void initHumans() {
-		// TODO este metodo tiene mas lineas que el Diego! ver de fraccionarlo
 		HumanAgent.initAgentID(); // Reinicio contador de IDs
-		
-		// Matrices de Markov por defecto
-		
-		HumanAgent.childTMMC = MarkovChains.CHILD_DEFAULT_TMMC;
-		HumanAgent.youngTMMC = MarkovChains.YOUNG_DEFAULT_TMMC;
-		HumanAgent.adultTMMC = MarkovChains.ADULT_DEFAULT_TMMC;
-		HumanAgent.elderTMMC = MarkovChains.ELDER_DEFAULT_TMMC;
-		HumanAgent.higherTMMC = MarkovChains.HIGHER_DEFAULT_TMMC;
+		setHumansDefaultTMMC();
 
-		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_DEFAULT_TMMC;
-
-		HumanAgent.infectedChildTMMC = MarkovChains.CHILD_DEFAULT_TMMC;
-		HumanAgent.infectedYoungTMMC = MarkovChains.YOUNG_DEFAULT_TMMC;
-		HumanAgent.infectedAdultTMMC = MarkovChains.ADULT_DEFAULT_TMMC;
-		HumanAgent.infectedElderTMMC = MarkovChains.ELDER_DEFAULT_TMMC;
-		HumanAgent.infectedHigherTMMC = MarkovChains.HIGHER_DEFAULT_TMMC;
-
-		// Cntadores
 		int localHumansCount = DataSet.localHumans + DataSet.localTravelerHumans;
-		int unemployedCount = 0;
-		//
-		
-		
-		// Crear humanos que viven y trabajan/estudian en OV
-		int age1Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[0]) / 100);
-		int age2Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[1]) / 100);
-		int age3Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[2]) / 100);
-		int age4Count = (int) ((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[3]) / 100);
-
-		int age5Count = localHumansCount - (age1Count + age2Count + age3Count + age4Count);
-		//
-		
-		// Crear humanos que viven dentro y trabajan o estudian fuera de OV
-		// los de 3era edad no los tengo en cuenta, se suponen que esos no trabajan
-		int age1LocalCount = (int) ((age1Count * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[0]) / 100);
-		int age2LocalCount = (int) ((age2Count * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[1]) / 100);
-		int age3LocalCount = (int) ((age3Count * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[2]) / 100);
-		int age4LocalCount = (int) ((age4Count * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[3]) / 100);
-
-		
-		// resto estos de los locales
-		age1Count -= age1LocalCount;
-		age2Count -= age2LocalCount;
-		age3Count -= age3LocalCount;
-		age4Count -= age4LocalCount;
-		//
-		
-		// Crear humanos que viven fuera y trabajan o estudian en OV
-		// los de 3era edad no los tengo en cuenta, se suponen que esos no trabajan
-		int age1ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[0]) / 100);
-		int age2ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[1]) / 100);
-		int age3ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[2]) / 100);
-		int age4ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[3]) / 100);
-//		int age5ForeignCount = (int) ((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[4]) / 100);
-		//
-		
-		//System.out.println("Locals: "+ age1Count + " - " + age2Count + " - " + age3Count);
-		//System.out.println("Local Travelers:   "+ age1LocalCount + " - " + age2LocalCount);
-		//System.out.println("Foreign Travelers: "+ age1ForeignCount + " - " + age2ForeignCount);
-		
-		BuildingAgent tempHome = null;
-		BuildingAgent tempJob = null;
-		
 		// Crear casas ficticias si es que faltan
 		int extraHomes = (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN) - homePlaces.size();
 		if (extraHomes > 0)
@@ -453,116 +426,131 @@ public class ContextCreator implements ContextBuilder<Object> {
 		// Este generador de randoms, se usa para catalogar algunos locales
 		Uniform disUniformWork  = RandomHelper.createUniform(1, 100);
 		
-		int i;
-		// Primero se crean los extranjeros, se asume que hay cupo de lugares de estudio y trabajo
-		for (i = 0; i < age1ForeignCount; i++) {
-			tempJob = findWorkingPlace(schoolPlaces);
-			createHuman(0, null, tempJob, 3);
-		}
-		for (i = 0; i < age2ForeignCount; i++) {
-			tempJob = findWorkingPlace(workPlaces);
-			createHuman(1, null, tempJob, 3);
-		}
-		for (i = 0; i < age3ForeignCount; i++) {
-			tempJob = findWorkingPlace(workPlaces);
-			createHuman(2, null, tempJob, 3);
-		}
-		for (i = 0; i < age4ForeignCount; i++) {
-			tempJob = findWorkingPlace(workPlaces);
-			createHuman(3, null, tempJob, 3);
+		int[] localHumans			= new int[DataSet.AGE_GROUPS];
+		int[] localTravelerHumans	= new int[DataSet.AGE_GROUPS];
+		int[] foreignTravelerHumans	= new int[DataSet.AGE_GROUPS];
+		
+		int i, j;
+		// Crear humanos que viven y trabajan/estudian en OV
+		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
+			localHumans[i] = (int) Math.ceil((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[i]) / 100);
+			localTravelerHumans[i] = (int) Math.ceil((localHumans[i] * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[i]) / 100);
+			localHumans[i] -= localTravelerHumans[i];
+			//
+			foreignTravelerHumans[i] = (int) Math.ceil((DataSet.foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[i]) / 100);
 		}
 		//
+		
+		// DEBUG
+		//for (i = 0; i < DataSet.AGE_GROUPS; i++)
+		//	System.out.println(localHumans[i] + " | " + localTravelerHumans[i] + " | " + foreignTravelerHumans[i]);
+		
+		BuildingAgent tempHome = null;
+		BuildingAgent tempJob = null;
+		unemployedCount = 0;
+		unschooledCount = 0;
+		
+		// Primero se crean los extranjeros, se asume que hay cupo de lugares de estudio y trabajo
+		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
+			for (j = 0; j < foreignTravelerHumans[i]; j++) {
+				tempJob = findAGWorkingPlace(i);
+				createHuman(i, null, tempJob);
+			}
+		}
 		
 		// Segundo se crean los locales, pero que trabajan o estudian fuera
-		for (i = 0; i < age1LocalCount; i++) {
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(0, tempHome, null, 3);
+		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
+			for (j = 0; j < localTravelerHumans[i]; j++) {
+				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
+				createHuman(i, tempHome, null);
+			}
 		}
-		for (i = 0; i < age2LocalCount; i++) {
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(1, tempHome, null, 3);
-		}
-		for (i = 0; i < age3LocalCount; i++) {
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(2, tempHome, null, 3);
-		}
-		for (i = 0; i < age4LocalCount; i++) {
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());;
-			createHuman(3, tempHome, null, 3);
-		}
-		//
 		
 		// Por ultimo se crean los 100% locales
-		for (i = 0; i < age1Count; i++) {
-			// 1era franja etaria -> Escuela
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			tempJob = findWorkingPlace(schoolPlaces);
-			if (tempJob == null) {
-				// Si no estudia, trabaja
-				tempJob = findWorkingPlace(workPlaces);
-				if (tempJob == null) {
-					// No encuentra trabajo
-					tempJob = tempHome;
-					++unemployedCount;
+		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
+			// Si son CHILD siempre van a la escuela
+			if (i == 0) {
+				for (j = 0; j < localHumans[0]; j++) {
+					tempHome = homePlaces.get(disUniHomesIndex.nextInt());
+					tempJob = findAGWorkingPlace(0);
+					createHuman(0, tempHome, tempJob);
 				}
 			}
-			createHuman(0, tempHome, tempJob);
-		}
-		for (i = 0; i < age2Count; i++) {
-			// 2era franja etaria -> Escuela
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			tempJob = findWorkingPlace(schoolPlaces);
-			if (tempJob == null) {
-				// Si no estudia, trabaja
-				tempJob = findWorkingPlace(workPlaces);
-				if (tempJob == null) {
-					// No encuentra trabajo
-					tempJob = tempHome;
-					++unemployedCount;
+			// Si son HIGHER se quedan en la casa, no trabajan
+			else if (i == 4) {
+				for (j = 0; j < localHumans[4]; j++) {
+					tempHome = homePlaces.get(disUniHomesIndex.nextInt());
+					createHuman(4, tempHome, tempHome);
 				}
 			}
-			createHuman(1, tempHome, tempJob);
-		}
-		
-		
-		for (i = 0; i < age3Count; i++) {
-			// 3da franja etaria -> Trabajo
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			if (disUniformWork.nextInt() <= DataSet.LAZY_HUMANS_PERCENTAGE) {
-				// Estos no trabaja o trabaja en su domicilio
-				tempJob = tempHome;
-			}
-			else if (disUniformWork.nextInt() <= DataSet.OUTSIDE_WORKERS_PERCENTAGE) {
-				// Trabaja al exterior
-				tempJob = null;
-			}
+			// Si son YOUNG, ADULT o ELDER pueden no trabajar/estudiar
 			else {
-				// Trabajador
-				tempJob = findWorkingPlace(workPlaces);
-				if (tempJob == null) {
-					tempJob = findWorkingPlace(schoolPlaces);
-					if (tempJob == null) {
-						// No encuentra trabajo
-						++unemployedCount;
-					}
+				for (j = 0; j < localHumans[i]; j++) {
+					tempHome = homePlaces.get(disUniHomesIndex.nextInt());
+					// Si no trabaja o trabaja en su domicilio
+					if (disUniformWork.nextInt() <= DataSet.LAZY_HUMANS_PERCENTAGE)
+						tempJob = tempHome;
+					// Trabaja al exterior
+					else if (disUniformWork.nextInt() <= DataSet.OUTSIDE_WORKERS_PERCENTAGE)
+						tempJob = null;
+					// Trabaja normalmente
+					else
+						tempJob = findAGWorkingPlace(i);
+					createHuman(i, tempHome, tempJob);
 				}
 			}
-			createHuman(2, tempHome, tempJob);
 		}
-		for (i = 0; i < age3Count; i++) {
-			// 4ta franja etaria -> Casa
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			createHuman(3, tempHome, tempHome);
-		}
-		for (i = 0; i < age4Count; i++) {
-			// 5ta franja etaria -> Casa
-			tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-			createHuman(4, tempHome, tempHome);
-		}
-		//
 		
 		System.out.println("HUMANOS TOTALES: " + (localHumansCount + DataSet.foreignTravelerHumans));
 		System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
+		System.out.println("BANCOS EN ESCUELA FALTANTES: " + unschooledCount);
+	}
+
+	/**
+	 * Busca lugar de trabajo/estudio en las distintas colecciones (escuela, facultad, trabajo), segun franja etaria y orden:<p>
+	 * <ul>
+	 * <li>0 -> schoolPlaces
+	 * <li>1 -> universityPlaces, schoolPlaces, workPlaces
+	 * <li>2 -> workPlaces, universityPlaces
+	 * <li>3 -> workPlaces, universityPlaces
+	 * <li>4 -> null
+	 * </ul>
+	 * @param ageGroup
+	 * @return WorkplaceAgent o null
+	 */
+	private WorkplaceAgent findAGWorkingPlace(int ageGroup) {
+		WorkplaceAgent workplace = null;
+		switch (ageGroup) {
+			case 0:
+				workplace = findWorkingPlace(schoolPlaces);
+				//
+				if (workplace == null)
+					++unschooledCount;
+				break;
+			case 1:
+				workplace = findWorkingPlace(universityPlaces);
+				if (workplace == null)
+					workplace = findWorkingPlace(schoolPlaces);
+					if (workplace == null)
+						workplace = findWorkingPlace(workPlaces);
+					//
+				if (workplace == null)
+					++unemployedCount;
+				break;
+			case 2:
+			case 3:
+				workplace = findWorkingPlace(workPlaces);
+				if (workplace == null)
+					workplace = findWorkingPlace(universityPlaces);
+				//
+				if (workplace == null)
+					++unemployedCount;
+				break;
+			default:
+				// Si es ageGroup 4, tendria que buscar el cajon
+				break;
+		}
+		return workplace;
 	}
 	
 	/**

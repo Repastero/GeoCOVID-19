@@ -29,13 +29,12 @@ public class InfeccionReport {
 		recoveredTotalCount = 0;
 		deathsTotalCount = 0;
 		
-		// TODO la cantidad de franjas etarias tendria que ser dinamica
-		exposedCount = new int[DataSet.ageGroup];
-		asxInfectiousCount = new int[DataSet.ageGroup];
-		symInfectiousCount = new int[DataSet.ageGroup];
-		hospitalizedCount = new int[DataSet.ageGroup];
-		recoveredCount = new int[DataSet.ageGroup];
-		deathsCount = new int[DataSet.ageGroup];
+		exposedCount = new int[DataSet.AGE_GROUPS];
+		asxInfectiousCount = new int[DataSet.AGE_GROUPS];
+		symInfectiousCount = new int[DataSet.AGE_GROUPS];
+		hospitalizedCount = new int[DataSet.AGE_GROUPS];
+		recoveredCount = new int[DataSet.AGE_GROUPS];
+		deathsCount = new int[DataSet.AGE_GROUPS];
 	}
 	
 	/**
