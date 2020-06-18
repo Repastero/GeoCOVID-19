@@ -1,5 +1,4 @@
-<!DOCTYPE xml>
-<repast.simphony.chart2.engine.TimeSeriesChartDescriptor simphonyVersion="2.7.0">
+<repast.simphony.chart2.engine.TimeSeriesChartDescriptor simphonyVersion="2.6.0">
   <name>Humanos</name>
   <dataSet>Humanos</dataSet>
   <xAxisLabel>Tick Count</xAxisLabel>
