@@ -108,9 +108,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
 		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
 		
-		System.out.println("Infectados acumulados NiÃ±os: " + InfeccionReport.getYoungExposedCount());
-		System.out.println("Recuperados NiÃ±os: " + InfeccionReport.getYoungRecoveredCount());
-		System.out.println("Muertos NiÃ±os: " + InfeccionReport.getYoungDeathsCount());
+		System.out.println("Infectados acumulados Niños: " + InfeccionReport.getYoungExposedCount());
+		System.out.println("Recuperados Niños: " + InfeccionReport.getYoungRecoveredCount());
+		System.out.println("Muertos Niños: " + InfeccionReport.getYoungDeathsCount());
 		
 		System.out.println("Infectados acumulados Jovenes: " + InfeccionReport.getYoungExposedCount());
 		System.out.println("Recuperados Jovenes: " + InfeccionReport.getYoungRecoveredCount());
@@ -177,7 +177,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_CONFINEMENT_TMMC;
 		*/
 		
-		// Cuarentena en espaÃ±a
+		// Cuarentena en españa
 		/*
 		HumanAgent.localTMMC[0] = MarkovChains.YOUNG_SPAIN_TMMC;
 		HumanAgent.localTMMC[1] = MarkovChains.YOUNG_SPAIN_TMMC;
