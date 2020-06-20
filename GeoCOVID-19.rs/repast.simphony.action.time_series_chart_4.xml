@@ -1,10 +1,9 @@
-<!DOCTYPE xml>
 <repast.simphony.chart2.engine.TimeSeriesChartDescriptor simphonyVersion="2.7.0">
-  <name>Humanos</name>
-  <dataSet>Humanos</dataSet>
+  <name>Reporte</name>
+  <dataSet>Reporte</dataSet>
   <xAxisLabel>Tick Count</xAxisLabel>
   <yAxisLabel>Cantidad</yAxisLabel>
-  <chartTitle>Humanos</chartTitle>
+  <chartTitle>Reporte</chartTitle>
   <type>TIME_SERIES</type>
   <background>
     <red>192</red>
@@ -22,13 +21,73 @@
   <showLegend>true</showLegend>
   <seriesIds>
     <entry>
-      <string>Cantidad</string>
+      <string>Hospitalizados</string>
       <SeriesData>
-        <label>Cantidad</label>
+        <label>Hospitalizados</label>
         <color>
           <red>0</red>
           <green>0</green>
           <blue>255</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Sintomaticos</string>
+      <SeriesData>
+        <label>Sintomaticos</label>
+        <color>
+          <red>255</red>
+          <green>0</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Expuestos</string>
+      <SeriesData>
+        <label>Expuestos</label>
+        <color>
+          <red>255</red>
+          <green>255</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Muertos</string>
+      <SeriesData>
+        <label>Muertos</label>
+        <color>
+          <red>102</red>
+          <green>0</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Recuperados</string>
+      <SeriesData>
+        <label>Recuperados</label>
+        <color>
+          <red>0</red>
+          <green>153</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Asintomaticos</string>
+      <SeriesData>
+        <label>Asintomaticos</label>
+        <color>
+          <red>255</red>
+          <green>102</green>
+          <blue>0</blue>
           <alpha>255</alpha>
         </color>
       </SeriesData>
