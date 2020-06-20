@@ -25,8 +25,12 @@
 	<parameter name="cantHumanosExtranjeros" displayName="Cantidad de Humanos que viven afuera"
 		type="int"	defaultValue="1000" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
-		
+			
 	<parameter name="cantHumanosLocales" displayName="Cantidad de Humanos que trabajan afuera"
 		type="int"	defaultValue="1000" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
+		
+	<parameter name="corridas" displayName="Cantidad de simulaciones que se quieren realizar"
+		type="int" defaultValue="50" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 </parameters>
