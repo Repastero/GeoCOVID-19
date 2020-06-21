@@ -210,6 +210,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		DataSet.localHumans				= (Integer) params.getValue("cantHumanos");
 		DataSet.foreignTravelerHumans	= (Integer) params.getValue("cantHumanosExtranjeros");
 		DataSet.localTravelerHumans		= (Integer) params.getValue("cantHumanosLocales");
+		DataSet.corridas				= (Integer) params.getValue("corridas");
 	}
 
 	private void loadPlacesShapefile() {
