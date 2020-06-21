@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE xml>
 <parameters>
 	<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
 		defaultValue="__NULL__"
