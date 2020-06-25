@@ -249,8 +249,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		String boundaryFilename = SHP_FILE_PARCELS;
 		List<SimpleFeature> features = loadFeaturesFromShapefile(boundaryFilename);
 		homePlaces.clear();
+		workPlaces.clear();
 		schoolPlaces.clear();
-		workPlaces.clear();		
+		universityPlaces.clear();
 		
 		BuildingAgent tempBuilding = null;
 		WorkplaceAgent tempWorkspace = null;

@@ -220,16 +220,10 @@ public class BuildingAgent {
 	    		preyId = grid[row][col];
 		    	if ((preyId != 0) && (preyId != spId)) { // Si no esta vacio o es el mismo
 		    		prey = humansMap.get(preyId);
-		    		if (prey != null) {
-						if (!prey.wasExposed()) {
-							if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-								prey.setExposed();
-							}
+					if (!prey.wasExposed()) {
+						if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
+							prey.setExposed();
 						}
-		    		}
-		    		else {
-		    			System.out.println("prey not found "+preyId); // TODO aca hay algo raro, falla cada tanto, mas que nada con viajeros extranjeros
-		    			grid[row][col] = 0;
 		    		}
 		    	}
 		    }
