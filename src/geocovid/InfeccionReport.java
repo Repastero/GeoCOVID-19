@@ -1,6 +1,7 @@
 package geocovid;
 
 import repast.simphony.engine.environment.RunEnvironment;
+import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 
 /**
@@ -39,11 +40,8 @@ public class InfeccionReport {
 		deathsCount = new int[DataSet.AGE_GROUPS];
 	}
 	
-	/**
-	 * Reinicio diariamente la cantidad de nuevos casos de Humanos infectados.
-	 */
-	@ScheduledMethod(start = 0d, interval = 12d, priority = 0.99d) //ScheduleParameters.FIRST_PRIORITY
-	public void inicializadorDiario() {
+	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
+	public void checkPandemicEnd() {
 		// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
 		if ((recoveredTotalCount != 0 || deathsTotalCount != 0) && ((deathsTotalCount + recoveredTotalCount) == exposedTotalCount))
 			RunEnvironment.getInstance().endRun();

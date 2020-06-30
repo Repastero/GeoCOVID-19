@@ -145,7 +145,7 @@ public class BuildingAgent {
 			if (!spreadersList.isEmpty())
 				findNearbySpreaders(human, pos);
 			// Se omite la estela en caso de espacios abiertos
-			if (!outdoor && !human.wasExposed() && !surfacesMap.isEmpty())
+			if (!human.wasExposed() && !surfacesMap.isEmpty())
 				checkIfSurfaceContaminated(human, pos);
 		}
 		return pos;
@@ -179,15 +179,12 @@ public class BuildingAgent {
 	
 	public void removeSpreader(HumanAgent human, int[] pos) {
 		spreadersList.remove(human);
-		// Se omite la estela en caso de espacios abiertos
-		if (outdoor)
-			return;
 		// Se crea la estela cuando el contagioso sale de la parcela
 		int csId = getSurfaceId(pos);
 		SurfaceAgent surface = surfacesMap.get(csId);
 		if (surface == null) {
 			// Se crea una superficie con la posicion como ID
-			surfacesMap.put(csId, new SurfaceAgent());
+			surfacesMap.put(csId, new SurfaceAgent(outdoor));
 		}
 		else {
 			// Si la superficie ya estaba contaminada, se 'renueva' el virus

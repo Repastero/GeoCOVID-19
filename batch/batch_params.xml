@@ -1,15 +1,17 @@
 <?xml version="1.0" ?>
 <sweep runs="1">
+	<parameter name="diaInicioSimulacion" type="constant"
+		constant_type="int" value="62"></parameter>
+	<parameter name="tiempoEntradaCaso" type="constant"
+		constant_type="int" value="0"></parameter>
+	<parameter name="cantidadInfectados" type="constant"
+		constant_type="int" value="5"></parameter>
 	<parameter name="tiempoInicioCuarentena" type="constant"
 		constant_type="int" value="144"></parameter>
 	<parameter name="cantHumanos" type="constant"
 		constant_type="int" value="6000"></parameter>
 	<parameter name="cantHumanosLocales" type="constant"
 		constant_type="int" value="1000"></parameter>
-	<parameter name="cantidadInfectados" type="constant"
-		constant_type="int" value="5"></parameter>
-	<parameter name="tiempoEntradaCaso" type="constant"
-		constant_type="int" value="1"></parameter>
 	<parameter name="cantHumanosExtranjeros" type="constant"
 		constant_type="int" value="1000"></parameter>
 	<parameter name="corridas" type="number" number_type="int"

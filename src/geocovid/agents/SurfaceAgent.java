@@ -1,6 +1,7 @@
 package geocovid.agents;
 
 import geocovid.DataSet;
+import geocovid.Temperature;
 import repast.simphony.engine.environment.RunEnvironment;
 
 public class SurfaceAgent {
@@ -8,8 +9,10 @@ public class SurfaceAgent {
 	private int lastUpdateTime = -1;// Ultimo Tick cuando se calculo infectionRate
 	private int infectionRate;		// Tasa de infeccion
 	private boolean contaminated;	// Flag por si el virus ya expiro
+	private boolean outdoor;	// Flag por si el virus ya expiro
 	
-	public SurfaceAgent() {
+	public SurfaceAgent(boolean outdoorSurface) {
+		this.outdoor = outdoorSurface;
 		this.updateLifespan();
 	}
 	
@@ -30,9 +33,12 @@ public class SurfaceAgent {
 			int hours = currentTime - creationTime;
 			hours += ((currentTime / 12) - (creationTime / 12)) * 12;
 			//
-			double beta = Math.exp(-(4.9d) + (DataSet.CS_MEAN_TEMPERATURE/10d));
+			double beta = Math.exp(-(4.9d) + (Temperature.getTemperature(outdoor) / 10d));
 			infectionRate = (int) (Math.exp((-beta) * hours) * DataSet.CS_INFECTION_RATE);
-			contaminated = (infectionRate > 0);
+			if (infectionRate < DataSet.CS_MIN_INFECTION_RATE) {
+				infectionRate = 0;
+				contaminated = false;
+			}
 		}
 		return infectionRate;
 	}
