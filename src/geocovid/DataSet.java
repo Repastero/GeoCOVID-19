@@ -1,15 +1,6 @@
 package geocovid;
 
 public final class DataSet {
-	/** Ver <b>corridas</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	public static int	corridas		= 50;
-	/** Ver <b>cantHumanos</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	public static int	localHumans		= 6000;
-	/** Ver <b>cantHumanosExtranjeros</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	public static int	foreignTravelerHumans	= 1000;
-	/** Ver <b>cantHumanosLocales</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	public static int	localTravelerHumans		= 1000;
-	
 	public static final int HOUSE_INHABITANTS_MEAN		= 4;	// cantidad media de humanos por hogar
 	public static final int DISTANCE_BETWEEN_WORKERS	= 2;	// distancia en metros entre trabajadores/estudiantes
 	public static final double BUILDING_AVAILABLE_AREA	= 0.8;	// porcentaje del area construida ocupable 
@@ -20,23 +11,29 @@ public final class DataSet {
 	public static final int	OUTSIDE_WORKERS_PERCENTAGE	= 5;
 	
 	/** % de contagio al estar en contacto con un infectado */
-	public static final int	INFECTION_RATE			= 60;	// % de contagio sobre 100 
-	public static final int	INFECTION_RADIUS		= 2;	// radio en metros de contagio
+	public static final int	INFECTION_RATE				= 60;	// % de contagio sobre 100 
+	public static final int	INFECTION_RADIUS			= 2;	// radio en metros de contagio
 	
 	/** % de contagio al estar en contacto con una superficie contaminada */
-	public static final int	CS_INFECTION_RATE		= 100;	// % de contagio inicial sobre 100
-	public static final int	CS_MEAN_TEMPERATURE		= 25;	// temperatura media ambiente en grados centigrados
+	public static final int	CS_INFECTION_RATE			= 60;	// % de contagio inicial sobre 100
+	public static final int	CS_MIN_INFECTION_RATE		= 30;	// % de contagio minimo  sobre 100, para seguir siendo efectivo
+	
+	/** informacion de temperatura para calcular la duracion del virus en superficie contaminada */
+	public static final int	OUTDOORS_MIN_TEMPERATURE	= 10;	// temperatura media minima anual en exteriores
+	public static final int	OUTDOORS_MAX_TEMPERATURE	= 35;	// temperatura media maxima anual en exteriores
+	public static final int	INDOORS_MIN_TEMPERATURE		= 20;	// temperatura media minima anual en interiores
+	public static final int	INDOORS_MAX_TEMPERATURE		= 30;	// temperatura media maxima anual en interiores
 		
 	/** duracion de periodo de incubacion */
-	public static final int EXPOSED_PERIOD_MEAN		= 60;	// 5 dias
-	public static final int EXPOSED_PERIOD_DEVIATION= 12;	// 1 dia desvio standard
+	public static final int EXPOSED_PERIOD_MEAN			= 60;	// 5 dias
+	public static final int EXPOSED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
 	/** duracion de periodo infectado sintomatico/asintomatico en ticks para todos */
-	public static final int	INFECTED_PERIOD_MEAN_AG  = 60;	// 5 a 6 dias sintomatico
-	public static final int INFECTED_PERIOD_DEVIATION= 12;	// 1 dia desvio standard
+	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 a 6 dias sintomatico
+	public static final int INFECTED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
 	/** % sobre 100 de casos asintomaticos con respecto a los sintomatcos*/
-	public static final double[] ASX_INFECTIOUS_RATE = {74d, 74d, 42d, 42d, 10d};	// % total de ser infectado asintomatico
+	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 74d, 42d, 42d, 10d};	// % total de ser infectado asintomatico
 	
 	/** % sobre 100 de cada grupo etario <p> 5-15 anos / 16-25 anos / 26-40 anos / 41-64 anos / 65 o mas anos */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
