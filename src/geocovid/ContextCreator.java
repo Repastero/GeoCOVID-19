@@ -55,7 +55,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
 	private int unemployedCount; // Contador de empleos faltantes
 	private int unschooledCount; // Contador de bancos faltantes en escuelas
-
+	
+	static final int WEEKLY_TICKS = 12*7; // ticks que representan el tiempo de una semana
+	static final int WEEKEND_TICKS = 12*2; // ticks que representan el tiempo que dura el fin de semana
+	
 	static final String SHP_FILE_PARCELS = "./data/ov-4326.shp";
 	static final String SHP_FILE_PLACES = "./data/places-matched-4326.shp";
 	
@@ -79,8 +82,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 		schedule.schedule(params, this, "infectRandos");
 		
 		// Schedule one shot para iniciar cierre de emergencia (tiempo de primer caso + tiempo inicio cuarentena
-		params = ScheduleParameters.createOneTime(outbreakStartTime + lockdownStartTime, ScheduleParameters.FIRST_PRIORITY);
+		params = ScheduleParameters.createOneTime(lockdownStartTime, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, this, "initiateLockdown");
+		
+		// Schedules one shot para los inicios y los fines de semana, hasta el comienzo de la cuartentena.
+		setWeekendMovement();
 		
 		this.context = context;
 		context.add(new InfeccionReport()); // Unicamente para la grafica en Repast Simphony
@@ -90,6 +96,23 @@ public class ContextCreator implements ContextBuilder<Object> {
 		initHumans();
 				
 		return context;
+	}
+	
+	/**
+	 * Programa en schedule los metodos para cambiar matrices de markov en los periodos de fines de semanas.<p>
+	 * Cuando termina se asigna "setHumansDefaultTMMC"
+	 */
+	private void setWeekendMovement() {
+		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
+		ScheduleParameters params;
+		int endWKND;
+		for (int i = WEEKLY_TICKS - WEEKEND_TICKS; i < lockdownStartTime; i += WEEKLY_TICKS) {
+			params = ScheduleParameters.createOneTime(i, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(params, this, "setHumansWeekendTMMC");
+			endWKND = (i + WEEKEND_TICKS > lockdownStartTime) ? lockdownStartTime : i + WEEKEND_TICKS;
+			params = ScheduleParameters.createOneTime(endWKND, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(params, this, "setHumansDefaultTMMC");
+		}
 	}
 	
 	public void startSimulation() {
@@ -143,10 +166,30 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
+	 * Asignar las matrices de markov que se utilizan los fines de semana.
+	 */
+	public void setHumansWeekendTMMC() {
+		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_WEEKEND_TMMC;
+		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_WEEKEND_TMMC;
+		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_WEEKEND_TMMC;
+		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_WEEKEND_TMMC;
+		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_WEEKEND_TMMC;
+		
+		HumanAgent.infectedLocalTMMC[0] = MarkovChains.CHILD_WEEKEND_TMMC;
+		HumanAgent.infectedLocalTMMC[1] = MarkovChains.YOUNG_WEEKEND_TMMC;
+		HumanAgent.infectedLocalTMMC[2] = MarkovChains.ADULT_WEEKEND_TMMC;
+		HumanAgent.infectedLocalTMMC[3] = MarkovChains.ELDER_WEEKEND_TMMC;
+		HumanAgent.infectedLocalTMMC[4] = MarkovChains.HIGHER_WEEKEND_TMMC;
+		
+		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_WEEKEND_TMMC;
+		HumanAgent.infectedTravelerTMMC	= MarkovChains.TRAVELER_WEEKEND_TMMC;
+	}
+	
+	/**
 	 * Asignar las matrices de markov que se utilizan al principio de simulacion.<p>
 	 * Ver {@link #initHumans()}
 	 */
-	private void setHumansDefaultTMMC() {
+	public void setHumansDefaultTMMC() {
 		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_DEFAULT_TMMC;
 		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_DEFAULT_TMMC;
 		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_DEFAULT_TMMC;
@@ -168,14 +211,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	public void initiateLockdown() {
 		// Confinamiento con salida a compras.
-		/*
-		HumanAgent.localTMMC[0] = MarkovChains.CHILD_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[1] = MarkovChains.YOUNG_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[2] = MarkovChains.ADULT_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[3] = MarkovChains.ELDER_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[4] = MarkovChains.HIGHER_HARD_CONFINEMENT_TMMC;
-		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_CONFINEMENT_TMMC;
-		*/
+		
+//		HumanAgent.localTMMC[0] = MarkovChains.CHILD_HARD_CONFINEMENT_TMMC;
+//		HumanAgent.localTMMC[1] = MarkovChains.YOUNG_HARD_CONFINEMENT_TMMC;
+//		HumanAgent.localTMMC[2] = MarkovChains.ADULT_HARD_CONFINEMENT_TMMC;
+//		HumanAgent.localTMMC[3] = MarkovChains.ELDER_HARD_CONFINEMENT_TMMC;
+//		HumanAgent.localTMMC[4] = MarkovChains.HIGHER_HARD_CONFINEMENT_TMMC;
+//		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_CONFINEMENT_TMMC;
 		
 		// Cuarentena en españa
 		/*
@@ -205,7 +247,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		infectedAmount		= (Integer) params.getValue("cantidadInfectados");
 		outbreakStartTime	= (Integer) params.getValue("tiempoEntradaCaso");
-		lockdownStartTime	= (Integer) params.getValue("tiempoInicioCuarentena");
+		lockdownStartTime	= outbreakStartTime + (Integer) params.getValue("tiempoInicioCuarentena");
 		
 		DataSet.localHumans				= (Integer) params.getValue("cantHumanos");
 		DataSet.foreignTravelerHumans	= (Integer) params.getValue("cantHumanosExtranjeros");

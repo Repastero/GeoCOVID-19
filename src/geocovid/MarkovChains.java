@@ -133,6 +133,45 @@ public final class MarkovChains {
 	
 	public static final int ELDER_FULL_DAY_CONFINEMENT_TMMC[][][] = ACTIVE_FULL_DAY_CONFINEMENT_TMMC;
 	
+	
+	///*******************************FINES DE SEMANA*******************************
+	
+	public static final int CHILD_WEEKEND_TMMC[][][] = {
+		{ {900,  0,100,  0},{900,  0,100,  0},{900,  0,100,  0},{900,  0,100,  0} },
+		{ {675,  0,300, 25},{900,  0,100,  0},{300,  0,675, 25},{500,  0,500,  0} },
+		{ {500,  0,475, 25},{900,  0,100,  0},{500,  0,475, 25},{500,  0,500,  0} },
+		{ {950,  0, 50,  0},{950,  0, 50,  0},{950,  0, 50,  0},{950,  0, 50,  0} },
+	};
+		
+	/** Matriz modificada para los Humanos que estan en la 2er franja etaria. */
+    public static final int YOUNG_WEEKEND_TMMC[][][] = CHILD_WEEKEND_TMMC;
+		
+	/** Matriz modificada para los Humanos que estan en la 3er franja etaria. */
+	public static final int ADULT_WEEKEND_TMMC[][][] = {
+		{ {700,100,100,100}, {700,100,100,100}, {300, 50,500,150},{300, 50,500,150} },
+		{ {500,  0,400,100}, {500,  0,400,100}, {500,  0,400,100},{500,  0,400,100} },
+		{ {500,  0,400,100}, {500,  0,400,100}, {500,  0,400,100},{500,  0,400,100} },
+		{ {700,100,100,100}, {700,100,100,100}, {300, 50,500,150},{900,  0,100,  0} },
+	};
+	/** Matriz modificada para los Humanos que estan en la 4ta franja etaria. */
+	public static final int ELDER_WEEKEND_TMMC[][][] = {
+		{ {950,  0, 50,  0}, {950,  0, 50,  0}, {950,  0, 50,  0},{950,  0, 50,  0} },
+		{ {650,  0,300, 50}, {650,  0,300, 50}, {350,  0,300, 350},{950,  0,50, 0} },
+		{ {650,  0,300, 50}, {650,  0,300, 50}, {350,  0,300, 350},{950,  0,50, 0} },
+		{ {950,  0, 50,  0}, {950,  0, 50,  0}, {950,  0, 50,  0},{950,  0, 50,  0} },
+	};
+	
+	/** Matriz modificada para los Humanos que estan en la 5ta franja etaria. */
+	public static final int HIGHER_WEEKEND_TMMC[][][] = ELDER_WEEKEND_TMMC;
+	
+	/** Matriz modificada para los Humanos que trabajan afuera o viven afuera. */
+	public static final int TRAVELER_WEEKEND_TMMC[][][] = {
+		{ {  0,1000,  0,  0},{  0,1000,  0,  0},{  0,1000,  0,  0},{  0,1000,  0,  0} },
+		{ {950,   0, 25, 25},{800,   0,100,100},{800,   0,100,100},{800,   0,100,100} },
+		{ {300,   0,350,350},{300,   0,350,350},{300,   0,350,350},{300,   0,350,350} },
+		{ {950,   0, 25, 25},{100,   0,450,450},{700,   0,300,  0},{700,   0,  0,300} }
+	};
+	
 	//
 	///*******************************CUARENTENA5*******************************
 	// Confinamiento de todos sólo con salida a compras Organizadas, viejos de tarde , jovenes adultos de mañana.
