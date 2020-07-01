@@ -11,14 +11,18 @@ public final class DataSet {
 	public static final int	OUTSIDE_WORKERS_PERCENTAGE	= 5;
 	
 	/** % de contagio al estar en contacto con un infectado */
-	public static final int	INFECTION_RATE				= 60;	// % de contagio sobre 100 
-	public static final int	INFECTION_RADIUS			= 2;	// radio en metros de contagio
+	public static final int	INFECTION_RATE				= 60;	// sobre 100
+	/** radio en metros que puede contagiar un infectado */
+	public static final int	INFECTION_RADIUS			= 2;	// metros
+	/** tiempo de contacto que debe tener un infectado para contagiar */
+	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks 
 	
-	/** % de contagio al estar en contacto con una superficie contaminada */
-	public static final int	CS_INFECTION_RATE			= 60;	// % de contagio inicial sobre 100
-	public static final int	CS_MIN_INFECTION_RATE		= 30;	// % de contagio minimo  sobre 100, para seguir siendo efectivo
+	/** % inicial de contagio al estar en contacto con una superficie contaminada */
+	public static final int	CS_INFECTION_RATE			= 60;	// sobre 100
+	/** % de contagio minimo, para seguir contando como superficie contaminada */
+	public static final int	CS_MIN_INFECTION_RATE		= 30;	// sobre 100
 	
-	/** informacion de temperatura para calcular la duracion del virus en superficie contaminada */
+	// Informacion de temperatura para calcular la duracion del virus en superficie contaminada
 	public static final int	OUTDOORS_MIN_TEMPERATURE	= 10;	// temperatura media minima anual en exteriores
 	public static final int	OUTDOORS_MAX_TEMPERATURE	= 35;	// temperatura media maxima anual en exteriores
 	public static final int	INDOORS_MIN_TEMPERATURE		= 20;	// temperatura media minima anual en interiores
@@ -32,10 +36,16 @@ public final class DataSet {
 	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 a 6 dias sintomatico
 	public static final int INFECTED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
-	/** % sobre 100 de casos asintomaticos con respecto a los sintomatcos*/
-	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 74d, 42d, 42d, 10d};	// % total de ser infectado asintomatico
+	/** % de casos asintomaticos con respecto a los sintomatcos */
+	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 74d, 42d, 42d, 10d};	// sobre 100 
 	
-	/** % sobre 100 de cada grupo etario <p> 5-15 anos / 16-25 anos / 26-40 anos / 41-64 anos / 65 o mas anos */
+	/** Grupos etarios:<ul>
+	 * <li>5-15 anos
+	 * <li>16-25 anos
+	 * <li>26-40 anos
+	 * <li>41-64 anos
+	 * <li>65 o mas anos</ul>
+	 */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
 	public static final double[] HUMANS_PER_AGE_GROUP			= {22d, 27d, 27d, 16d, 8d}; // Censo OV 2013
 	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {15d, 25d, 40d, 20d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera
@@ -44,8 +54,8 @@ public final class DataSet {
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
 	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750 / 111320, 1000d / 111320, -1d, -1d, 500d / 111320}; // metros div metros por grado (longitud)
 	
-	/** % sobre 100 de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};
-	/** % sobre 100 de casos en UTI que mueren al terminar la infeccion */
-	public static final double	ICU_DEATH_RATE					= 42d;	// % que muere en UTI
+	/** % de casos graves que entra en UTI - de cada grupo etario */
+	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};	// sobre 100
+	/** % de casos en UTI que mueren al terminar la infeccion */
+	public static final double	ICU_DEATH_RATE					= 42d;	// sobre 100
 }

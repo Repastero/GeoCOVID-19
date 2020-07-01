@@ -33,6 +33,7 @@ public class HumanAgent {
 	private double icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[1];
 	private double asxChance = DataSet.ASX_INFECTIOUS_RATE[1];
 	private double travelRadius = -1;
+	private double relocationTime = -1d;
 	
 	protected static ISchedule schedule;
 	private static int agentIDCounter = 0;
@@ -44,7 +45,6 @@ public class HumanAgent {
     public boolean symInfectious	= false; // Symptomatic Infectious
     public boolean hospitalized		= false; // Hospitalized to ICU
     public boolean recovered		= false;
-    public boolean dead				= false;
     /////////////
     
 	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign) {
@@ -81,6 +81,10 @@ public class HumanAgent {
 	
 	public int[] getCurrentPosition() {
 		return currentPosition;
+	}
+	
+	public double getRelocationTime() {
+		return relocationTime;
 	}
 	
 	/**
@@ -191,7 +195,6 @@ public class HumanAgent {
 			InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
 			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
 				// Se muere en ICU
-				dead = true; // flag por si quiere volver al contexto
 				InfeccionReport.modifyDeathsCount(ageGroup, 1);
 			}
 			else {
@@ -209,34 +212,34 @@ public class HumanAgent {
         switch (activityIndex) {
 	    	case 0: // 0 Casa
 	    		newBuilding = homePlace;
-	    		mean = 100;
-	    		stdDev = 50;
-	    		maxDev = 75;
+	    		mean = 20;
+	    		stdDev = 10;
+	    		maxDev = 15;
 	    		break;
 	    	case 1: // 1 Trabajo / Estudio
 	    		newBuilding = workPlace;
-	    		mean = 150;
-	    		stdDev = 10;
-	    		maxDev = 20;
+	    		mean = 30;
+	    		stdDev = 2;
+	    		maxDev = 4;
 	    		break;
 	    	case 2: // 2 Ocio
 	    		newBuilding = BuildingManager.findRandomPlace(2, currentBuilding, travelRadius);
-	    		mean = 50;
-	    		stdDev = 10;
-	    		maxDev = 25;
+	    		mean = 10;
+	    		stdDev = 2;
+	    		maxDev = 5;
 	    		break;
 	    	default: // 3 Otros (supermercados, farmacias, etc)
 	    		newBuilding = BuildingManager.findRandomPlace(3, currentBuilding, travelRadius);
-	    		mean = 25;
-	    		stdDev = 10;
-	    		maxDev = 20;
+	    		mean = 5;
+	    		stdDev = 2;
+	    		maxDev = 4;
 	    		break;
         }
         
         // Calcular tiempo hasta que cambie nuevamente de posicion
 	    ndValue = RandomHelper.createNormal(mean, stdDev).nextInt();
 	    ndValue = (ndValue > mean+maxDev) ? mean+maxDev : (ndValue < mean-maxDev ? mean-maxDev: ndValue);
-	    double temp = schedule.getTickCount() + (ndValue*0.02d);
+	    double temp = schedule.getTickCount() + (ndValue * 0.1d);
 	    
    	 	// Schedule one shot
 		ScheduleParameters params = ScheduleParameters.createOneTime(temp, 0.6d); // ScheduleParameters.FIRST_PRIORITY
@@ -246,8 +249,8 @@ public class HumanAgent {
 	}
 	
     /**
-    * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
-    **/
+     * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
+     */
     public void switchLocation() {
     	// No se mueve si esta internado
     	if (hospitalized) {
@@ -297,6 +300,7 @@ public class HumanAgent {
         		else
         			currentPosition = newBuilding.insertHuman(this);
         		currentBuilding = newBuilding;
+        		relocationTime = schedule.getTickCount();
 
         		if (isContagious() && currentPosition != null) {
    					// Si en periodo de contagio y dentro del edificio, mover el marcador
