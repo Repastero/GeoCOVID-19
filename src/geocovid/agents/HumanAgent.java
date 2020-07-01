@@ -33,6 +33,7 @@ public class HumanAgent {
 	private double icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[1];
 	private double asxChance = DataSet.ASX_INFECTIOUS_RATE[1];
 	private double travelRadius = -1;
+	private double relocationTime = -1d;
 	
 	protected static ISchedule schedule;
 	private static int agentIDCounter = 0;
@@ -44,7 +45,6 @@ public class HumanAgent {
     public boolean symInfectious	= false; // Symptomatic Infectious
     public boolean hospitalized		= false; // Hospitalized to ICU
     public boolean recovered		= false;
-    public boolean dead				= false;
     /////////////
     
 	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign) {
@@ -81,6 +81,10 @@ public class HumanAgent {
 	
 	public int[] getCurrentPosition() {
 		return currentPosition;
+	}
+	
+	public double getRelocationTime() {
+		return relocationTime;
 	}
 	
 	/**
@@ -191,7 +195,6 @@ public class HumanAgent {
 			InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
 			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
 				// Se muere en ICU
-				dead = true; // flag por si quiere volver al contexto
 				InfeccionReport.modifyDeathsCount(ageGroup, 1);
 			}
 			else {
@@ -246,8 +249,8 @@ public class HumanAgent {
 	}
 	
     /**
-    * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
-    **/
+     * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
+     */
     public void switchLocation() {
     	// No se mueve si esta internado
     	if (hospitalized) {
@@ -297,6 +300,7 @@ public class HumanAgent {
         		else
         			currentPosition = newBuilding.insertHuman(this);
         		currentBuilding = newBuilding;
+        		relocationTime = schedule.getTickCount();
 
         		if (isContagious() && currentPosition != null) {
    					// Si en periodo de contagio y dentro del edificio, mover el marcador
