@@ -209,34 +209,34 @@ public class HumanAgent {
         switch (activityIndex) {
 	    	case 0: // 0 Casa
 	    		newBuilding = homePlace;
-	    		mean = 100;
-	    		stdDev = 50;
-	    		maxDev = 75;
+	    		mean = 20;
+	    		stdDev = 10;
+	    		maxDev = 15;
 	    		break;
 	    	case 1: // 1 Trabajo / Estudio
 	    		newBuilding = workPlace;
-	    		mean = 150;
-	    		stdDev = 10;
-	    		maxDev = 20;
+	    		mean = 30;
+	    		stdDev = 2;
+	    		maxDev = 4;
 	    		break;
 	    	case 2: // 2 Ocio
 	    		newBuilding = BuildingManager.findRandomPlace(2, currentBuilding, travelRadius);
-	    		mean = 50;
-	    		stdDev = 10;
-	    		maxDev = 25;
+	    		mean = 10;
+	    		stdDev = 2;
+	    		maxDev = 5;
 	    		break;
 	    	default: // 3 Otros (supermercados, farmacias, etc)
 	    		newBuilding = BuildingManager.findRandomPlace(3, currentBuilding, travelRadius);
-	    		mean = 25;
-	    		stdDev = 10;
-	    		maxDev = 20;
+	    		mean = 5;
+	    		stdDev = 2;
+	    		maxDev = 4;
 	    		break;
         }
         
         // Calcular tiempo hasta que cambie nuevamente de posicion
 	    ndValue = RandomHelper.createNormal(mean, stdDev).nextInt();
 	    ndValue = (ndValue > mean+maxDev) ? mean+maxDev : (ndValue < mean-maxDev ? mean-maxDev: ndValue);
-	    double temp = schedule.getTickCount() + (ndValue*0.02d);
+	    double temp = schedule.getTickCount() + (ndValue * 0.1d);
 	    
    	 	// Schedule one shot
 		ScheduleParameters params = ScheduleParameters.createOneTime(temp, 0.6d); // ScheduleParameters.FIRST_PRIORITY
