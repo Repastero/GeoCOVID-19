@@ -12,7 +12,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	//private List<int[]> workersPosition = new ArrayList<int[]>();
 	private int[][] workPositions;
 	private int workPositionsCount;
-	/** Cantidad maxima de trabajdores en lugar de trabajo */
+	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
 	/** Cantidad de trajadores por actividad */
 	private static Map<String, Integer> workersPerType;
@@ -129,10 +129,12 @@ public class WorkplaceAgent extends BuildingAgent {
 	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workplaceType) {
 		super(geo, id, blockid, type, area, coveredArea);
 		
-		int workersAmount = workersPerType.getOrDefault(workplaceType, -1);
-		if (workersAmount == -1)
-			workersAmount = (getNumberOfSpots() / workersPerTypeAndArea.get(workplaceType))+1;
-		this.vacancies = workersAmount;
+		if (workersPerType.containsKey(workplaceType))
+			this.vacancies = workersPerType.get(workplaceType);
+		else if (workersPerTypeAndArea.containsKey(workplaceType))
+			this.vacancies = (getNumberOfSpots() / workersPerTypeAndArea.get(workplaceType))+1;
+		else
+			System.err.println("Sin cupo de trabajadores de Workplace: " + workplaceType);
 		createWorkPositions();
 	}
 	

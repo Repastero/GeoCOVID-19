@@ -51,8 +51,10 @@ public final class DataSet {
 	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {15d, 25d, 40d, 20d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera
 	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {15d, 30d, 35d, 20d, 0d}; // Humanos con hogar fuera y trabajo/estudio dentro
 	
+	/** grado de precision frente a longitud */
+	public static final double DEGREE_PRECISION = 11.132d / 0.0001d; // Fuente https://en.wikipedia.org/wiki/Decimal_degrees
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
-	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750 / 111320, 1000d / 111320, -1d, -1d, 500d / 111320}; // metros div metros por grado (longitud)
+	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750d / DEGREE_PRECISION, 1000d / DEGREE_PRECISION, -1d, -1d, 500d / DEGREE_PRECISION}; // metros div metros por grado (longitud)
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};	// sobre 100

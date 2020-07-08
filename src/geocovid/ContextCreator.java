@@ -282,7 +282,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		for (SimpleFeature feature : features) {
 			Geometry geom = (Geometry) feature.getDefaultGeometry();
 			if (geom == null || !geom.isValid()) {
-				System.out.println("Invalid geometry: " + feature.getID());
+				System.err.println("Invalid geometry: " + feature.getID());
 			} 
 			if (geom instanceof Point) {
 				//id = (Long)feature.getAttribute("id");
@@ -294,7 +294,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 				placesType.put(idParcel, type);
 			}
 			else {
-				System.out.println("Error creating agent for  " + geom);
+				System.err.println("Error creating agent for " + geom);
 			}
 		}
 		features.clear();
@@ -326,7 +326,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		for (SimpleFeature feature : features) {
 			Geometry geom = (Geometry) feature.getDefaultGeometry();
 			if (geom == null || !geom.isValid()) {
-				System.out.println("Invalid geometry: " + feature.getID());
+				System.err.println("Invalid geometry: " + feature.getID());
 				continue;
 			}
 			if (geom instanceof Point) {
@@ -382,7 +382,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 				}
 			}
 			else {
-				System.out.println("Error creating agent for  " + geom);
+				System.err.println("Error creating agent for " + geom);
 			}
 		}
 		features.clear();

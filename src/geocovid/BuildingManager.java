@@ -92,6 +92,10 @@ public final class BuildingManager {
         }
         //
         List<WorkplaceAgent> placesList = placesMap.get(types[i]);
+        if (placesList == null) {
+        	System.err.println("Sin places para actividad: " + types[i]);
+        	return null;
+        }
         int count = placesList.size();
         if (radius == -1) { // Radio infinito - selecciona al azar
         	newPlace = placesList.get(RandomHelper.nextIntFromTo(0, count-1));

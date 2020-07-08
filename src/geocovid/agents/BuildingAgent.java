@@ -78,8 +78,8 @@ public class BuildingAgent {
 		else {
 			// Si es una forma, tomar medida mas chica como el ancho
 			Envelope env = geometry.getEnvelopeInternal();
-			int width = (int)(env.getWidth() * 111320); 	// grados cartesianos a metros
-			int height = (int)(env.getHeight() * 111320);	// grados cartesianos a metros
+			int width = (int)(env.getWidth() * DataSet.DEGREE_PRECISION); 	// grados cartesianos a metros
+			int height = (int)(env.getHeight() * DataSet.DEGREE_PRECISION);	// grados cartesianos a metros
 			
 			// Tomar medida mas chica como el frente de la propiedad
 			size[0] = (width >= height) ? height : width;
@@ -111,7 +111,7 @@ public class BuildingAgent {
 	public int[] insertHuman(HumanAgent human) {
 		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
 		if (humansMap.size() >= capacity) {
-			System.out.println("building full "+human.getAgentID());
+			System.out.println("Building full "+human.getAgentID());
 			// TODO ver que hacer con el humano si no hay lugar
 			return null;
 		}
@@ -169,7 +169,7 @@ public class BuildingAgent {
 		//
 		grid[pos[0]][pos[1]] = 0;
 		if (!humansMap.remove(human.getAgentID(), human))
-			System.out.println("not found "+human.getAgentID());
+			System.err.println("Humano no encontrado en Building "+human.getAgentID());
 	}
 	
 	/**
