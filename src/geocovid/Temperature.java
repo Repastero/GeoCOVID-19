@@ -36,7 +36,7 @@ public class Temperature {
 			odCurrentTemp = odCurrentTemp + odTempStep;
 			idCurrentTemp = idCurrentTemp + idTempStep;
 		}
-		if (++dayOfTheYear == 364) // Fin de ano
+		if (++dayOfTheYear == 364) // Fin de año
 			dayOfTheYear = 0;
 	}
 	
