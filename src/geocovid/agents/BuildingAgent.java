@@ -111,7 +111,7 @@ public class BuildingAgent {
 	public int[] insertHuman(HumanAgent human) {
 		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
 		if (humansMap.size() >= capacity) {
-			System.out.println("Building full "+human.getAgentID());
+			System.out.println("Building full - ID: "+getId());
 			// TODO ver que hacer con el humano si no hay lugar
 			return null;
 		}

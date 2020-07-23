@@ -340,8 +340,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 					maxParcelId = id;
 				
 				if (area == 0) { // los terrenos sin construir los tomo igual
-					area = 400;
-					coveredArea = 320;
+					area = 100;
+					coveredArea = 80;
 				}
 				else if ((coveredArea == 0) && (!type.equals("park"))) { // los terrenos sin construir los tomo igual
 					coveredArea = (int)(area * .8d);
@@ -356,9 +356,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 				else {
 					placeType = placesType.remove(id);
 					if (placeType.contains("lodging")) {
-						// Si es alojamiento, divido la superficie por 300 por casa
-						for (int i = 0; i < (area / 300); i++) {
-							tempBuilding = new BuildingAgent(geom, id, blockId, type, 300, 280);
+						// Si es alojamiento, divido la superficie por 80 por casa
+						for (int i = 0; i < (area / 80); i++) {
+							tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
 							homePlaces.add(tempBuilding);
 							context.add(tempBuilding);
 							geography.move(tempBuilding, geom);
