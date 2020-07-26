@@ -21,6 +21,7 @@ public class BuildingAgent {
 	private String type;
 	private int area;
 	private int coveredArea;
+	private int realArea;
 	//
 	private int capacity;
 	private int size[] = {0,0}; // ancho x largo
@@ -40,10 +41,25 @@ public class BuildingAgent {
 		this.area = area;
 		this.coveredArea = coveredArea;
 		//
+		setRealArea(DataSet.BUILDING_AVAILABLE_AREA);
+		setBuildingShape();
+	}
+	
+	public BuildingAgent(Geometry geo, long id, long blockId, String type, int area, int coveredArea, double areaModifier) {
+		// Constructor Workplace
+		this.geometry = geo;
+		this.id = id;
+		this.blockId = blockId;
+		this.type = type;
+		this.area = area;
+		this.coveredArea = coveredArea;
+		//
+		setRealArea(areaModifier);
 		setBuildingShape();
 	}
 	
 	public BuildingAgent(BuildingAgent ba) {
+		// Constructor para crear copia de ba
 		this.geometry = ba.geometry;
 		this.id = ba.id;
 		this.blockId = ba.blockId;
@@ -51,15 +67,12 @@ public class BuildingAgent {
 		this.area = ba.area;
 		this.coveredArea = ba.coveredArea;
 		//
+		this.realArea = ba.realArea;
 		setBuildingShape();
 	}
 	
-	/**
-	 * Crea la grilla de posiciones, segun forma y area
-	 */
-	private void setBuildingShape() {
+	private void setRealArea(double availableAreaMod) {
 		// Si es espacio verde tomo toda el area
-		int realArea;
 		if (coveredArea > 0) {
 			realArea = coveredArea;
 			outdoor = false;
@@ -69,7 +82,13 @@ public class BuildingAgent {
 			outdoor = true;
 		}
 		// Se resta un porcentaje del area para paredes, muebles, etc.
-		realArea *= DataSet.BUILDING_AVAILABLE_AREA;
+		realArea *= availableAreaMod;
+	}
+	
+	/**
+	 * Crea la grilla de posiciones, segun forma y area
+	 */
+	private void setBuildingShape() {
 		if (geometry instanceof Point) {
 			// Si es solo un punto, tomar la superficie como un cuadrado
 			size[1] = (int)Math.sqrt(realArea);
@@ -307,7 +326,7 @@ public class BuildingAgent {
 	}
 	
 	public int getNumberOfSpots() {
-		return capacity;
+		return coveredArea;
 	}
 	
 	public int[][] getGrid() {

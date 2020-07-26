@@ -3,7 +3,8 @@ package geocovid;
 public final class DataSet {
 	public static final int HOUSE_INHABITANTS_MEAN		= 4;	// cantidad media de humanos por hogar
 	public static final int DISTANCE_BETWEEN_WORKERS	= 2;	// distancia en metros entre trabajadores/estudiantes
-	public static final double BUILDING_AVAILABLE_AREA	= 0.8;	// porcentaje del area construida ocupable 
+	public static final double BUILDING_AVAILABLE_AREA	= 0.5;	// porcentaje del area construida ocupable en casas
+	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;	// porcentaje del area construida ocupable en places
 	//
 	/** % de humanos locales que no trabaja por que no quiere o trabaja en su casa */
 	public static final int	LAZY_HUMANS_PERCENTAGE		= 20;

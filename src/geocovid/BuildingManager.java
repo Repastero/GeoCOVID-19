@@ -34,7 +34,7 @@ public final class BuildingManager {
 	// Types que estan disponibles en el SHP de places
 	protected static final String entertainmentTypes[] = {"bar", "church", "gym", "hair_care", "physiotherapist", "restaurant", "sport_club", "sports_complex", "park"};
 	// Chances de visitar cada tipo de place (suma 1000)
-	private static final int entertainmentChances[]  = {120, 100, 140, 100, 100, 120, 100, 100, 120};
+	private static final int entertainmentChances[]  = {140, 70, 130, 40, 110, 150, 110, 110, 140};
 	// Types que estan disponibles en el SHP de places
 	protected static final String otherTypes[] = {"bank", "car_repair", "bakery", "book_store", "clothing_store", "electronics_store", "computer_accessories_store", "hardware_store", "building_materials_supplier", "electronics_store+home_goods_store", "home_goods_store", "laundry", "liquor_store", "meal_takeaway", "pharmacy", "real_estate_agency", "supermarket+grocery_or_supermarket", "grocery_or_supermarket", "veterinary_care", "public_medical_center", "medical_office", "ice_cream_shop", "optician", "photographer", "government_office", "local_government_office", "police"};
 	// Chances de visitar cada tipo de place (suma 1000)

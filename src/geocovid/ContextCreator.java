@@ -343,9 +343,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 					area = 100;
 					coveredArea = 80;
 				}
-				else if ((coveredArea == 0) && (!type.equals("park"))) { // los terrenos sin construir los tomo igual
-					coveredArea = (int)(area * .8d);
-				}
 				
 				if (!placesType.containsKey(id)) {
 					tempBuilding = new BuildingAgent(geom, id, blockId, type, area, coveredArea);
@@ -432,7 +429,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		int randomIndex;
 		
 		for (int i = 0; i <= extraHomes; i++) {
-			if (indexesCount >= 0) { // Si quedan contenedores inside
+			if (indexesCount >= 0) {
 				randomIndex = RandomHelper.nextIntFromTo(0, indexesCount);
 				tempHome = homePlaces.get(ciIndexes[randomIndex]);
 				ciIndexes[randomIndex] = ciIndexes[indexesCount--];
@@ -560,9 +557,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 			}
 		}
 		
-		System.out.println("HUMANOS TOTALES: " + (localHumansCount + foreignTravelerHumans));
-		System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
-		System.out.println("BANCOS EN ESCUELA FALTANTES: " + unschooledCount);
+		//System.out.println("HUMANOS TOTALES: " + (localHumansCount + foreignTravelerHumans));
+		if (unemployedCount != 0)
+			System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
+		if (unschooledCount != 0)
+			System.out.println("BANCOS EN ESCUELA FALTANTES: " + unschooledCount);
 	}
 
 	/**
