@@ -22,17 +22,21 @@ public class BuildingAgent {
 	private int area;
 	private int coveredArea;
 	private int realArea;
-	//
+	// Atributos de la grilla
 	private int capacity;
+	private int startingRow = 0; // indice de fila inicial para no trabajadores 
 	private int size[] = {0,0}; // ancho x largo
 	private int grid[][];
 	private boolean outdoor;
-	
+	// Atributos staticos para checkear el radio de infeccion
+	private static int circleRadius;
+	private static int xShifts[];
+	private static int yShifts[];
+	// Listas de Agentes dentro de Building 
 	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent trasmisores
 	private Map<Integer, HumanAgent> humansMap = new HashMap<>(); // Mapa <Id Humano, HumanAgent>
-	
 	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>(); // Mapa <Id Superficie, SurfaceAgent>
-	
+	//
 	public BuildingAgent(Geometry geo, long id, long blockId, String type, int area, int coveredArea) {
 		this.geometry = geo;
 		this.id = id;
@@ -71,6 +75,37 @@ public class BuildingAgent {
 		setBuildingShape();
 	}
 	
+	/**
+	 * Crea un circulo de acuerdo a el radio de infeccion, y guarda los desplazamientos de X e Y a partir del centro
+	 * @see DataSet#INFECTION_RADIUS
+	 */
+	public static void initInfectionRadius() {
+		// Cantidad de desvios de posicion de X e Y, segun radio de infeccion 1 ... 20
+		final int[] shiftsCount = {8,20,36,56,80,128,164,204,248,296,348,444,508,576,648,724,804,948,1040,1136};
+		int radius = DataSet.INFECTION_RADIUS;
+		// Chequeo que radio este dentro del rango 
+		if (radius < 1 || radius > 20)
+			radius = 4;
+		// Desvio maximo de X + Y
+		circleRadius = radius + (radius / 6) + 1;
+		int absX;
+		xShifts = new int[shiftsCount[radius-1]];
+		yShifts = new int[shiftsCount[radius-1]];
+		int indxy = 0;
+		for (int x = -radius; x <= radius; x++) {
+			absX = Math.abs(x);
+			for (int y = -radius; y <= radius; y++) {
+				if (x == 0 && y == 0) // Posicion centro, la del infectado
+					continue;
+				if (absX + Math.abs(y) <= circleRadius) {
+					xShifts[indxy] = x;
+					xShifts[indxy] = y;
+					++indxy;
+				}
+			}
+		}
+	}
+	
 	private void setRealArea(double availableAreaMod) {
 		// Si es espacio verde tomo toda el area
 		if (coveredArea > 0) {
@@ -91,8 +126,22 @@ public class BuildingAgent {
 	private void setBuildingShape() {
 		if (geometry instanceof Point) {
 			// Si es solo un punto, tomar la superficie como un cuadrado
-			size[1] = (int)Math.sqrt(realArea);
-			size[0] = size[1] + 1;
+			// Se ultiplica el area por la cantidad de Humanos por m2
+			int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METRE;
+			
+			// Busca el numero de X mas alto que sea factor de realArea
+			for (int i = 1; i * i <= humansCap; i++) {
+	            if (humansCap % i == 0) {
+	            	size[0] = i;
+	    	        size[1] = humansCap / i;
+	            }
+			}
+			
+			// Si Y es mas del doble que X, uso calculo viejo
+			if (size[0] < size[1] >> 1) {
+				size[1] = (int)Math.sqrt(humansCap);
+				size[0] = size[1] + 1;
+			}
 		}
 		else {
 			// Si es una forma, tomar medida mas chica como el ancho
@@ -129,7 +178,7 @@ public class BuildingAgent {
 	 */
 	public int[] insertHuman(HumanAgent human) {
 		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
-		if (humansMap.size() >= capacity) {
+		if (humansMap.size() >= capacity) { // TODO ver esto no es tan preciso, si startingRow > 0, tendria que discriminar trabajadores 
 			System.out.println("Building full - ID: "+getId());
 			// TODO ver que hacer con el humano si no hay lugar
 			return null;
@@ -138,7 +187,7 @@ public class BuildingAgent {
 		int x, y;
 		do {
 			x = RandomHelper.nextIntFromTo(0, size[0]-1);
-			y = RandomHelper.nextIntFromTo(0, size[1]-1);
+			y = RandomHelper.nextIntFromTo(startingRow, size[1]-1);
 		} while (grid[x][y] != 0);
 		
 		int[] humanPos = {x,y};
@@ -224,39 +273,33 @@ public class BuildingAgent {
      * Esparce el virus a los humanos susceptibles con los que tuvo contacto cercano y prolongado.
 	 * @param spHuman HumanAgent contagioso
 	 * @param spPos posicion en grilla de spHuman 
-     * @see DataSet#INFECTION_RADIUS
      * @see DataSet#INFECTION_EXPOSURE_TIME
      * @see DataSet#INFECTION_RATE
 	 */
     private void spreadVirus(HumanAgent spHuman, int[] spPos) {
-    	int sprId = spHuman.getAgentID();
-    	// Buscar vecinos
-    	int radius = DataSet.INFECTION_RADIUS;
-		// Si se pasa del inicio
-		int startX = (spPos[0] - radius < 0) ? 0 : spPos[0] - radius;
-		int startY = (spPos[1] - radius < 0) ? 0 : spPos[1] - radius;
-		// Si se pasa del fin
-		int endX = (spPos[0] + radius > size[0]) ? size[0] : spPos[0] + radius;
-		int endY = (spPos[1] + radius > size[1]) ? size[1] : spPos[1] + radius;
-		
 		HumanAgent prey = null;
 		int preyId;
 		// Recorre las posiciones de la grilla al rededor del infectado, buscando nuevos huespedes
 		// TODO ver si hay diferencia en rendimiento reccoriendo "humans" y midiendo la distancia
-		for (int row = startX; row < endX; row++) {
-		    for (int col = startY; col < endY; col++) {
-	    		preyId = grid[row][col];
-		    	if ((preyId != 0) && (preyId != sprId)) { // Si no esta vacio o es el mismo
-		    		prey = humansMap.get(preyId);
-					if (!prey.wasExposed()) {
-						if (Math.abs(spHuman.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-							if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-								prey.setExposed();
+		int posX, posY;
+		for (int i = 0; i < xShifts.length; i++) {
+			posX = spPos[0]+xShifts[i];
+			posY = spPos[1]+yShifts[i];
+	    	if (posX >= 0 && posY >= 0) { // no de un valor negativo
+	    		if (posX < size[0] && posY < size[1]) { // no se salga de la grilla
+	    			preyId = grid[posX][posY];
+			    	if (preyId != 0) { // Si no esta vacio, hay humano
+			    		prey = humansMap.get(preyId);
+						if (!prey.wasExposed()) {
+							if (Math.abs(spHuman.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+								if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
+									prey.setExposed();
+								}
 							}
-						}
-		    		}
+			    		}
+			    	}
 		    	}
-		    }
+	    	}
 		}
     }
     
@@ -264,23 +307,27 @@ public class BuildingAgent {
      * Busca en la lista de trasmisores los que tuvo contacto cercano y prolongado, y se contagia.
      * @param human HumanAgent susceptible
      * @param pos posicion en grilla de human 
-     * @see DataSet#INFECTION_RADIUS
      * @see DataSet#INFECTION_EXPOSURE_TIME
      * @see DataSet#INFECTION_RATE
      */
     private void findNearbySpreaders(HumanAgent human, int[] pos) {
     	// TODO ver que es mas rapido -> calcular distancia con infectados o buscar en grid
     	int[] spPos = new int[2];
+    	int xShift, yShift;
     	for (HumanAgent spreader : spreadersList) {
     		spPos = spreader.getCurrentPosition();
-            if (Math.max(Math.abs(pos[0] - spPos[0]), Math.abs(pos[1] - spPos[1])) <= DataSet.INFECTION_RADIUS) {
-            	if (Math.abs(human.getRelocationTime() - spreader.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-            		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-            			human.setExposed();
-            			break;
-            		}
-            	}
-            }
+    		xShift = Math.abs(pos[0] - spPos[0]);
+    		yShift = Math.abs(pos[1] - spPos[1]);
+    		if (xShift < circleRadius && yShift < circleRadius) { // que X o Y individualmente no exedan el radio de contagio
+	    		if (xShift + yShift <= circleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
+	            	if (Math.abs(human.getRelocationTime() - spreader.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+	            		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
+	            			human.setExposed();
+	            			break;
+	            		}
+	            	}
+	            }
+    		}
     	}
     }
     
@@ -323,6 +370,16 @@ public class BuildingAgent {
 	
 	public int getHeight() {
 		return size[1];
+	}
+	
+	public int getStartingRow() {
+		return startingRow;
+	}
+	
+	public void setStartingRow(int row) {
+		startingRow = row;
+		// Resto de capacidad la cantidad de ubicaciones que estan reservadas
+		capacity -= startingRow * size[0];
 	}
 	
 	public int getNumberOfSpots() {
