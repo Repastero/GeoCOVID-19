@@ -1,11 +1,18 @@
 package geocovid;
 
 public final class DataSet {
-	public static final int HOUSE_INHABITANTS_MEAN		= 4;	// cantidad media de humanos por hogar
-	public static final int DISTANCE_BETWEEN_WORKERS	= 2;	// distancia en metros entre trabajadores/estudiantes
-	public static final double BUILDING_AVAILABLE_AREA	= 0.5;	// porcentaje del area construida ocupable en casas
-	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;	// porcentaje del area construida ocupable en places
-	//
+	/** cantidad maxima de humanos por m2 (minimo 1) */
+	public static final int HUMANS_PER_SQUARE_METRE	= 4;
+	/** cantidad media de humanos por hogar (minimo 1) */
+	public static final int HOUSE_INHABITANTS_MEAN	= 4;
+	/** espacios entre puestos de trabajo/estudio (minimo 1) */
+	public static final int SPACE_BETWEEN_WORKERS	= 4;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
+	
+	/** porcentaje del area construida ocupable en casas (minimo .1) */
+	public static final double BUILDING_AVAILABLE_AREA	= 0.5;
+	/** porcentaje del area construida ocupable en places (minimo .1) */
+	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;
+	
 	/** % de humanos locales que no trabaja por que no quiere o trabaja en su casa */
 	public static final int	LAZY_HUMANS_PERCENTAGE		= 20;
 	/** % de humanos locales que trabajan al exterior - fuera de edificios */
@@ -13,8 +20,8 @@ public final class DataSet {
 	
 	/** % de contagio al estar en contacto con un infectado */
 	public static final int	INFECTION_RATE				= 60;	// sobre 100
-	/** radio en metros que puede contagiar un infectado */
-	public static final int	INFECTION_RADIUS			= 2;	// metros
+	/** radio que puede contagiar un infectado */
+	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks 
 	

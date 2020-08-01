@@ -145,9 +145,10 @@ public class WorkplaceAgent extends BuildingAgent {
 		int x = getWidth();
 		int y = getHeight();
 		workPositions = new int[vacancies][2];
-		int distance = DataSet.DISTANCE_BETWEEN_WORKERS;
+		int distance = DataSet.SPACE_BETWEEN_WORKERS;
 		int col = 0;
 		int row = 0;
+		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
 		for (int i = 0; i < workPositions.length; i++) {
 			workPositions[i][0] = col;
 			workPositions[i][1] = row;
@@ -156,11 +157,17 @@ public class WorkplaceAgent extends BuildingAgent {
 				col = distance;
 				row += distance;
 				if (row >= y) {
+					fullBuilding = true;
 					// si faltan asignar puestos, vuelve al principio + offset
 					col = (distance > 1 ? distance >> 1 : 1);
 					row = col;
 				}
 			}
+		}
+		// Separar los trabajadores de los clientes, si quedan filas disponibles
+		if (!fullBuilding) {
+			if (row == 0) row = 1;
+			setStartingRow(row);
 		}
 		workPositionsCount = workPositions.length;
 	}

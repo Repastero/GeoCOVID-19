@@ -105,7 +105,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		loadPlacesShapefile();
 		loadParcelsShapefile();
 		initHumans();
-				
+		
 		return context;
 	}
 	
@@ -470,7 +470,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private void initHumans() {
 		HumanAgent.initAgentID(); // Reinicio contador de IDs
 		setHumansDefaultTMMC();
-
+		BuildingAgent.initInfectionRadius(); // Crea posiciones de infeccion en grilla
+		
 		int localHumansCount = localHumans + localTravelerHumans;
 		// Crear casas ficticias si es que faltan
 		int extraHomes = (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN) - homePlaces.size();
