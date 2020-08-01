@@ -23,6 +23,10 @@ public class InfeccionReport {
 	private static int[] recoveredCount;
 	private static int[] deathsCount;
 	//
+	private static int[] sumOfSocialInteractions;
+	private static int[] humansInteracting;
+	private static double[] averageSocialInteractions;
+	
 	public InfeccionReport() {
 		exposedTotalCount = 0;
 		exposedToCSCount = 0;
@@ -38,13 +42,28 @@ public class InfeccionReport {
 		hospitalizedCount = new int[DataSet.AGE_GROUPS];
 		recoveredCount = new int[DataSet.AGE_GROUPS];
 		deathsCount = new int[DataSet.AGE_GROUPS];
+		
+		sumOfSocialInteractions = new int[DataSet.AGE_GROUPS];
+		humansInteracting = new int[DataSet.AGE_GROUPS];
+		averageSocialInteractions = new double[DataSet.AGE_GROUPS];
 	}
 	
 	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
 	public void checkPandemicEnd() {
+		// Calcula las interacciones promedio y reinicia vectores
+		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+			averageSocialInteractions[i] = sumOfSocialInteractions[i] / (double)humansInteracting[i];
+			sumOfSocialInteractions[i] = 0;
+			humansInteracting[i] = 0;
+		}
 		// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
 		if ((recoveredTotalCount != 0 || deathsTotalCount != 0) && ((deathsTotalCount + recoveredTotalCount) == exposedTotalCount))
 			RunEnvironment.getInstance().endRun();
+	}
+	
+	public static void updateSocialInteractions(int agIndex, int interactions) {
+		sumOfSocialInteractions[agIndex] += interactions;
+		++humansInteracting[agIndex];
 	}
 	
 	public static void addExposedToCS() {
@@ -124,5 +143,11 @@ public class InfeccionReport {
 	public static int getHigherHospitalizedCount()	{ return hospitalizedCount[4]; }
 	public static int getHigherRecoveredCount()		{ return recoveredCount[4]; }
 	public static int getHigherDeathsCount()		{ return deathsCount[4]; }
+
+	public static double getChildAVGInteractions()	{ return averageSocialInteractions[0]; }
+	public static double getYoungAVGInteractions()	{ return averageSocialInteractions[1]; }
+	public static double getAdultAVGInteractions()	{ return averageSocialInteractions[2]; }
+	public static double getElderAVGInteractions()	{ return averageSocialInteractions[3]; }
+	public static double getHigherAVGInteractions()	{ return averageSocialInteractions[4]; }
 	//
 }

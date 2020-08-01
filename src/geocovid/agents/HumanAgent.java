@@ -2,6 +2,8 @@ package geocovid.agents;
 
 import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext;
 import static repast.simphony.essentials.RepastEssentials.AddAgentToContext;
+import java.util.HashMap;
+import java.util.Map;
 
 import geocovid.BuildingManager;
 import geocovid.DataSet;
@@ -47,6 +49,8 @@ public class HumanAgent {
     public boolean recovered		= false;
     /////////////
     
+    private Map<Integer, Integer> socialInteractions = new HashMap<>(); // ID contacto, cantidad de contactos
+    
 	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign) {
 		this.homePlace = home;
 		this.workPlace = work;
@@ -85,6 +89,33 @@ public class HumanAgent {
 	
 	public double getRelocationTime() {
 		return relocationTime;
+	}
+	
+	public void addSocialInteraction(int humanId) {
+		// Aca uso la ID del humano como key, por si se quiere saber cuantos contactos se repiten
+		if (socialInteractions.containsKey(humanId))
+			socialInteractions.put(humanId, socialInteractions.get(humanId) + 1);
+		else
+			socialInteractions.put(humanId, 1);
+	}
+	
+	/**
+	 * Informa la cantidad de contactos en el dia (si corresponde) y reinicia el Map
+	 */
+	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
+	public void newDayBegin() {
+		// Tengo en cuenta solo los locales...
+		if (!foreignTraveler) {
+			// Y que ademas trabajen en un building que no sea la casa, o tengan 65 anos o mas
+			if ((ageGroup+1 == DataSet.AGE_GROUPS) || (workPlace != null && workPlace != homePlace)) {
+				int count = 0;
+				for (Object value : socialInteractions.values()) {
+					count += (Integer)value;
+				}
+				InfeccionReport.updateSocialInteractions(ageGroup, count);
+			}
+		}
+		socialInteractions.clear();
 	}
 	
 	/**

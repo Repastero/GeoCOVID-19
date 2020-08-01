@@ -218,6 +218,8 @@ public class BuildingAgent {
 		// Si quedo afuera, no se continua
 		if (pos == null)
 			return;
+		// Busca contactos cercanos
+		sociallyInteract(human, pos);
 		// Si es susceptible se busca si pudo contagiarse
 		if (!human.wasExposed()) {
 			// Primero busca fuentes de contagio directo
@@ -238,6 +240,35 @@ public class BuildingAgent {
 		grid[pos[0]][pos[1]] = 0;
 		if (!humansMap.remove(human.getAgentID(), human))
 			System.err.println("Humano no encontrado en Building "+human.getAgentID());
+	}
+	
+	/**
+	 * Lo mismo que <b>spreadVirus</b> pero no discrimina covidosos
+	 * @param agent
+	 * @param agentPos
+	 */
+	public void sociallyInteract(HumanAgent agent, int[] agentPos) {
+		int spId = agent.getAgentID();
+		HumanAgent contact = null;
+		int contactId;
+		
+		int posX, posY;
+		for (int i = 0; i < xShifts.length; i++) {
+			posX = agentPos[0]+xShifts[i];
+			posY = agentPos[1]+yShifts[i];
+	    	if (posX >= 0 && posY >= 0) { // no de un valor negativo
+	    		if (posX < size[0] && posY < size[1]) { // no se salga de la grilla
+		    		contactId = grid[posX][posY];
+			    	if (contactId != 0) { // Si no esta vacio, hay humano
+			    		contact = humansMap.get(contactId);
+			    		if (Math.abs(agent.getRelocationTime() - contact.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+				    		agent.addSocialInteraction(contactId);
+				    		contact.addSocialInteraction(spId);
+			    		}
+			    	}
+		    	}
+	    	}
+		}
 	}
 	
 	/**
