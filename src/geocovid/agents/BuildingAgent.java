@@ -99,7 +99,7 @@ public class BuildingAgent {
 					continue;
 				if (absX + Math.abs(y) <= circleRadius) {
 					xShifts[indxy] = x;
-					xShifts[indxy] = y;
+					yShifts[indxy] = y;
 					++indxy;
 				}
 			}
@@ -301,13 +301,13 @@ public class BuildingAgent {
 	}
 	
 	/**
-     * Esparce el virus a los humanos susceptibles con los que tuvo contacto cercano y prolongado.
+	 * Esparce el virus a los humanos susceptibles con los que tuvo contacto cercano y prolongado.
 	 * @param spHuman HumanAgent contagioso
 	 * @param spPos posicion en grilla de spHuman 
-     * @see DataSet#INFECTION_EXPOSURE_TIME
-     * @see DataSet#INFECTION_RATE
+	 * @see DataSet#INFECTION_EXPOSURE_TIME
+	 * @see DataSet#INFECTION_RATE
 	 */
-    private void spreadVirus(HumanAgent spHuman, int[] spPos) {
+	private void spreadVirus(HumanAgent spHuman, int[] spPos) {
 		HumanAgent prey = null;
 		int preyId;
 		// Recorre las posiciones de la grilla al rededor del infectado, buscando nuevos huespedes
@@ -327,69 +327,69 @@ public class BuildingAgent {
 									prey.setExposed();
 								}
 							}
+			    			}
 			    		}
-			    	}
-		    	}
-	    	}
+		    		}
+	    		}
 		}
-    }
+	}
     
-    /**
-     * Busca en la lista de trasmisores los que tuvo contacto cercano y prolongado, y se contagia.
-     * @param human HumanAgent susceptible
-     * @param pos posicion en grilla de human 
-     * @see DataSet#INFECTION_EXPOSURE_TIME
-     * @see DataSet#INFECTION_RATE
-     */
-    private void findNearbySpreaders(HumanAgent human, int[] pos) {
-    	// TODO ver que es mas rapido -> calcular distancia con infectados o buscar en grid
-    	int[] spPos = new int[2];
-    	int xShift, yShift;
-    	for (HumanAgent spreader : spreadersList) {
-    		spPos = spreader.getCurrentPosition();
-    		xShift = Math.abs(pos[0] - spPos[0]);
-    		yShift = Math.abs(pos[1] - spPos[1]);
-    		if (xShift < circleRadius && yShift < circleRadius) { // que X o Y individualmente no exedan el radio de contagio
-	    		if (xShift + yShift <= circleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
-	            	if (Math.abs(human.getRelocationTime() - spreader.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-	            		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-	            			human.setExposed();
-	            			break;
-	            		}
-	            	}
-	            }
-    		}
-    	}
-    }
-    
-    /**
-     * Verifica si la superficie donde esta parado el Humano esta contaminada y checkea si el Humano se contagia.
-     * @param human HumanAgent susceptible
-     * @param pos posicion en grilla de human
-     */
-    private void checkIfSurfaceContaminated(HumanAgent human, int[] pos) {
-    	int csId = getSurfaceId(pos);
-    	SurfaceAgent surface = surfacesMap.get(csId);
-    	if (surface != null) {
-    		// Si en el ultimo checkeo la superficie seguia contaminada
-    		if (surface.isContaminated()) {
-    			if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
-    				human.setExposed();
-    				InfeccionReport.addExposedToCS();
-    			}
+	/**
+	 * Busca en la lista de trasmisores los que tuvo contacto cercano y prolongado, y se contagia.
+	 * @param human HumanAgent susceptible
+	 * @param pos posicion en grilla de human 
+	 * @see DataSet#INFECTION_EXPOSURE_TIME
+	 * @see DataSet#INFECTION_RATE
+	 */
+	private void findNearbySpreaders(HumanAgent human, int[] pos) {
+		// TODO ver que es mas rapido -> calcular distancia con infectados o buscar en grid
+		int[] spPos = new int[2];
+		int xShift, yShift;
+		for (HumanAgent spreader : spreadersList) {
+			spPos = spreader.getCurrentPosition();
+			xShift = Math.abs(pos[0] - spPos[0]);
+			yShift = Math.abs(pos[1] - spPos[1]);
+			if (xShift < circleRadius && yShift < circleRadius) { // que X o Y individualmente no exedan el radio de contagio
+				if (xShift + yShift <= circleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
+					if (Math.abs(human.getRelocationTime() - spreader.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+						if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
+							human.setExposed();
+							break;
+						}
+					}
+				}
 			}
-    		// Es preferible no eliminar la superficie contaminada, para utilizar el objeto posteriormente
-    	}
-    }
+		}
+	}
     
-    /**
-     * El ID de superficie se calcula como: (Y * ANCHO) + X.
-     * @param pos {x, y} de superficie
-     * @return id superficie
-     */
-    private int getSurfaceId(int[] pos) {
-    	return (pos[1]*size[0])+pos[0];
-    }
+	/**
+	 * Verifica si la superficie donde esta parado el Humano esta contaminada y checkea si el Humano se contagia.
+	 * @param human HumanAgent susceptible
+	 * @param pos posicion en grilla de human
+	 */
+	private void checkIfSurfaceContaminated(HumanAgent human, int[] pos) {
+		int csId = getSurfaceId(pos);
+		SurfaceAgent surface = surfacesMap.get(csId);
+		if (surface != null) {
+			// Si en el ultimo checkeo la superficie seguia contaminada
+			if (surface.isContaminated()) {
+				if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
+					human.setExposed();
+					InfeccionReport.addExposedToCS();
+				}
+			}
+		// Es preferible no eliminar la superficie contaminada, para utilizar el objeto posteriormente
+		}
+	}
+    
+	/**
+	 * El ID de superficie se calcula como: (Y * ANCHO) + X.
+	 * @param pos {x, y} de superficie
+	 * @return id superficie
+	 */
+	private int getSurfaceId(int[] pos) {
+		return (pos[1]*size[0])+pos[0];
+	}
     
 	public int[] getSize() {
 		return size;
