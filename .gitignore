@@ -14,4 +14,5 @@ repast-licenses/
 # Files
 *.log
 *.txt
+*.patch
 Repast.settings
