@@ -13,29 +13,24 @@ public final class DataSet {
 	/** porcentaje del area construida ocupable en places (minimo .1) */
 	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;
 	
-	/** % de humanos locales que no trabaja por que no quiere o trabaja en su casa */
-	public static final int	LAZY_HUMANS_PERCENTAGE		= 20;
-	/** % de humanos locales que trabajan al exterior - fuera de edificios */
-	public static final int	OUTSIDE_WORKERS_PERCENTAGE	= 5;
-	
 	/** % de contagio al estar en contacto con un infectado */
-	public static final int	INFECTION_RATE				= 60;	// sobre 100
+	public static final int	INFECTION_RATE				= 22;	// sobre 100
 	/** radio que puede contagiar un infectado */
 	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks 
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
-	public static final int	CS_INFECTION_RATE			= 60;	// sobre 100
+	public static final int	CS_INFECTION_RATE			= 22;	// sobre 100
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
-	public static final int	CS_MIN_INFECTION_RATE		= 30;	// sobre 100
+	public static final int	CS_MIN_INFECTION_RATE		= 10;	// sobre 100
 	
 	// Informacion de temperatura para calcular la duracion del virus en superficie contaminada
 	public static final int	OUTDOORS_MIN_TEMPERATURE	= 10;	// temperatura media minima anual en exteriores
 	public static final int	OUTDOORS_MAX_TEMPERATURE	= 35;	// temperatura media maxima anual en exteriores
 	public static final int	INDOORS_MIN_TEMPERATURE		= 20;	// temperatura media minima anual en interiores
 	public static final int	INDOORS_MAX_TEMPERATURE		= 30;	// temperatura media maxima anual en interiores
-		
+	
 	/** duracion de periodo de incubacion */
 	public static final int EXPOSED_PERIOD_MEAN			= 60;	// 5 dias
 	public static final int EXPOSED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
@@ -56,9 +51,19 @@ public final class DataSet {
 	 */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
 	public static final double[] HUMANS_PER_AGE_GROUP			= {22d, 27d, 27d, 16d, 8d}; // Censo OV 2013
-	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {15d, 25d, 40d, 20d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera
-	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {15d, 30d, 35d, 20d, 0d}; // Humanos con hogar fuera y trabajo/estudio dentro
+	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {20d, 30d, 30d, 20d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera
+	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {10d, 50d, 20d, 20d, 0d}; // Humanos con hogar fuera y trabajo/estudio dentro
 	
+	/** % de estudiantes, trabajadores e inactivos (ama de casa/jubilado/pensionado/otros) segun grupo etario */
+	public static final double OCCUPATION_PER_AGE_GROUP[][] = { // Datos del "El mapa del trabajo argentino 2019" - CEPE
+			{ 100d,   0d,   0d},	// 5-15
+			{  50d,  30d,  20d},	// 16-25
+			{  15d,  70d,  15d},	// 26-40
+			{   0d,  80d,  20d},	// 41-64
+			{   0d,   0d, 100d} };	// 65+
+	
+	/** para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
+	public static final boolean COUNT_UNIQUE_INTERACTIONS = false;
 	/** grado de precision frente a longitud */
 	public static final double DEGREE_PRECISION = 11.132d / 0.0001d; // Fuente https://en.wikipedia.org/wiki/Decimal_degrees
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */

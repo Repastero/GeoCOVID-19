@@ -104,16 +104,17 @@ public class HumanAgent {
 	 */
 	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
 	public void newDayBegin() {
-		// Tengo en cuenta solo los locales...
-		if (!foreignTraveler) {
-			// Y que ademas trabajen en un building que no sea la casa, o tengan 65 anos o mas
-			if ((ageGroup+1 == DataSet.AGE_GROUPS) || (workPlace != null && workPlace != homePlace)) {
-				int count = 0;
-				for (Object value : socialInteractions.values()) {
-					count += (Integer)value;
-				}
-				InfeccionReport.updateSocialInteractions(ageGroup, count);
+		// Se tiene en cuenta unicamente los que viven y "trabajan" en la ciudad
+		if ((!foreignTraveler) && (workPlace != null)) {
+			int count = 0;
+			if (DataSet.COUNT_UNIQUE_INTERACTIONS) {
+				count = socialInteractions.size();
 			}
+			else {
+				for (Object value : socialInteractions.values())
+					count += (Integer)value;
+			}
+			InfeccionReport.updateSocialInteractions(ageGroup, count);
 		}
 		socialInteractions.clear();
 	}
