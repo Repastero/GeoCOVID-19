@@ -480,9 +480,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		Uniform disUniHomesIndex = RandomHelper.createUniform(0, homePlaces.size()-1);
 		//
 		
-		// Este generador de randoms, se usa para catalogar algunos locales
-		Uniform disUniformWork  = RandomHelper.createUniform(1, 100);
-		
 		int[] locals = new int[DataSet.AGE_GROUPS];
 		int[] localTravelers = new int[DataSet.AGE_GROUPS];
 		int[] foreignTravelers = new int[DataSet.AGE_GROUPS];
@@ -491,16 +488,16 @@ public class ContextCreator implements ContextBuilder<Object> {
 		// Crear humanos que viven y trabajan/estudian en OV
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			locals[i] = (int) Math.ceil((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[i]) / 100);
-			localTravelers[i] = (int) Math.ceil((locals[i] * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[i]) / 100);
+			localTravelers[i] = (int) Math.ceil((localTravelerHumans * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[i]) / 100);
 			locals[i] -= localTravelers[i];
 			//
-			foreignTravelers[i] = (int) Math.ceil((foreignTravelers[i] * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[i]) / 100);
+			foreignTravelers[i] = (int) Math.ceil((foreignTravelerHumans * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[i]) / 100);
 		}
 		//
 		
 		// DEBUG
 		//for (i = 0; i < DataSet.AGE_GROUPS; i++)
-		//	System.out.println(localHumans[i] + " | " + localTravelerHumans[i] + " | " + foreignTravelerHumans[i]);
+		//	System.out.println(locals[i] + " | " + localTravelers[i] + " | " + foreignTravelers[i]);
 		
 		BuildingAgent tempHome = null;
 		BuildingAgent tempJob = null;
@@ -510,7 +507,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		// Primero se crean los extranjeros, se asume que hay cupo de lugares de estudio y trabajo
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			for (j = 0; j < foreignTravelers[i]; j++) {
-				tempJob = findAGWorkingPlace(i);
+				tempJob = findAGWorkingPlace(i, null);
 				createHuman(i, null, tempJob);
 			}
 		}
@@ -525,36 +522,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		// Por ultimo se crean los 100% locales
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			// Si son CHILD siempre van a la escuela
-			if (i == 0) {
-				for (j = 0; j < locals[0]; j++) {
-					tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-					tempJob = findAGWorkingPlace(0);
-					createHuman(0, tempHome, tempJob);
-				}
-			}
-			// Si son HIGHER se quedan en la casa, no trabajan
-			else if (i == 4) {
-				for (j = 0; j < locals[4]; j++) {
-					tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-					createHuman(4, tempHome, tempHome);
-				}
-			}
-			// Si son YOUNG, ADULT o ELDER pueden no trabajar/estudiar
-			else {
-				for (j = 0; j < locals[i]; j++) {
-					tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-					// Si no trabaja o trabaja en su domicilio
-					if (disUniformWork.nextInt() <= DataSet.LAZY_HUMANS_PERCENTAGE)
-						tempJob = tempHome;
-					// Trabaja al exterior
-					else if (disUniformWork.nextInt() <= DataSet.OUTSIDE_WORKERS_PERCENTAGE)
-						tempJob = null;
-					// Trabaja normalmente
-					else
-						tempJob = findAGWorkingPlace(i);
-					createHuman(i, tempHome, tempJob);
-				}
+			for (j = 0; j < locals[i]; j++) {
+				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
+				tempJob = findAGWorkingPlace(i, tempHome);
+				createHuman(i, tempHome, tempJob);
 			}
 		}
 		
@@ -566,49 +537,38 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 
 	/**
-	 * Busca lugar de trabajo/estudio en las distintas colecciones (escuela, facultad, trabajo), segun franja etaria y orden:<p>
-	 * <ul>
-	 * <li>0 -> schoolPlaces
-	 * <li>1 -> universityPlaces, schoolPlaces, workPlaces
-	 * <li>2 -> workPlaces, universityPlaces
-	 * <li>3 -> workPlaces, universityPlaces
-	 * <li>4 -> null
-	 * </ul>
+	 * Busca lugar de trabajo/estudio en las distintas colecciones (escuela, facultad, trabajo), segun franja etaria y ocupacion<p>
 	 * @param ageGroup
-	 * @return WorkplaceAgent o null
+	 * @param home 
+	 * @return WorkplaceAgent, BuildingAgent o null
 	 */
-	private WorkplaceAgent findAGWorkingPlace(int ageGroup) {
-		WorkplaceAgent workplace = null;
-		switch (ageGroup) {
-			case 0:
-				workplace = findWorkingPlace(schoolPlaces);
-				//
-				if (workplace == null)
-					++unschooledCount;
-				break;
-			case 1:
-				workplace = findWorkingPlace(universityPlaces);
-				if (workplace == null)
-					workplace = findWorkingPlace(schoolPlaces);
-					if (workplace == null)
-						workplace = findWorkingPlace(workPlaces);
-					//
-				if (workplace == null)
-					++unemployedCount;
-				break;
-			case 2:
-			case 3:
-				workplace = findWorkingPlace(workPlaces);
-				if (workplace == null)
-					workplace = findWorkingPlace(universityPlaces);
-				//
-				if (workplace == null)
-					++unemployedCount;
-				break;
-			default:
-				// Si es ageGroup 4, tendria que buscar el cajon
-				break;
-		}
+	private BuildingAgent findAGWorkingPlace(int ageGroup, BuildingAgent home) {
+		BuildingAgent workplace = null;
+		//
+		double occupation[] = DataSet.OCCUPATION_PER_AGE_GROUP[ageGroup];
+		int r = RandomHelper.nextIntFromTo(1, 100);
+		int i = 0;
+        while (r > occupation[i]) {
+        	r -= occupation[i];
+        	++i;
+        }
+        
+        if (i == 0) { // estudiante
+        	if (ageGroup == 0 || (ageGroup == 1 && (occupation[i] - r < occupation[i]*.4d))) // 40% es primario
+        		workplace = findWorkingPlace(schoolPlaces);
+        	else
+        		workplace = findWorkingPlace(universityPlaces);
+        	if (workplace == null)
+        		++unschooledCount;
+        }
+        else if (i == 1) { // trabajor
+        	workplace = findWorkingPlace(workPlaces);
+        	if (workplace == null)
+        		++unemployedCount;
+        }
+        else { // inactivo
+        	workplace = home;
+        }
 		return workplace;
 	}
 	
@@ -617,7 +577,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * @param list
 	 * @return WorkplaceAgent o null
 	 */
-	private WorkplaceAgent findWorkingPlace(List<WorkplaceAgent> list) { 
+	private WorkplaceAgent findWorkingPlace(List<WorkplaceAgent> list) {
 		int index;
 		WorkplaceAgent workplace = null;
 		if (!list.isEmpty()) {

@@ -15,8 +15,6 @@ import geocovid.agents.BuildingAgent;
 import geocovid.agents.InfectiousHumanAgent;
 import geocovid.agents.WorkplaceAgent;
 import repast.simphony.context.Context;
-import repast.simphony.query.PropertyEquals;
-import repast.simphony.query.Query;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.gis.Geography;
 
@@ -138,18 +136,7 @@ public final class BuildingManager {
 			foundedPlace = findPlace(geo, entertainmentTypes, entertainmentChances, radius);
 		}
 		else if (type == 3) { // Otros
-			if ((RandomHelper.nextIntFromTo(1, 100) > 15) || (currentBuilding == null)) { // Probabilidad de 15% que le toque visitar una casa
-				foundedPlace = findPlace(geo, otherTypes, otherChances, radius);
-			}
-			else {
-				// Busca las casas de la misma manzana y viaja a una al azar
-				List<BuildingAgent> houseList = new ArrayList<>();
-				// TODO ver si no es mas realista que seleccione una casa al azar en un radio de 100 metros (vecino de enfrente)
-				Query<Object> query = new PropertyEquals<Object>(context, "blockId", currentBuilding.getBlockId());
-				for (Object building : query.query())
-					houseList.add((BuildingAgent) building);
-				foundedPlace = houseList.get(RandomHelper.nextIntFromTo(0, houseList.size()-1)); // Por lo menos 1 hay seguro
-			}
+			foundedPlace = findPlace(geo, otherTypes, otherChances, radius);
 		}
 		return foundedPlace;
 	}

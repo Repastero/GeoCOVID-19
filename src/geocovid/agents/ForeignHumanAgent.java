@@ -39,22 +39,22 @@ public class ForeignHumanAgent extends HumanAgent {
 	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
 		BuildingAgent newBuilding = null;
 		double endTime = schedule.getTickCount();
-        switch (activityIndex) {
-	    	case 1: // 1 Trabajo / Estudio
-	    		newBuilding = getPlaceOfWork();
-	    		endTime += 3; // la actividad de trabajo dura 4 ticks
-	    		AddAgentToContext("GeoCOVID-19", this);
-	    		inContext = true;
-	    		break;
-	    	default: // 0, 1, 3
-	    		endTime += 1; // resto de actividades dura 1 tick
-	    		if (prevActivityIndex == 1) { // trabajo
-	    			RemoveAgentFromContext("GeoCOVID-19", this);
-	    			inContext = false;
-	    		}
-	    		break;
-        }
-        
+		// Si toca casa, sale del contexto por 2 ticks
+		if (activityIndex == 0) {
+			if (inContext) {
+    			RemoveAgentFromContext("GeoCOVID-19", this);
+    			inContext = false;
+    		}
+    		endTime += 2;
+		}
+		else {
+    		if (!inContext) {
+    			AddAgentToContext("GeoCOVID-19", this);
+    			inContext = true;
+    		}
+    		return super.switchActivity(prevActivityIndex, activityIndex);
+		}
+		
         // Schedule one shot
 		ScheduleParameters params = ScheduleParameters.createOneTime(endTime, 0.6d); // ScheduleParameters.FIRST_PRIORITY
 		schedule.schedule(params, this, "switchLocation");
