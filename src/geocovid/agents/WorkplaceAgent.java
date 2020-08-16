@@ -12,6 +12,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	//private List<int[]> workersPosition = new ArrayList<int[]>();
 	private int[][] workPositions;
 	private int workPositionsCount;
+	private String workplaceType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
 	/** Cantidad de trajadores por actividad */
@@ -126,9 +127,10 @@ public class WorkplaceAgent extends BuildingAgent {
 	    workersPerTypeAndArea.put("electronics_store+home_goods_store", 30);
 	}
 	
-	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workplaceType) {
+	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workType) {
 		super(geo, id, blockid, type, area, coveredArea, DataSet.WORKPLACE_AVAILABLE_AREA);
 		
+		this.workplaceType = workType;
 		if (workersPerType.containsKey(workplaceType))
 			this.vacancies = workersPerType.get(workplaceType);
 		else if (workersPerTypeAndArea.containsKey(workplaceType))
@@ -145,11 +147,12 @@ public class WorkplaceAgent extends BuildingAgent {
 		int x = getWidth();
 		int y = getHeight();
 		workPositions = new int[vacancies][2];
+		workPositionsCount = workPositions.length;
 		int distance = DataSet.SPACE_BETWEEN_WORKERS;
 		int col = 0;
 		int row = 0;
 		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
-		for (int i = 0; i < workPositions.length; i++) {
+		for (int i = 0; i < workPositionsCount; i++) {
 			workPositions[i][0] = col;
 			workPositions[i][1] = row;
 			col += distance;
@@ -157,10 +160,23 @@ public class WorkplaceAgent extends BuildingAgent {
 				col = distance;
 				row += distance;
 				if (row >= y) {
+					if (i+1 < workPositionsCount) {
+						// Si faltan crear puestos 
+						if (fullBuilding) {
+							// Si hace 2 pasadas de la grilla y aun faltan puestos, reduce el total
+							System.out.format("Cupos de trabajo limitados a %d de %d en tipo: %s id: %d%n",
+									i+1, workPositionsCount, workplaceType, getId());
+							workPositionsCount = i+1;
+							vacancies = workPositionsCount;
+							break;
+						}
+						// Si es la primer pasada, vuelve al principio + offset
+						System.out.format("Falta espacio para %d cupos de trabajo en tipo: %s id: %d - Inicia segunda pasada%n",
+								workPositionsCount-(i+1), workplaceType, getId());
+						col = (distance > 1 ? distance >> 1 : 1);
+						row = col;
+					}
 					fullBuilding = true;
-					// si faltan asignar puestos, vuelve al principio + offset
-					col = (distance > 1 ? distance >> 1 : 1);
-					row = col;
 				}
 			}
 		}
@@ -169,7 +185,6 @@ public class WorkplaceAgent extends BuildingAgent {
 			if (row == 0) row = 1;
 			setStartingRow(row);
 		}
-		workPositionsCount = workPositions.length;
 	}
 	
 	/**

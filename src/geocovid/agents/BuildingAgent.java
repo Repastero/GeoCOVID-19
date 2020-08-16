@@ -286,6 +286,9 @@ public class BuildingAgent {
 	 * @param pos {x, y} en grilla
 	 */
 	public void removeSpreader(HumanAgent human, int[] pos) {
+		// Si quedo afuera, no se continua
+		if (pos == null)
+			return;
 		spreadersList.remove(human);
 		// Se crea la estela cuando el contagioso sale de la parcela
 		int csId = getSurfaceId(pos);

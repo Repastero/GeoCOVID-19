@@ -186,9 +186,9 @@ public class HumanAgent {
 		}
 		//
 		
-		if (!hospitalized && currentBuilding != null) {
+		if (!hospitalized && currentBuilding != null && currentPosition != null) {
+			// Si no fue a ICU y tiene position dentro de un Building, se crear el marcador de infeccioso
 			currentBuilding.addSpreader(this);
-			// Si no fue a ICU y esta dentro de un Building, se crear el marcador de infeccioso
 			BuildingManager.createInfectiousHuman(agentID, currentBuilding.getGeometry().getCoordinate());
 		}
 		
@@ -339,7 +339,6 @@ public class HumanAgent {
    					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getGeometry().getCoordinate());
     			}
         	}
-        	
         	else if (isContagious() && currentActivity == 1) {
         		// Si va afuera a trabajar y es contagioso, oculto el marcador
         		BuildingManager.hideInfectiousHuman(agentID);
