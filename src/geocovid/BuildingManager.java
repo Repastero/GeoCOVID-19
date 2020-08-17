@@ -19,7 +19,7 @@ import repast.simphony.random.RandomHelper;
 import repast.simphony.space.gis.Geography;
 
 public final class BuildingManager {
-	private static final Envelope BOUNDARY = new Envelope(-60.52217611, -60.51670536, -31.81675550, -31.83208680); // Rectangulo con las coordenadas minimas y maximas del GIS
+	private static final Envelope BOUNDARY = new Envelope(); // Rectangulo con las coordenadas minimas y maximas del GIS
 	
 	private static Context<Object> context; // Lo uso para crear el Query con PropertyEquals
 	private static Geography<Object> geography; // Lo uso para crear el Query con PropertyEquals
@@ -27,7 +27,7 @@ public final class BuildingManager {
 	
 	private static Map<String, List<WorkplaceAgent>> placesMap = new HashMap<>(); // Lugares de entretenimiento / otros
 	
-	private static Map<Integer, InfectiousHumanAgent> InfectiousHumans = new HashMap<>(); // Humanos infectaods
+	private static Map<Integer, InfectiousHumanAgent> infectiousHumans = new HashMap<>(); // Humanos infectaods
 	
 	// Types que estan disponibles en el SHP de places
 	protected static final String entertainmentTypes[] = {"bar", "church", "gym", "hair_care", "physiotherapist", "restaurant", "sport_club", "sports_complex", "park"};
@@ -42,7 +42,18 @@ public final class BuildingManager {
 		context = con;
 		geography = geo;
 		placesMap.clear(); // Por si cambio el SHP entre corridas
-		InfectiousHumans.clear(); // Por si quedo algun infeccioso
+		infectiousHumans.clear(); // Por si quedo algun infeccioso
+	}
+	
+	/**
+	 * Inicializa el Envelope con los limites 2d del contexto
+	 * @param x1 minimo
+	 * @param x2 maximo
+	 * @param y1 minimo
+	 * @param y2 maximo
+	 */
+	public static void setBoundary(double x1, double x2, double y1, double y2) { 
+		BOUNDARY.init(x1, x2, y1, y2);
 	}
 	
 	/**
@@ -154,7 +165,7 @@ public final class BuildingManager {
 		geography.move(infectedHuman, geomCircle);
 		context.add(infectedHuman);
 		//
-		InfectiousHumans.put(agentID, infectedHuman);
+		infectiousHumans.put(agentID, infectedHuman);
 	}
 	
 	/**
@@ -163,7 +174,7 @@ public final class BuildingManager {
 	 * @param newCoordinate
 	 */
 	public static void moveInfectiousHuman(int agentID, Coordinate newCoordinate) {
-		InfectiousHumanAgent infHuman = InfectiousHumans.get(agentID);
+		InfectiousHumanAgent infHuman = infectiousHumans.get(agentID);
 		// Si aun no tiene marcador, se crea desde cero
 		if (infHuman == null) {
 			createInfectiousHuman(agentID, newCoordinate);
@@ -188,13 +199,13 @@ public final class BuildingManager {
 	}
 	
 	public static void deleteInfectiousHuman(int agentID) {
-		InfectiousHumanAgent infHuman = InfectiousHumans.remove(agentID);
+		InfectiousHumanAgent infHuman = infectiousHumans.remove(agentID);
 		if (infHuman != null) // si es viajero, puede ser que nunca se creo el marcador
 			context.remove(infHuman);
 	}
 	
 	public static void hideInfectiousHuman(int agentID) {
-		InfectiousHumanAgent infHuman = InfectiousHumans.get(agentID);
+		InfectiousHumanAgent infHuman = infectiousHumans.get(agentID);
 		if (infHuman != null) {
 			infHuman.setHidden(true);
 			//-geography.move(infHuman, null); // no lo saca del mapa

@@ -317,14 +317,30 @@ public class ContextCreator implements ContextBuilder<Object> {
 		List<String> placesTypeList = Arrays.asList(ArrayUtils.addAll(BuildingManager.entertainmentTypes, BuildingManager.otherTypes));
 		BuildingManager.initManager(context, geography);
 		
+		double maxX = -180d;
+		double minX = 180d;
+		double maxY = -90d;
+		double minY = 90d;
+		double tempX, tempY;
+		
 		long id;
 		long blockId;
 		String type;
 		int area;
 		int coveredArea;
-		
 		for (SimpleFeature feature : features) {
 			Geometry geom = (Geometry) feature.getDefaultGeometry();
+			
+			// Busca los valores min y max de X e Y
+			// para crear el Extent o Boundary que incluye a todas las parcelas
+			tempX = geom.getCoordinate().x;
+			if (tempX > maxX)		maxX = tempX;
+			else if (tempX < minX)	minX = tempX;
+			tempY = geom.getCoordinate().y;
+			if (tempY > maxY)		maxY = tempY;
+			else if (tempY < minY)	minY = tempY;
+			//
+			
 			if (geom == null || !geom.isValid()) {
 				System.err.println("Invalid geometry: " + feature.getID());
 				continue;
@@ -383,6 +399,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 			}
 		}
 		features.clear();
+		
+		BuildingManager.setBoundary(minX, maxX, minY, maxY);
 	}
 	
 	/**
