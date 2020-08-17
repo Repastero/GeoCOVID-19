@@ -88,11 +88,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 		setBachParameters();
 		
 		// Schedule one shot para agregar infectados
-		params = ScheduleParameters.createOneTime(outbreakStartTime, ScheduleParameters.FIRST_PRIORITY);
+		params = ScheduleParameters.createOneTime(outbreakStartTime, 0.9d);
 		schedule.schedule(params, this, "infectRandos");
 		
 		// Schedule one shot para iniciar cierre de emergencia (tiempo de primer caso + tiempo inicio cuarentena
-		params = ScheduleParameters.createOneTime(lockdownStartTime, ScheduleParameters.FIRST_PRIORITY);
+		params = ScheduleParameters.createOneTime(lockdownStartTime, 0.9d);
 		schedule.schedule(params, this, "initiateLockdown");
 		
 		// Schedules one shot para los inicios y los fines de semana, hasta el comienzo de la cuartentena.
