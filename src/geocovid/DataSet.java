@@ -18,7 +18,7 @@ public final class DataSet {
 	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;
 	
 	/** % de contagio al estar en contacto con un infectado */
-	public static final int	INFECTION_RATE				= 22;	// sobre 100
+	public static final int	INFECTION_RATE				= 31;	// sobre 100
 	/** radio que puede contagiar un infectado */
 	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** tiempo de contacto que debe tener un infectado para contagiar */

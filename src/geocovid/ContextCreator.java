@@ -72,7 +72,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	@Override
 	public Context<Object> build(Context<Object> context) {
-		RunEnvironment.getInstance().endAt(3600); // 300 dias maximo
+		RunEnvironment.getInstance().endAt(8760); // 300 dias maximo
 		
 		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
 		ScheduleParameters params = ScheduleParameters.createOneTime(0d, ScheduleParameters.FIRST_PRIORITY);
@@ -201,20 +201,20 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Ver {@link #initHumans()}
 	 */
 	public void setHumansDefaultTMMC() {
-		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_DEFAULT_TMMC;
-		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_DEFAULT_TMMC;
-		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_DEFAULT_TMMC;
-		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_DEFAULT_TMMC;
-		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_DEFAULT_TMMC;
+		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_PARANAS2_TMMC;
+		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_PARANAS2_TMMC;
+		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_PARANAS2_TMMC;
+		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_PARANAS2_TMMC;
+		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_PARANAS2_TMMC;
 
-		HumanAgent.infectedLocalTMMC[0] = MarkovChains.CHILD_DEFAULT_TMMC;
-		HumanAgent.infectedLocalTMMC[1] = MarkovChains.YOUNG_DEFAULT_TMMC;
-		HumanAgent.infectedLocalTMMC[2] = MarkovChains.ADULT_DEFAULT_TMMC;
-		HumanAgent.infectedLocalTMMC[3] = MarkovChains.ELDER_DEFAULT_TMMC;
-		HumanAgent.infectedLocalTMMC[4] = MarkovChains.HIGHER_DEFAULT_TMMC;
+		HumanAgent.infectedLocalTMMC[0] = MarkovChains.CHILD_PARANAS2_TMMC;
+		HumanAgent.infectedLocalTMMC[1] = MarkovChains.YOUNG_PARANAS2_TMMC;
+		HumanAgent.infectedLocalTMMC[2] = MarkovChains.ADULT_PARANAS2_TMMC;
+		HumanAgent.infectedLocalTMMC[3] = MarkovChains.ELDER_PARANAS2_TMMC;
+		HumanAgent.infectedLocalTMMC[4] = MarkovChains.HIGHER_PARANAS2_TMMC;
 		
-		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_DEFAULT_TMMC;
-		HumanAgent.infectedTravelerTMMC	= MarkovChains.TRAVELER_DEFAULT_TMMC;
+		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_CONFINEMENT_TMMC;
+		HumanAgent.infectedTravelerTMMC	= MarkovChains.TRAVELER_CONFINEMENT_TMMC;
 	}
 	
 	/**
