@@ -47,6 +47,9 @@ public class HumanAgent {
     public boolean symInfectious	= false; // Symptomatic Infectious
     public boolean hospitalized		= false; // Hospitalized to ICU
     public boolean recovered		= false;
+    // Extras
+    public boolean suspiciousCase	= false; // Si se contagia en trabajo o casa
+    public boolean quarantined		= false; // Si se aisla por ser sintomatico o "suspiciousCase"
     /////////////
     
     private Map<Integer, Integer> socialInteractions = new HashMap<>(); // ID contacto, cantidad de contactos
@@ -148,7 +151,7 @@ public class HumanAgent {
 		switchLocation();
 	}
 	
-	public void setExposed() {
+	public void setExposed(boolean fromSyntomatic) {
 		// Una vez expuesto, no puede volver a contagiarse
 		if (exposed)
 			return;
@@ -162,6 +165,11 @@ public class HumanAgent {
 		
 		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(scheduleParams, this, "setInfectious");
+		
+		// Si el spreader tiene sintomas y el expuesto esta en la casa o trabajo
+		if ((fromSyntomatic) && (currentActivity == 0 || currentActivity == 1)) {
+			suspiciousCase = true;
+		}
 	}
 	
 	public void setInfectious() {
@@ -173,6 +181,10 @@ public class HumanAgent {
 		if (RandomHelper.nextDoubleFromTo(0, 100) <= asxChance) {
 			asxInfectious = true;
 			InfeccionReport.modifyASXInfectiousCount(ageGroup, 1);
+			// Si es asintomatico pero se contagio de un sintomatico, se aisla igual
+			if (suspiciousCase) {
+				startQuarantine();
+			}
 		}
 		else {
 			// Si se complica el caso, se interna - si no continua vida normal
@@ -183,6 +195,8 @@ public class HumanAgent {
 			}
 			symInfectious = true;
 			InfeccionReport.modifySYMInfectiousCount(ageGroup, 1);
+			// Se aisla por tiempo prolongado en ICU o no
+			startQuarantine();
 		}
 		//
 		
@@ -200,7 +214,7 @@ public class HumanAgent {
 		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(scheduleParams, this, "setRecovered");
 	}
-	
+
 	public void setRecovered() {
 		// Verificar que este infectado
 		if (asxInfectious)
@@ -212,7 +226,7 @@ public class HumanAgent {
 		
 		// Se recupera de la infeccion
 		asxInfectious = false;
-		symInfectious = false;
+		symInfectious = false; 
 		if (!hospitalized) {
 			recovered = true;
 			InfeccionReport.modifyRecoveredCount(ageGroup, 1);
@@ -236,6 +250,23 @@ public class HumanAgent {
 				addRecoveredToContext();
 			}
 		}
+	}
+
+	public void startQuarantine() {
+		quarantined = true;
+		suspiciousCase = false;
+		
+		int mean = DataSet.QUARANTINED_PERIOD_MEAN_AG;
+		int std = DataSet.QUARANTINED_PERIOD_DEVIATION;
+		double period = RandomHelper.createNormal(mean, std).nextDouble();
+		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
+		
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(scheduleParams, this, "stopQuarantine");
+	}
+	
+	public void stopQuarantine() {
+		quarantined = false;
 	}
 
 	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
@@ -298,9 +329,9 @@ public class HumanAgent {
         
         int[][][] matrixTMMC;
         if (!foreignTraveler)
-        	matrixTMMC = (!symInfectious ? localTMMC[indexTMMC] : infectedLocalTMMC[indexTMMC]);
+        	matrixTMMC = (!quarantined ? localTMMC[indexTMMC] : infectedLocalTMMC[indexTMMC]);
         else
-        	matrixTMMC = (!symInfectious ? travelerTMMC : infectedTravelerTMMC);
+        	matrixTMMC = (!quarantined ? travelerTMMC : infectedTravelerTMMC);
         
         while (r > matrixTMMC[p][currentActivity][i]) {
         	// La suma de las pobabilidades no debe dar mas de 1000

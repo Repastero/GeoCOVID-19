@@ -13,9 +13,9 @@ public final class DataSet {
 	public static final int SPACE_BETWEEN_WORKERS	= 4;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
 	
 	/** porcentaje del area construida ocupable en casas (minimo .1) */
-	public static final double BUILDING_AVAILABLE_AREA	= 0.5;
+	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
 	/** porcentaje del area construida ocupable en places (minimo .1) */
-	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;
+	public static final double WORKPLACE_AVAILABLE_AREA	= 0.75;
 	
 	/** % de contagio al estar en contacto con un infectado */
 	public static final int	INFECTION_RATE				= 31;	// sobre 100
@@ -40,8 +40,12 @@ public final class DataSet {
 	public static final int EXPOSED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
 	/** duracion de periodo infectado sintomatico/asintomatico en ticks para todos */
-	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 dias sintomatico
+	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 dias
 	public static final int INFECTED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
+	
+	/** duracion de aislamiento de un infectado sintomatico o asintomatico conciente */
+	public static final int	QUARANTINED_PERIOD_MEAN_AG	= 120;	// 10 dias
+	public static final int QUARANTINED_PERIOD_DEVIATION= 24;	// 2 dia desvio standard
 	
 	/** % de casos asintomaticos con respecto a los sintomatcos */
 	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 74d, 42d, 42d, 10d};	// sobre 100 

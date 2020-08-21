@@ -172,7 +172,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, infectedAmount);
 		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
 			HumanAgent humano = (HumanAgent) iterator.next();
-			humano.setExposed();
+			humano.setExposed(false);
 		}
 	}
 	
@@ -380,6 +380,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 			if (area == 0) {
 				area = 100;
 				coveredArea = 80;
+			}
+			// Si tiene menos de 20 m2 se omite
+			else if (coveredArea < 20) {
+				continue;
 			}
 			// Chekea si la ID de parcela pertenece a la de un Place
 			if (!placesType.containsKey(id)) {

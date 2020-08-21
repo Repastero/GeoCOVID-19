@@ -331,13 +331,13 @@ public class BuildingAgent {
 						if (!prey.wasExposed()) {
 							if (Math.abs(spHuman.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
 								if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-									prey.setExposed();
+									prey.setExposed(spHuman.symInfectious | spHuman.quarantined);
 								}
 							}
-			    			}
 			    		}
-		    		}
-	    		}
+			    	}
+		    	}
+	    	}
 		}
 	}
     
@@ -360,7 +360,7 @@ public class BuildingAgent {
 				if (xShift + yShift <= circleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
 					if (Math.abs(human.getRelocationTime() - spreader.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
 						if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-							human.setExposed();
+							human.setExposed(spreader.symInfectious | spreader.quarantined);
 							break;
 						}
 					}
@@ -381,7 +381,7 @@ public class BuildingAgent {
 			// Si en el ultimo checkeo la superficie seguia contaminada
 			if (surface.isContaminated()) {
 				if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
-					human.setExposed();
+					human.setExposed(false);
 					InfeccionReport.addExposedToCS();
 				}
 			}
