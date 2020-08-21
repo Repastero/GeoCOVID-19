@@ -1,140 +1,25 @@
 package geocovid.agents;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import repast.simphony.random.RandomHelper;
 import com.vividsolutions.jts.geom.Geometry;
 
 import geocovid.DataSet;
-import repast.simphony.random.RandomHelper;
 
 public class WorkplaceAgent extends BuildingAgent {
-	//private List<int[]> workersPosition = new ArrayList<int[]>();
 	private int[][] workPositions;
 	private int workPositionsCount;
 	private String workplaceType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
-	/** Cantidad de trajadores por actividad */
-	private static Map<String, Integer> workersPerType;
-	/** Metros cuadrados por trabajador por actividad */
-	private static Map<String, Integer> workersPerTypeAndArea;
-	static {
-		workersPerType = new HashMap<>();
-		workersPerType.put("airport", 20);
-		workersPerType.put("aquarium", 6);
-		workersPerType.put("art_gallery", 6);
-		workersPerType.put("atm", 2);
-		workersPerType.put("book_store", 3);
-		workersPerType.put("car_dealer", 10);
-		workersPerType.put("cemetery", 4);
-		workersPerType.put("church", 6);
-		workersPerType.put("funeral_home", 6);
-		workersPerType.put("gym", 6);
-		workersPerType.put("laundry", 3);
-		workersPerType.put("library", 3);
-		workersPerType.put("meal_takeaway", 8);
-		workersPerType.put("movie_rental", 3);
-		workersPerType.put("moving_company", 6);
-		workersPerType.put("museum", 6);
-		workersPerType.put("parking", 3);
-		workersPerType.put("stadium", 10);
-		workersPerType.put("synagogue", 4);
-		
-		workersPerType.put("park", 2);
-		workersPerType.put("ice_cream_shop", 4);
-		workersPerType.put("optician", 4);
-		workersPerType.put("photographer", 2);
-		workersPerType.put("computer_accessories_store", 4);
-		
-	    //
-	    workersPerTypeAndArea = new HashMap<>();
-	    workersPerTypeAndArea.put("accounting", 20);
-	    workersPerTypeAndArea.put("accounting+local_government_office", 10);
-	    workersPerTypeAndArea.put("bakery", 30);
-	    workersPerTypeAndArea.put("bakery+cafe", 40);
-	    workersPerTypeAndArea.put("bank", 40);
-	    workersPerTypeAndArea.put("bar", 30);
-	    workersPerTypeAndArea.put("bar+liquor_store", 50);
-	    workersPerTypeAndArea.put("beauty_salon", 20);
-	    workersPerTypeAndArea.put("beauty_salon+spa", 40);
-	    workersPerTypeAndArea.put("bicycle_store", 40);
-	    workersPerTypeAndArea.put("bus_station", 60);
-	    workersPerTypeAndArea.put("cafe", 40);
-	    workersPerTypeAndArea.put("car_repair", 70);
-	    workersPerTypeAndArea.put("car_repair+store", 40);
-	    workersPerTypeAndArea.put("car_wash", 40);
-	    workersPerTypeAndArea.put("casino", 50);
-	    workersPerTypeAndArea.put("clothing_store", 30);
-	    workersPerTypeAndArea.put("convenience_store", 40);
-	    workersPerTypeAndArea.put("courthouse", 40);
-	    workersPerTypeAndArea.put("dentist", 60);
-	    workersPerTypeAndArea.put("doctor", 60);
-	    workersPerTypeAndArea.put("drugstore", 20);
-	    workersPerTypeAndArea.put("electronics_store", 40);
-	    workersPerTypeAndArea.put("fire_station", 30);
-	    workersPerTypeAndArea.put("florist", 40);
-	    workersPerTypeAndArea.put("furniture_store", 50);
-	    workersPerTypeAndArea.put("gas_station", 30);
-	    workersPerTypeAndArea.put("hair_care", 20);
-	    workersPerTypeAndArea.put("hardware_store", 40);
-	    workersPerTypeAndArea.put("home_goods_store", 40);
-	    workersPerTypeAndArea.put("hospital", 60);
-	    workersPerTypeAndArea.put("insurance_agency", 15);
-	    workersPerTypeAndArea.put("jewelry_store", 20);
-	    workersPerTypeAndArea.put("lawyer", 15);
-	    workersPerTypeAndArea.put("liquor_store", 40);
-	    workersPerTypeAndArea.put("local_government_office", 10);
-	    workersPerTypeAndArea.put("locksmith", 30);
-	    workersPerTypeAndArea.put("lodging", 80);
-	    workersPerTypeAndArea.put("meal_delivery", 30);
-	    workersPerTypeAndArea.put("movie_theater", 70);
-	    workersPerTypeAndArea.put("night_club", 80);
-	    workersPerTypeAndArea.put("pet_store", 30);
-	    workersPerTypeAndArea.put("pharmacy", 30);
-	    workersPerTypeAndArea.put("pharmacy+veterinary_care", 30);
-	    workersPerTypeAndArea.put("physiotherapist", 40);
-	    workersPerTypeAndArea.put("police", 40);
-	    workersPerTypeAndArea.put("post_office", 20);
-	    workersPerTypeAndArea.put("primary_school", 8);
-	    workersPerTypeAndArea.put("primary_school+secondary_school", 8);
-	    workersPerTypeAndArea.put("real_estate_agency", 30);
-	    workersPerTypeAndArea.put("restaurant", 30);
-	    workersPerTypeAndArea.put("school", 8);
-	    workersPerTypeAndArea.put("secondary_school", 8);
-	    workersPerTypeAndArea.put("secondary_school+primary_school", 8);
-	    workersPerTypeAndArea.put("shoe_store", 30);
-	    workersPerTypeAndArea.put("shoe_store+clothing_store", 30);
-	    workersPerTypeAndArea.put("shopping_mall", 80);
-	    workersPerTypeAndArea.put("spa", 40);
-	    workersPerTypeAndArea.put("storage", 50);
-	    workersPerTypeAndArea.put("store", 30);
-	    //workersPerTypeAndArea.put("supermarket", 150);
-	    workersPerTypeAndArea.put("supermarket+department_store", 120);
-	    workersPerTypeAndArea.put("travel_agency", 20);
-	    workersPerTypeAndArea.put("university", 12);
-	    workersPerTypeAndArea.put("veterinary_care", 40);
-	    
-	    workersPerTypeAndArea.put("corporate_office", 15);
-	    workersPerTypeAndArea.put("government_office", 10);
-	    workersPerTypeAndArea.put("building_materials_supplier", 80);
-	    workersPerTypeAndArea.put("medical_office", 40);
-	    workersPerTypeAndArea.put("public_medical_center", 25);
-	    workersPerTypeAndArea.put("sport_club", 60);
-	    workersPerTypeAndArea.put("sports_complex", 120);
-	    workersPerTypeAndArea.put("grocery_or_supermarket", 40);
-	    workersPerTypeAndArea.put("supermarket+grocery_or_supermarket", 40);
-	    workersPerTypeAndArea.put("electronics_store+home_goods_store", 30);
-	}
 	
-	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workType) {
+	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workType, int workersPlace, int workersArea) {
 		super(geo, id, blockid, type, area, coveredArea, DataSet.WORKPLACE_AVAILABLE_AREA);
 		
 		this.workplaceType = workType;
-		if (workersPerType.containsKey(workplaceType))
-			this.vacancies = workersPerType.get(workplaceType);
-		else if (workersPerTypeAndArea.containsKey(workplaceType))
-			this.vacancies = (getNumberOfSpots() / workersPerTypeAndArea.get(workplaceType))+1;
+		if (workersPlace > 0)
+			this.vacancies = workersPlace;
+		else if (workersArea > 0)
+			this.vacancies = (getNumberOfSpots() / workersArea)+1;
 		else
 			System.err.println("Sin cupo de trabajadores de Workplace: " + workplaceType);
 		createWorkPositions();

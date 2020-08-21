@@ -255,13 +255,13 @@ public class HumanAgent {
 	    		maxDev = 4;
 	    		break;
 	    	case 2: // 2 Ocio
-	    		newBuilding = BuildingManager.findRandomPlace(2, currentBuilding, travelRadius);
+	    		newBuilding = BuildingManager.findRandomPlace(2, currentBuilding, travelRadius, ageGroup);
 	    		mean = 10;
 	    		stdDev = 2;
 	    		maxDev = 5;
 	    		break;
 	    	default: // 3 Otros (supermercados, farmacias, etc)
-	    		newBuilding = BuildingManager.findRandomPlace(3, currentBuilding, travelRadius);
+	    		newBuilding = BuildingManager.findRandomPlace(3, currentBuilding, travelRadius, ageGroup);
 	    		mean = 5;
 	    		stdDev = 2;
 	    		maxDev = 4;

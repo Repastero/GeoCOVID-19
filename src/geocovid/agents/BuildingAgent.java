@@ -124,11 +124,10 @@ public class BuildingAgent {
 	 * Crea la grilla de posiciones, segun forma y area
 	 */
 	private void setBuildingShape() {
+		// Se multiplica el area por la cantidad de Humanos por m2
+		final int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METRE;
 		if (geometry instanceof Point) {
 			// Si es solo un punto, tomar la superficie como un cuadrado
-			// Se ultiplica el area por la cantidad de Humanos por m2
-			int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METRE;
-			
 			// Busca el numero de X mas alto que sea factor de realArea
 			for (int i = 1; i * i <= humansCap; i++) {
 	            if (humansCap % i == 0) {
@@ -144,6 +143,11 @@ public class BuildingAgent {
 			}
 		}
 		else {
+			/* Para simplificar las cosas convierto las geometrias Polygon a Point
+			 * se tendria que probar si hay diferencia usando la forma real del building
+			 * tambien habria que cambiar la geometria de construcciones Horizontales
+			 */
+			
 			// Si es una forma, tomar medida mas chica como el ancho
 			Envelope env = geometry.getEnvelopeInternal();
 			int width = (int)(env.getWidth() * DataSet.DEGREE_PRECISION); 	// grados cartesianos a metros
@@ -152,15 +156,15 @@ public class BuildingAgent {
 			// Tomar medida mas chica como el frente de la propiedad
 			size[0] = (width >= height) ? height : width;
 			// El largo de la propiedad varia segun la sup cubierta
-			size[1] = (int)(realArea / size[0]);
+			size[1] = (int)(humansCap / size[0]);
 			
 			// Si el largo queda en cero o un valor muy chico, creo un cuadrado
-			if (size[1] == 0 || size[0] / size[1] >= 10) {
-				size[1] = (int)Math.sqrt(realArea);
+			if ((size[1] == 0) || (size[0] / size[1] >= 10)) {
+				size[1] = (int)Math.sqrt(humansCap);
 				size[0] = size[1] + 1;
 			}
 			// Si el area queda muy chica, sumo 1 metro mas de largo y resto 1 de ancho
-			else if (size[0] * size[1] < realArea - size[1]) {
+			else if ((size[0] * size[1]) < (humansCap - size[1])) {
 				--size[0];
 				++size[1];
 			}
@@ -179,7 +183,7 @@ public class BuildingAgent {
 	public int[] insertHuman(HumanAgent human) {
 		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
 		if (humansMap.size() >= capacity) { // TODO ver esto no es tan preciso, si startingRow > 0, tendria que discriminar trabajadores 
-			System.out.println("Building full - ID: "+getId());
+			System.out.println("Building full - ID: "+getId()+" type: "+getType());
 			// TODO ver que hacer con el humano si no hay lugar
 			return null;
 		}

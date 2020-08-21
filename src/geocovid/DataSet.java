@@ -1,6 +1,10 @@
 package geocovid;
 
 public final class DataSet {
+	public static final String SHP_FILE_PARCELS = "./data/sec2.shp";
+	public static final String SHP_FILE_PLACES = "./data/sec2-places.shp";
+	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/sec2-places-markov.csv";
+	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METRE	= 4;
 	/** cantidad media de humanos por hogar (minimo 1) */
@@ -36,7 +40,7 @@ public final class DataSet {
 	public static final int EXPOSED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
 	/** duracion de periodo infectado sintomatico/asintomatico en ticks para todos */
-	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 a 6 dias sintomatico
+	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 dias sintomatico
 	public static final int INFECTED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
 	/** % de casos asintomaticos con respecto a los sintomatcos */
@@ -50,16 +54,16 @@ public final class DataSet {
 	 * <li>65 o mas anos</ul>
 	 */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
-	public static final double[] HUMANS_PER_AGE_GROUP			= {22d, 27d, 27d, 16d, 8d}; // Censo OV 2013
-	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {20d, 30d, 30d, 20d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera
-	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {10d, 50d, 20d, 20d, 0d}; // Humanos con hogar fuera y trabajo/estudio dentro
+	public static final double[] HUMANS_PER_AGE_GROUP			= {14.4d, 17.92d, 22.88d, 31.1d, 13.7d}; // Abelardo
+	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {10d, 20d, 35d, 35d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera - Inventado
+	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {10d, 20d, 35d, 35d, 0d}; // Humanos con hogar fuera y trabajo/estudio dentro - Inventado
 	
 	/** % de estudiantes, trabajadores e inactivos (ama de casa/jubilado/pensionado/otros) segun grupo etario */
 	public static final double OCCUPATION_PER_AGE_GROUP[][] = { // Datos del "El mapa del trabajo argentino 2019" - CEPE
 			{ 100d,   0d,   0d},	// 5-15
-			{  50d,  30d,  20d},	// 16-25
-			{  15d,  70d,  15d},	// 26-40
-			{   0d,  80d,  20d},	// 41-64
+			{  50d,  10d,  40d},	// 16-25	<- 100% mas de inactivos
+			{  15d,  55d,  30d},	// 26-40	<- 100% mas de inactivos
+			{   0d,  60d,  40d},	// 41-64	<- 100% mas de inactivos
 			{   0d,   0d, 100d} };	// 65+
 	
 	/** para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */

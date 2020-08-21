@@ -6,18 +6,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import cern.jet.random.Uniform;
@@ -43,6 +42,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private List<WorkplaceAgent>universityPlaces = new ArrayList<WorkplaceAgent>();
 	
 	private Map<Long, String> placesType = new HashMap<>();
+	private Map<String, PlaceProperty> placesProperty = new HashMap<>();
 	
 	private Context<Object> context;
 	private Geography<Object> geography;
@@ -69,8 +69,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 	static final int WEEKLY_TICKS = 12*7; // ticks que representan el tiempo de una semana
 	static final int WEEKEND_TICKS = 12*2; // ticks que representan el tiempo que dura el fin de semana
 	
-	static final String SHP_FILE_PARCELS = "./data/ov-4326.shp";
-	static final String SHP_FILE_PLACES = "./data/places-matched-4326.shp";
 	
 	@Override
 	public Context<Object> build(Context<Object> context) {
@@ -103,7 +101,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		context.add(new Temperature(simulationStartDay)); // Para calcular temperatura diaria, para estela
 		
 		loadPlacesShapefile();
+		PlaceProperty.loadPlacesProperties(placesProperty);
 		loadParcelsShapefile();
+		BuildingManager.createActivitiesChances();
 		initHumans();
 		
 		return context;
@@ -269,7 +269,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 
 	private void loadPlacesShapefile() {
-		String boundaryFilename = SHP_FILE_PLACES;
+		String boundaryFilename = DataSet.SHP_FILE_PLACES;
 		List<SimpleFeature> features = loadFeaturesFromShapefile(boundaryFilename);
 		placesType.clear();
 		
@@ -291,7 +291,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 				type = (String) feature.getAttribute("type");
 				//rating = (int) feature.getAttribute("ratings");
 				
+				type = type.split("\\+")[0]; // TODO si no es lugar de trabajo, tendria que sumar % segun 2ndo type
+				
 				placesType.put(idParcel, type);
+				if (!placesProperty.containsKey(type))
+					placesProperty.put(type, new PlaceProperty(type));
 			}
 			else {
 				System.err.println("Error creating agent for " + geom);
@@ -301,7 +305,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 
 	private void loadParcelsShapefile() {
-		String boundaryFilename = SHP_FILE_PARCELS;
+		String boundaryFilename = DataSet.SHP_FILE_PARCELS;
 		List<SimpleFeature> features = loadFeaturesFromShapefile(boundaryFilename);
 		homePlaces.clear();
 		workPlaces.clear();
@@ -312,9 +316,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		WorkplaceAgent tempWorkspace = null;
 		String placeType;
 		maxParcelId = 0;
+		PlaceProperty placeProp;
+		GeometryFactory geometryFactory = new GeometryFactory();
 		
-		// Armo la lista con los tipos de lugares de entretenimiento y otros, para filtrar los lugares de trabajo
-		List<String> placesTypeList = Arrays.asList(ArrayUtils.addAll(BuildingManager.entertainmentTypes, BuildingManager.otherTypes));
 		BuildingManager.initManager(context, geography);
 		
 		double maxX = -180d;
@@ -325,6 +329,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		long id;
 		long blockId;
+		//String state;
 		String type;
 		int area;
 		int coveredArea;
@@ -346,56 +351,74 @@ public class ContextCreator implements ContextBuilder<Object> {
 				continue;
 			}
 			if (geom instanceof Point) {
+				// Formato propio OV
 				id = (Long)feature.getAttribute("id");
 				blockId = (Long)feature.getAttribute("block");
 				type = (String)feature.getAttribute("type");
 				area = (int)feature.getAttribute("area");
 				coveredArea = (int)feature.getAttribute("cover_area");
+			}
+			else { // Polygon
+				// Formato Catastro Parana - modificado
+				id = (Long)feature.getAttribute("id");
+				blockId = (int)feature.getAttribute("block");
+				//state = (String)feature.getAttribute("state"); // E H B
+				type = (String)feature.getAttribute("type");
+				area = (int) Math.round((double)feature.getAttribute("area"));
+				coveredArea = (int) Math.round((double)feature.getAttribute("cover_area"));
+				// Ignoro estos tipos de Buildings
+				if (type.contains("BALDIO") || type.contains("BAULERA") || type.contains("COCHERA"))
+					continue;
+				// Convierto las geometrias Polygon a Point
+				geom = geometryFactory.createPoint(geom.getCentroid().getCoordinate());
 				
-				if (id > maxParcelId)
-					maxParcelId = id;
-				
-				if (area == 0) { // los terrenos sin construir los tomo igual
-					area = 100;
-					coveredArea = 80;
-				}
-				
-				if (!placesType.containsKey(id)) {
-					tempBuilding = new BuildingAgent(geom, id, blockId, type, area, coveredArea);
-					homePlaces.add(tempBuilding);
-					context.add(tempBuilding);
-					geography.move(tempBuilding, geom);
+			}
+			// Guarda la ultima ID de parcela, para crear ficticias
+			if (id > maxParcelId)
+				maxParcelId = id;
+			// Los terrenos sin construir los tomo igual
+			if (area == 0) {
+				area = 100;
+				coveredArea = 80;
+			}
+			// Chekea si la ID de parcela pertenece a la de un Place
+			if (!placesType.containsKey(id)) {
+				tempBuilding = new BuildingAgent(geom, id, blockId, type, area, coveredArea);
+				homePlaces.add(tempBuilding);
+				context.add(tempBuilding);
+				geography.move(tempBuilding, geom);
+			}
+			else {
+				placeType = placesType.remove(id);
+				placeProp = placesProperty.get(placeType);
+				if (placeProp.getActivityType() == 0) { // lodging
+					// Si es alojamiento, divido la superficie por 80 por casa
+					for (int i = 0; i < (area / 80); i++) {
+						tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
+						homePlaces.add(tempBuilding);
+						context.add(tempBuilding);
+						geography.move(tempBuilding, geom);
+					}
 				}
 				else {
-					placeType = placesType.remove(id);
-					if (placeType.contains("lodging")) {
-						// Si es alojamiento, divido la superficie por 80 por casa
-						for (int i = 0; i < (area / 80); i++) {
-							tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
-							homePlaces.add(tempBuilding);
-							context.add(tempBuilding);
-							geography.move(tempBuilding, geom);
-						}
-					}
-					else {
-						tempWorkspace = new WorkplaceAgent(geom, id, blockId, type, area, coveredArea, placeType);
+					tempWorkspace = new WorkplaceAgent(geom, id, blockId, placeType, area, coveredArea, placeType, placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
+					if (placeProp.getActivityType() == 1) { // trabajo / estudio
 						if (placeType.contains("school"))
 							schoolPlaces.add(tempWorkspace);
 						else if (placeType.contains("university"))
 							universityPlaces.add(tempWorkspace);
 						else {
 							workPlaces.add(tempWorkspace);
-							// Si es lugar con atencion al publico, se agrega a la lista de actividades
-							if (placesTypeList.contains(placeType))
-								BuildingManager.addPlace(placeType, tempWorkspace);
 						}
-						context.add(tempWorkspace);
-						geography.move(tempWorkspace, geom);
 					}
+					else { // ocio, otros
+						workPlaces.add(tempWorkspace);
+						// Si es lugar con atencion al publico, se agrega a la lista de actividades
+						BuildingManager.addPlace(placeType, tempWorkspace, placeProp);
+					}
+					context.add(tempWorkspace);
+					geography.move(tempWorkspace, geom);
 				}
-			}
-			else {
-				System.err.println("Error creating agent for " + geom);
 			}
 		}
 		features.clear();
@@ -493,8 +516,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 		int localHumansCount = localHumans + localTravelerHumans;
 		// Crear casas ficticias si es que faltan
 		int extraHomes = (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN) - homePlaces.size();
-		if (extraHomes > 0)
+		if (extraHomes > 0) {
 			createFictitiousHomes(extraHomes);
+			System.out.println("HOGARES PROMEDIO FALTANTES: "+extraHomes);
+		}
+		else
+			System.out.println("HOGARES PROMEDIO SOBRANTES: "+extraHomes*-1);
 		Uniform disUniHomesIndex = RandomHelper.createUniform(0, homePlaces.size()-1);
 		//
 		

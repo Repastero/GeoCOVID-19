@@ -29,20 +29,38 @@ public final class BuildingManager {
 	
 	private static Map<Integer, InfectiousHumanAgent> infectiousHumans = new HashMap<>(); // Humanos infectaods
 	
-	// Types que estan disponibles en el SHP de places
-	protected static final String entertainmentTypes[] = {"bar", "church", "gym", "hair_care", "physiotherapist", "restaurant", "sport_club", "sports_complex", "park"};
-	// Chances de visitar cada tipo de place (suma 1000)
-	private static final int entertainmentChances[]  = {140, 70, 130, 40, 100, 130, 125, 125, 140};
-	// Types que estan disponibles en el SHP de places
-	protected static final String otherTypes[] = {"bank", "car_repair", "bakery", "book_store", "clothing_store", "electronics_store", "computer_accessories_store", "hardware_store", "building_materials_supplier", "electronics_store+home_goods_store", "home_goods_store", "laundry", "liquor_store", "meal_takeaway", "pharmacy", "real_estate_agency", "supermarket+grocery_or_supermarket", "grocery_or_supermarket", "veterinary_care", "public_medical_center", "medical_office", "ice_cream_shop", "optician", "photographer", "government_office", "local_government_office", "police"};
-	// Chances de visitar cada tipo de place (suma 1000)
-	private static final int otherChances[] = {40, 40, 60, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 20, 20, 20, 20, 20};
+	// Temporal
+	private static List<PlaceProperty> enterPropList = new ArrayList<PlaceProperty>();
+	private static List<PlaceProperty> otherPropList = new ArrayList<PlaceProperty>();
+	//
 	
+	// Types que estan disponibles en el SHP de places
+	private static String[] entertainmentTypes;
+	// Chances de visitar cada lugar de ocio por cada grupo etario
+	private static int[][] entertainmentChances;
+	// Sumatoria de chances por cada grupo etario
+	private static int[] entertainmentChancesSum;
+	
+	// Types que estan disponibles en el SHP de places
+	private static String[] otherTypes;
+	// Chances de visitar cada lugar de otros por cada grupo etario
+	private static int[][] otherChances;
+	// Sumatoria de chances por cada grupo etario
+	private static int[] otherChancesSum;
+	
+	/**
+	 * Reinicia colecciones de Places, y guarda referencia de Context y Geography
+	 * @param con Context
+	 * @param geo Geography
+	 */
 	public static void initManager(Context<Object> con, Geography<Object> geo) {
 		context = con;
 		geography = geo;
 		placesMap.clear(); // Por si cambio el SHP entre corridas
 		infectiousHumans.clear(); // Por si quedo algun infeccioso
+		//
+		enterPropList.clear(); // Por las dudas
+		otherPropList.clear(); // Por las dudas
 	}
 	
 	/**
@@ -60,8 +78,9 @@ public final class BuildingManager {
 	 * Agregar el Building a la lista que pertenece segun Type.
 	 * @param type
 	 * @param build
+	 * @param placeProp 
 	 */
-	public static void addPlace(String type, WorkplaceAgent build) {
+	public static void addPlace(String type, WorkplaceAgent build, PlaceProperty prop) {
 		if (placesMap.containsKey(type)) {
 			placesMap.get(type).add(build);
 		}
@@ -69,7 +88,53 @@ public final class BuildingManager {
 			List<WorkplaceAgent> buildList = new ArrayList<WorkplaceAgent>();
 			buildList.add(build);
 			placesMap.put(type, buildList);
+			//
+			if (prop.getActivityType() == 2)
+				enterPropList.add(prop);
+			else
+				otherPropList.add(prop);
 		}
+	}
+
+	private static void fillActivitiesChances(List<PlaceProperty> propList, String[] types, int[][] chances, int[] chancesSum) {
+		PlaceProperty pp;
+		int i, j;
+		for (i = 0; i < propList.size(); i++) {
+			pp = propList.get(i);
+			types[i] = pp.getGoogleMapsType();
+			chances[i] = pp.getActivityChances(); // TODO copiar la referencia en lugar de cada int ???
+			for (j = 0; j < chances[i].length; j++) {
+				chancesSum[j] += chances[i][j];
+			}
+		}
+	}
+	
+	public static void createActivitiesChances() {
+		entertainmentTypes = new String[enterPropList.size()];
+		entertainmentChances = new int[enterPropList.size()][DataSet.AGE_GROUPS];
+		entertainmentChancesSum = new int[DataSet.AGE_GROUPS];
+		fillActivitiesChances(enterPropList, entertainmentTypes, entertainmentChances, entertainmentChancesSum);
+
+		otherTypes = new String[otherPropList.size()];
+		otherChances = new int[otherPropList.size()][DataSet.AGE_GROUPS];
+		otherChancesSum = new int[DataSet.AGE_GROUPS];
+		fillActivitiesChances(otherPropList, otherTypes, otherChances, otherChancesSum);
+		
+		enterPropList.clear();
+		otherPropList.clear();
+		
+		/* TESTEO
+		for (int i = 0; i < entertainmentTypes.length; i++) {
+			System.out.println(entertainmentTypes[i]+" "+entertainmentChances[i][0]+" "+entertainmentChances[i][1]+" "+entertainmentChances[i][2]+" "+entertainmentChances[i][3]+" "+entertainmentChances[i][4]);
+		}
+		System.out.println("TOTAL "+entertainmentChancesSum[0]+" "+entertainmentChancesSum[1]+" "+entertainmentChancesSum[2]+" "+entertainmentChancesSum[3]+" "+entertainmentChancesSum[4]);
+		System.out.println("-------------------------------------------------------");
+		for (int i = 0; i < otherTypes.length; i++) {
+			System.out.println(otherTypes[i]+" "+otherChances[i][0]+" "+otherChances[i][1]+" "+otherChances[i][2]+" "+otherChances[i][3]+" "+otherChances[i][4]);
+		}
+		System.out.println("TOTAL "+otherChancesSum[0]+" "+otherChancesSum[1]+" "+otherChancesSum[2]+" "+otherChancesSum[3]+" "+otherChancesSum[4]);
+		System.out.println("-------------------------------------------------------");
+		*/
 	}
 	
 	/**
@@ -87,16 +152,17 @@ public final class BuildingManager {
 	 * @param geo
 	 * @param types
 	 * @param chances
+	 * @param chancesSum 
 	 * @param radius
 	 * @return
 	 */
-	public static WorkplaceAgent findPlace(Geometry geo, String[] types, int[] chances, double radius) {
+	public static WorkplaceAgent findPlace(Geometry geo, String[] types, int[][] chances, int[] chancesSum, double radius, int groupAge) {
 		WorkplaceAgent newPlace = null;
-        int rnd = RandomHelper.nextIntFromTo(1, 1000);
+        int rnd = RandomHelper.nextIntFromTo(1, chancesSum[groupAge]);
         int i = 0;
-        while (rnd > chances[i]) {
+        while (rnd > chances[i][groupAge]) {
         	// La suma de las pobabilidades no debe dar mas de 1000
-        	rnd -= chances[i];
+        	rnd -= chances[i][groupAge];
         	++i;
         }
         //
@@ -129,9 +195,10 @@ public final class BuildingManager {
 	 * @param type
 	 * @param currentBuilding
 	 * @param radius
+	 * @param ageGroup 
 	 * @return
 	 */
-	public static BuildingAgent findRandomPlace(int type, BuildingAgent currentBuilding, double radius) {
+	public static BuildingAgent findRandomPlace(int type, BuildingAgent currentBuilding, double radius, int ageGroup) {
 		BuildingAgent foundedPlace = null;
 		
 		Geometry geo;
@@ -144,10 +211,10 @@ public final class BuildingManager {
 		}
 		
 		if (type == 2) { // Entretenimiento
-			foundedPlace = findPlace(geo, entertainmentTypes, entertainmentChances, radius);
+			foundedPlace = findPlace(geo, entertainmentTypes, entertainmentChances, entertainmentChancesSum, radius, ageGroup);
 		}
 		else if (type == 3) { // Otros
-			foundedPlace = findPlace(geo, otherTypes, otherChances, radius);
+			foundedPlace = findPlace(geo, otherTypes, otherChances, otherChancesSum, radius, ageGroup);
 		}
 		return foundedPlace;
 	}

@@ -6,7 +6,7 @@
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 		
 	<parameter name="diaInicioSimulacion" displayName="Dia del ano inicio simulacion"
-		type="int" defaultValue="62" isReadOnly="false"
+		type="int" defaultValue="210" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 		
 	<parameter name="tiempoEntradaCaso" displayName="Tiempo de entrada de infectados"
@@ -14,11 +14,11 @@
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 		
 	<parameter name="cantidadInfectados" displayName="Numero de infectados iniciales"
-		type="int" defaultValue="5" isReadOnly="false"
+		type="int" defaultValue="20" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 		
 	<parameter name="tiempoInicioCuarentena" displayName="Tiempo de inicio cuarentena"
-		type="int" defaultValue="144" isReadOnly="false"
+		type="int" defaultValue="0" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 		
 	<parameter name="cantHumanos" displayName="Cantidad de Humanos locales"
@@ -26,11 +26,11 @@
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
 		
 	<parameter name="cantHumanosExtranjeros" displayName="Cantidad de Humanos que viven afuera"
-		type="int"	defaultValue="1000" isReadOnly="false"
+		type="int"	defaultValue="6000" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
 		
 	<parameter name="cantHumanosLocales" displayName="Cantidad de Humanos que trabajan afuera"
-		type="int"	defaultValue="1000" isReadOnly="false"
+		type="int"	defaultValue="8000" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"/>
 		
 	<parameter name="corridas" displayName="Cantidad de simulaciones que se quieren realizar"
