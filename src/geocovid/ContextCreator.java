@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.geotools.data.shapefile.ShapefileDataStore;
@@ -312,6 +313,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		schoolPlaces.clear();
 		universityPlaces.clear();
 		
+		// Listado de Places cerrados durante pandemia
+		final Set<String> closedPlaces = Set.of("beauty_school", "church", "dance_school", "escape_room_center", "function_room_facility", "funeral_home", "language_school", "lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "soccer_field", "sports_club", "sportswear_store", "synagogue", "travel_agency", "university");
+		
 		BuildingAgent tempBuilding = null;
 		WorkplaceAgent tempWorkspace = null;
 		String placeType;
@@ -381,47 +385,51 @@ public class ContextCreator implements ContextBuilder<Object> {
 				area = 100;
 				coveredArea = 80;
 			}
-			// Si tiene menos de 20 m2 se omite
-			else if (coveredArea < 20) {
-				continue;
-			}
 			// Chekea si la ID de parcela pertenece a la de un Place
-			if (!placesType.containsKey(id)) {
+			if (!placesType.containsKey(id)) { // es una vivienda entonces
+				// Si tiene menos de 25 m2 cubiertos se omite
+				if (coveredArea < 25) continue;
+				
 				tempBuilding = new BuildingAgent(geom, id, blockId, type, area, coveredArea);
 				homePlaces.add(tempBuilding);
 				context.add(tempBuilding);
 				geography.move(tempBuilding, geom);
 			}
 			else {
+				// Si tiene menos de 25 m2 cubiertos se incrementa
+				if (coveredArea < 25) coveredArea = 25;
+				
 				placeType = placesType.remove(id);
-				placeProp = placesProperty.get(placeType);
-				if (placeProp.getActivityType() == 0) { // lodging
-					// Si es alojamiento, divido la superficie por 80 por casa
-					for (int i = 0; i < (area / 80); i++) {
-						tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
-						homePlaces.add(tempBuilding);
-						context.add(tempBuilding);
-						geography.move(tempBuilding, geom);
-					}
-				}
-				else {
-					tempWorkspace = new WorkplaceAgent(geom, id, blockId, placeType, area, coveredArea, placeType, placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
-					if (placeProp.getActivityType() == 1) { // trabajo / estudio
-						if (placeType.contains("school"))
-							schoolPlaces.add(tempWorkspace);
-						else if (placeType.contains("university"))
-							universityPlaces.add(tempWorkspace);
-						else {
-							workPlaces.add(tempWorkspace);
+				if (!closedPlaces.contains(placeType)) { // si no esta cerrado
+					placeProp = placesProperty.get(placeType);
+					if (placeProp.getActivityType() == 0) { // lodging
+						// Si es alojamiento, divido la superficie por 80 por casa
+						for (int i = 0; i < (area / 80); i++) {
+							tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
+							homePlaces.add(tempBuilding);
+							context.add(tempBuilding);
+							geography.move(tempBuilding, geom);
 						}
 					}
-					else { // ocio, otros
-						workPlaces.add(tempWorkspace);
-						// Si es lugar con atencion al publico, se agrega a la lista de actividades
-						BuildingManager.addPlace(placeType, tempWorkspace, placeProp);
+					else {
+						tempWorkspace = new WorkplaceAgent(geom, id, blockId, placeType, area, coveredArea, placeType, placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
+						if (placeProp.getActivityType() == 1) { // trabajo / estudio
+							if (placeType.contains("school"))
+								schoolPlaces.add(tempWorkspace);
+							else if (placeType.contains("university"))
+								universityPlaces.add(tempWorkspace);
+							else {
+								workPlaces.add(tempWorkspace);
+							}
+						}
+						else { // ocio, otros
+							workPlaces.add(tempWorkspace);
+							// Si es lugar con atencion al publico, se agrega a la lista de actividades
+							BuildingManager.addPlace(placeType, tempWorkspace, placeProp);
+						}
+						context.add(tempWorkspace);
+						geography.move(tempWorkspace, geom);
 					}
-					context.add(tempWorkspace);
-					geography.move(tempWorkspace, geom);
 				}
 			}
 		}
