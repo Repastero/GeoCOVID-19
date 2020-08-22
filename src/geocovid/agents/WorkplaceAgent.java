@@ -1,11 +1,19 @@
 package geocovid.agents;
 
 import repast.simphony.random.RandomHelper;
+
+import java.util.Set;
+
 import com.vividsolutions.jts.geom.Geometry;
 
 import geocovid.DataSet;
 
 public class WorkplaceAgent extends BuildingAgent {
+	// Listado de Places cerrados durante pandemia
+	public static final Set<String> CLOSED_PLACES = Set.of("beauty_school", "bus_station", "church", "dance_school", "escape_room_center", "function_room_facility", "funeral_home", "language_school", "lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "soccer_field", "sports_club", "sportswear_store", "synagogue", "travel_agency", "university");
+	// Listado de Places a cielo abierto
+	public static final Set<String> OPEN_AIR_PLACES = Set.of("gas_station","park","parking","soccer_field");
+	
 	private int[][] workPositions;
 	private int workPositionsCount;
 	private String workplaceType;
@@ -69,6 +77,16 @@ public class WorkplaceAgent extends BuildingAgent {
 		if (!fullBuilding) {
 			if (row == 0) row = 1;
 			setStartingRow(row);
+		}
+		
+		// Para calcular el maximo aforo teorico de un local comercial:
+		// dividir la superficie util transitable entre 4
+		if (!OPEN_AIR_PLACES.contains(workplaceType)) { // si no es al aire libre
+			int cap = (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * DataSet.SQUARE_METERS_PER_HUMAN));
+			if (cap <= workPositionsCount) {
+				cap = workPositionsCount + 1; // permitir al menos un cliente
+			}
+			setCapacity(cap);
 		}
 	}
 	

@@ -6,11 +6,13 @@ public final class DataSet {
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/sec2-places-markov.csv";
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
-	public static final int HUMANS_PER_SQUARE_METRE	= 4;
+	public static final int HUMANS_PER_SQUARE_METER	= 4;
 	/** cantidad media de humanos por hogar (minimo 1) */
 	public static final int HOUSE_INHABITANTS_MEAN	= 4;
 	/** espacios entre puestos de trabajo/estudio (minimo 1) */
 	public static final int SPACE_BETWEEN_WORKERS	= 4;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
+	/** metros cuadrados por persona para limitar aforo en Places (en espacios cerrados) */
+	public static final int SQUARE_METERS_PER_HUMAN	= 4;	// TODO buscar segn disposicion municipal
 	
 	/** porcentaje del area construida ocupable en casas (minimo .1) */
 	public static final double BUILDING_AVAILABLE_AREA	= 0.6;

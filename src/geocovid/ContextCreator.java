@@ -313,9 +313,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		schoolPlaces.clear();
 		universityPlaces.clear();
 		
-		// Listado de Places cerrados durante pandemia
-		final Set<String> closedPlaces = Set.of("beauty_school", "church", "dance_school", "escape_room_center", "function_room_facility", "funeral_home", "language_school", "lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "soccer_field", "sports_club", "sportswear_store", "synagogue", "travel_agency", "university");
-		
 		BuildingAgent tempBuilding = null;
 		WorkplaceAgent tempWorkspace = null;
 		String placeType;
@@ -396,11 +393,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 				geography.move(tempBuilding, geom);
 			}
 			else {
-				// Si tiene menos de 25 m2 cubiertos se incrementa
-				if (coveredArea < 25) coveredArea = 25;
-				
 				placeType = placesType.remove(id);
-				if (!closedPlaces.contains(placeType)) { // si no esta cerrado
+				if (!WorkplaceAgent.CLOSED_PLACES.contains(placeType)) { // si no esta cerrado
+					// Si tiene menos de 25 m2 cubiertos y no es un Place al aire libre, se incrementa
+					if ((coveredArea < 25) && !WorkplaceAgent.OPEN_AIR_PLACES.contains(placeType))
+						coveredArea = 25;
+					//
 					placeProp = placesProperty.get(placeType);
 					if (placeProp.getActivityType() == 0) { // lodging
 						// Si es alojamiento, divido la superficie por 80 por casa

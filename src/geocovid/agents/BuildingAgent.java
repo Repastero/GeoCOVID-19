@@ -125,7 +125,7 @@ public class BuildingAgent {
 	 */
 	private void setBuildingShape() {
 		// Se multiplica el area por la cantidad de Humanos por m2
-		final int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METRE;
+		final int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METER;
 		if (geometry instanceof Point) {
 			// Si es solo un punto, tomar la superficie como un cuadrado
 			// Busca el numero de X mas alto que sea factor de realArea
@@ -475,8 +475,19 @@ public class BuildingAgent {
 	public void setCoveredArea(int coveredArea) {
 		this.coveredArea = coveredArea;
 	}
-	
+
+	public int getRealArea() {
+		return realArea;
+	}
+
 	public int getHumansAmount() {
 		return humansMap.size();
+	}
+	
+	public void setCapacity(int limit) {
+		this.capacity = limit;
+	}
+	public boolean isOutdoor() {
+		return outdoor;
 	}
 }
