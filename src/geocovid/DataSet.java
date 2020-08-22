@@ -59,7 +59,7 @@ public final class DataSet {
 	 */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
 	public static final double[] HUMANS_PER_AGE_GROUP			= {14.4d, 17.92d, 22.88d, 31.1d, 13.7d}; // Abelardo
-	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {10d, 20d, 35d, 35d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera - Inventado
+	public static final double[] LOCAL_HUMANS_PER_AGE_GROUP		= {20d, 20d, 30d, 30d, 0d}; // Humanos con hogar dentro y trabajo/estudio fuera - Inventado
 	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP	= {10d, 20d, 35d, 35d, 0d}; // Humanos con hogar fuera y trabajo/estudio dentro - Inventado
 	
 	/** % de estudiantes, trabajadores e inactivos (ama de casa/jubilado/pensionado/otros) segun grupo etario */
@@ -75,7 +75,9 @@ public final class DataSet {
 	/** grado de precision frente a longitud */
 	public static final double DEGREE_PRECISION = 11.132d / 0.0001d; // Fuente https://en.wikipedia.org/wiki/Decimal_degrees
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
-	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750d / DEGREE_PRECISION, 1000d / DEGREE_PRECISION, -1d, -1d, 500d / DEGREE_PRECISION}; // metros div metros por grado (longitud)
+	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {1000d / DEGREE_PRECISION, 1250d / DEGREE_PRECISION, -1d, -1d, 750d / DEGREE_PRECISION}; // metros div metros por grado (longitud)
+	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
+	public static final int TRAVEL_OUTSIDE_CHANCE = 50; // Segun Abelardo tendria que ser 75% para la seccional 2, pero por la pandemia lo reducimos a 50%
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};	// sobre 100

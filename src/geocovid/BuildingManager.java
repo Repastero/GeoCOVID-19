@@ -201,6 +201,11 @@ public final class BuildingManager {
 	public static BuildingAgent findRandomPlace(int type, BuildingAgent currentBuilding, double radius, int ageGroup) {
 		BuildingAgent foundedPlace = null;
 		
+		// Hay una probabilidad de que el Humano se traslade fuera del contexto para realizar las actividades de ocio u otros
+		// Esto aplica a todos los agentes Humanos, tanto locales como extranjeros
+		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.TRAVEL_OUTSIDE_CHANCE)
+			return foundedPlace;
+		
 		Geometry geo;
 		if (currentBuilding != null) {
 			geo = currentBuilding.getGeometry();
