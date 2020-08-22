@@ -86,6 +86,10 @@ public class HumanAgent {
 		return (asxInfectious || symInfectious);
 	}
 	
+	public boolean atWork() {
+		return (currentActivity == 1);
+	}
+	
 	public int[] getCurrentPosition() {
 		return currentPosition;
 	}
@@ -167,7 +171,7 @@ public class HumanAgent {
 		schedule.schedule(scheduleParams, this, "setInfectious");
 		
 		// Si el spreader tiene sintomas y el expuesto esta en la casa o trabajo
-		if ((fromSyntomatic) && (currentActivity == 0 || currentActivity == 1)) {
+		if (fromSyntomatic && (currentActivity == 0 || currentActivity == 1)) {
 			suspiciousCase = true;
 		}
 	}

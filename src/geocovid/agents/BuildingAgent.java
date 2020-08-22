@@ -22,6 +22,7 @@ public class BuildingAgent {
 	private int area;
 	private int coveredArea;
 	private int realArea;
+	private boolean workingPlace = false;
 	// Atributos de la grilla
 	private int capacity;
 	private int startingRow = 0; // indice de fila inicial para no trabajadores 
@@ -57,6 +58,7 @@ public class BuildingAgent {
 		this.type = type;
 		this.area = area;
 		this.coveredArea = coveredArea;
+		this.workingPlace = true;
 		//
 		setRealArea(areaModifier);
 		setBuildingShape();
@@ -307,6 +309,23 @@ public class BuildingAgent {
 		}
 	}
 	
+	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
+		int infectionRate = DataSet.INFECTION_RATE;
+		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+			// Si es un lugar de trabajo y cerrado, se asume que usan cubreboca
+			if (workingPlace && !outdoor) {
+				// Si hay contagio entre cliente-cliente o empleado-cliente
+				if (!(spreader.atWork() && prey.atWork()))
+					infectionRate -= (infectionRate * DataSet.MASK_INFECTION_RATE_REDUCTION) / 100;
+			}
+			if (RandomHelper.nextIntFromTo(1, 100) <= infectionRate) {
+				prey.setExposed(spreader.symInfectious | spreader.quarantined);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Esparce el virus a los humanos susceptibles con los que tuvo contacto cercano y prolongado.
 	 * @param spHuman HumanAgent contagioso
@@ -329,11 +348,7 @@ public class BuildingAgent {
 			    	if (preyId != 0) { // Si no esta vacio, hay humano
 			    		prey = humansMap.get(preyId);
 						if (!prey.wasExposed()) {
-							if (Math.abs(spHuman.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-								if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-									prey.setExposed(spHuman.symInfectious | spHuman.quarantined);
-								}
-							}
+							checkContagion(spHuman, prey);
 			    		}
 			    	}
 		    	}
@@ -358,12 +373,8 @@ public class BuildingAgent {
 			yShift = Math.abs(pos[1] - spPos[1]);
 			if (xShift < circleRadius && yShift < circleRadius) { // que X o Y individualmente no exedan el radio de contagio
 				if (xShift + yShift <= circleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
-					if (Math.abs(human.getRelocationTime() - spreader.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-						if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-							human.setExposed(spreader.symInfectious | spreader.quarantined);
-							break;
-						}
-					}
+					if (checkContagion(spreader, human))
+						break;
 				}
 			}
 		}

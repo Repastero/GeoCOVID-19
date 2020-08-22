@@ -12,7 +12,7 @@ public final class DataSet {
 	/** espacios entre puestos de trabajo/estudio (minimo 1) */
 	public static final int SPACE_BETWEEN_WORKERS	= 4;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** metros cuadrados por persona para limitar aforo en Places (en espacios cerrados) */
-	public static final int SQUARE_METERS_PER_HUMAN	= 4;	// TODO buscar segn disposicion municipal
+	public static final int SQUARE_METERS_PER_HUMAN	= 4;	// TODO buscar segun disposicion municipal
 	
 	/** porcentaje del area construida ocupable en casas (minimo .1) */
 	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
@@ -25,6 +25,8 @@ public final class DataSet {
 	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks 
+	/** % de reduccion de INFECTION_RATE al usar barbijo */
+	public static final int	MASK_INFECTION_RATE_REDUCTION = 30;	// sobre 100
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 22;	// sobre 100
