@@ -386,6 +386,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 			if (!placesType.containsKey(id)) { // es una vivienda entonces
 				// Si tiene menos de 25 m2 cubiertos se omite
 				if (coveredArea < 25) continue;
+				// Si tiene mas de 100 m2 cubiertos se limita
+				if (coveredArea > 100) coveredArea = 100;
 				
 				tempBuilding = new BuildingAgent(geom, id, blockId, type, area, coveredArea);
 				homePlaces.add(tempBuilding);
