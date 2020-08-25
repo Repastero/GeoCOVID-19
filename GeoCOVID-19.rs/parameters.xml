@@ -13,7 +13,7 @@
 									
 		/>
 				<parameter name="tiempoInicioCuarentena" displayName="Tiempo de inicio cuarentena" type="int" 
-						defaultValue="0" 
+						defaultValue="480" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
