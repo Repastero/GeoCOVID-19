@@ -84,7 +84,7 @@ public final class DataSet {
 	public static final int TRAVEL_OUTSIDE_CHANCE = 50; // Segun Abelardo tendria que ser 75% para la seccional 2, pero por la pandemia lo reducimos a 50%
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};	// sobre 100
+	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 2d, 5d, 20d, 36d};	// sobre 100
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE					= 42d;	// sobre 100
 }
