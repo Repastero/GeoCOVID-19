@@ -41,7 +41,12 @@ public class WorkplaceAgent extends BuildingAgent {
 		int y = getHeight();
 		workPositions = new int[vacancies][2];
 		workPositionsCount = workPositions.length;
-		int distance = DataSet.SPACE_BETWEEN_WORKERS;
+		int mean =  DataSet.SPACE_BETWEEN_WORKERS;
+		int std = 1;
+		int distance = RandomHelper.createNormal(mean, std).nextInt();
+		distance = (distance > mean+std) ? mean+std : (distance < mean-std ? mean-std: distance);
+		
+		//int distance = DataSet.SPACE_BETWEEN_WORKERS;
 		int col = 0;
 		int row = 0;
 		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
@@ -82,7 +87,12 @@ public class WorkplaceAgent extends BuildingAgent {
 		// Para calcular el maximo aforo teorico de un local comercial:
 		// dividir la superficie util transitable entre 4
 		if (!OPEN_AIR_PLACES.contains(workplaceType)) { // si no es al aire libre
-			int cap = (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * DataSet.SQUARE_METERS_PER_HUMAN));
+			int mean1 =  DataSet.SQUARE_METERS_PER_HUMAN;
+			int std1 = 1;
+			int distance1 = RandomHelper.createNormal(mean1, std1).nextInt();
+			distance1 = (distance1 > mean1+std1) ? mean1+std1 : (distance1 < mean1-std1 ? mean1-std1: distance1);
+			int cap = (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * distance1));
+			//int cap = (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * DataSet.SQUARE_METERS_PER_HUMAN));
 			if (cap <= workPositionsCount) {
 				cap = workPositionsCount + 1; // permitir al menos un cliente
 			}

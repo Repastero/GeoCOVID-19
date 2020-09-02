@@ -208,11 +208,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Ver {@link #initHumans()}
 	 */
 	public void setHumansDefaultTMMC() {
-		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_PARANAS2_AGOSTO_TMMC;
-		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_PARANAS2_AGOSTO_TMMC;
-		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_PARANAS2_AGOSTO_TMMC;
-		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_PARANAS2_AGOSTO_TMMC;
-		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_PARANAS2_AGOSTO_TMMC;
+		HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
+		HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
+		HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
+		HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
+		HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
 
 		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
 		HumanAgent.infectedLocalTMMC[1] = MarkovChains.INFECTED_YOUNG_TMMC;
@@ -221,7 +221,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		HumanAgent.infectedLocalTMMC[4] = MarkovChains.INFECTED_HIGHER_TMMC;
 		HumanAgent.infectedTravelerTMMC = MarkovChains.INFECTED_TRAVELER_TMMC;
 		
-		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_CONFINEMENT_TMMC;
+		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
 	}
 	
 	/**
@@ -238,24 +238,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 1:
 			//CONFINAMIENTO JULIO2020 PARANA, DISTANCIAMIENTO OBLIGATORIO
 			if (sectoral == 0) {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
-			}
-			else {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
-			}
-			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_CONFINEMENT_TMMC;
-			break;
-		case 2:
-			//CONFINAMIENTO AGOSTO2020 PARANA, DISTANCIAMIENTO OBLIGATORIO
-			if (sectoral == 0) {
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_AGOSTO_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_AGOSTO_TMMC;
 				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_AGOSTO_TMMC;
@@ -269,7 +251,25 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
 			}
-			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_CONFINEMENT_TMMC;
+			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
+			break;
+		case 2:
+			//CONFINAMIENTO AGOSTO2020 PARANA, DISTANCIAMIENTO OBLIGATORIO
+			if (sectoral == 0) {
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS2_TMMC;
+			}
+			else {
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS11_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS11_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS11_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
+			}
+			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
 			break;
 		case 3:
 			// TODO Aca va fase 3 o trifasica

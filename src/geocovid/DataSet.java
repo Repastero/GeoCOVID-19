@@ -9,21 +9,21 @@ public final class DataSet {
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/sec2+11-places-markov.csv";
 	
 	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 14383 para sec2 y 16885 para sec11 */
-	public static final int[] LOCAL_HUMANS				= {6500, 10000};	// Cantidad de Humanos locales (no salen a trabajar)
-	public static final int[] LOCAL_TRAVELER_HUMANS		= {8000,  6000};	// Cantidad de Humanos que trabajan afuera
+	public static final int[] LOCAL_HUMANS				= {6500, 10885};	// Cantidad de Humanos locales (no salen a trabajar)
+	public static final int[] LOCAL_TRAVELER_HUMANS		= {7883,  6000};	// Cantidad de Humanos que trabajan afuera
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, 1};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0, 5, 10, 15};	// Dia de inicio de cada fase
+	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, };	// Numero de fase en orden de cambio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0, 38, 56};	// Dia de inicio de cada fase
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
 	/** cantidad media de humanos por hogar (minimo 1) */
 	public static final int[] HOUSE_INHABITANTS_MEAN= {4, 6};
 	/** espacios entre puestos de trabajo/estudio (minimo 1) */
-	public static final int SPACE_BETWEEN_WORKERS	= 4;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
+	public static final int SPACE_BETWEEN_WORKERS	= 3;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** metros cuadrados por persona para limitar aforo en Places (en espacios cerrados) */
-	public static final int SQUARE_METERS_PER_HUMAN	= 4;	// TODO buscar segun disposicion municipal
+	public static final int SQUARE_METERS_PER_HUMAN	= 3;	// TODO buscar segun disposicion municipal
 	
 	/** porcentaje del area construida ocupable en casas (minimo .1) */
 	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
@@ -37,10 +37,10 @@ public final class DataSet {
 	/** tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks 
 	/** % de reduccion de INFECTION_RATE al usar barbijo */
-	public static final int	MASK_INFECTION_RATE_REDUCTION = 30;	// sobre 100
+	public static final int	MASK_INFECTION_RATE_REDUCTION = 20;	// sobre 100
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
-	public static final int	CS_INFECTION_RATE			= 22;	// sobre 100
+	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
 	public static final int	CS_MIN_INFECTION_RATE		= 10;	// sobre 100
 	
@@ -113,7 +113,7 @@ public final class DataSet {
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.008d, 0.024d, 0.074d, 4.402d, 28.612d};	// sobre 100 - Pierinox
+	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.008d, 0.24d, 0.74d, 4.402d, 28.612d};	// sobre 100 - Pierinox
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 42d;	// sobre 100
 }

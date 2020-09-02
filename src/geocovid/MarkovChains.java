@@ -299,4 +299,80 @@ public final class MarkovChains {
 			{ { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } },
 			{ { 700, 0, 150, 150 }, { 700, 0, 150, 150 }, { 700, 0, 150, 150 }, { 700, 0, 150, 150 } },
 			{ { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } } };
-}
+	
+	//matrices 2 confinamineto agosto (simil fase oro verde)seccional2
+	/** Matriz modificada para los Humanos que estan en la 1er franja etaria. */
+	public static final int CHILD_DEFAULTS2_TMMC[][][] = {
+			{ { 500, 0, 250, 250 },  { 500, 0, 250, 250 },  { 500, 0, 250, 250 },  { 500, 0, 250, 250 } },
+			{ { 750, 0, 150, 100 }, { 750, 0, 150, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } },
+			{ { 300, 0, 450, 450 }, { 225, 0, 500, 275 }, { 100, 0, 700, 200 }, { 200, 0, 600, 200 } },
+			{ { 500, 0, 350, 150 }, { 300, 0, 350, 350 }, { 600, 0, 300, 100 }, { 500, 0, 200, 300 } } };
+
+	/** Matriz modificada para los Humanos que estan en la 2er franja etaria. */
+	public static final int YOUNG_DEFAULTS2_TMMC[][][] = {
+			{ { 100, 775, 125, 50 }, { 125, 800, 25, 50 }, { 125, 800, 25, 50 }, { 125, 800, 25, 50 } },
+			{ { 400, 450, 125, 25 }, { 400, 400, 100, 100 }, { 400, 400, 100, 100 }, { 400, 400, 100, 100 } },
+			{ { 100, 600, 250, 50 }, { 100, 600, 250, 50 }, { 100, 600, 250, 50 }, { 100, 600, 250, 50 } },
+			{ { 200, 100, 500, 200 }, { 300, 100, 300, 300 }, { 400, 0, 300, 300 }, { 400, 0, 300, 300 } } };
+
+
+	/** Matriz modificada para los Humanos que estan en la 3er franja etaria. */
+	public static final int ADULT_DEFAULTS2_TMMC[][][] = {
+			{ { 125, 825, 25, 25 }, { 125, 825, 25, 25 }, { 125, 825, 25, 25 }, { 125, 825, 25, 25 } },
+			{ { 500, 350, 50, 100 }, { 500, 350, 50, 100 }, { 400, 450, 100, 50 }, { 400, 450, 100, 50 } },
+			{ { 50, 800, 125, 25 }, { 50, 800, 125, 25 }, { 50, 800, 125, 25 }, { 50, 800, 125, 25 } },
+			{ { 300, 100, 350, 250 }, { 300, 100, 350, 250 }, { 300, 100, 300, 300 }, { 300, 100, 300, 300 } } };
+
+	/** Matriz modificada para los Humanos que estan en la 4ta franja etaria. */
+	public static final int ELDER_DEFAULTS2_TMMC[][][] = ADULT_DEFAULTS2_TMMC;
+
+	/** Matriz modificada para los Humanos que estan en la 5ta franja etaria. */
+	public static final int HIGHER_DEFAULTS2_TMMC[][][] = {
+			{ { 700, 0, 100, 200 }, { 700, 0, 100, 200 }, { 700, 0, 100, 200 }, { 700, 0, 100, 200 } },
+			{ { 900, 0, 25, 75 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } },
+			{ { 800, 0, 150, 50 }, { 300, 0, 450, 250 }, { 700, 0, 300, 0 }, { 700, 0, 0, 300 } },
+			{ { 950, 0, 25, 25 }, { 950, 0, 25, 25 }, { 950, 0, 25, 25 }, { 950, 0, 25, 25 } } };
+
+	/** Matriz modificada para los Humanos que viven afuera. */
+	public static final int TRAVELER_DEFAULTS2S11_TMMC[][][] = {
+			{ { 100, 700, 100, 100 }, { 100, 700, 100, 100 }, { 100, 700, 100, 100 }, { 100, 700, 100, 100 } },
+			{ { 900, 0, 50, 50 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } },
+			{ { 300, 400, 200, 100 }, { 300, 500, 100, 100 }, { 300, 350, 250, 100 }, { 300, 400, 200, 100 } },
+			{ { 1000, 0, 0, 0 }, { 1000, 0, 0, 0 }, { 1000, 0, 0, 0 }, { 1000, 0, 0, 0 } } };
+
+	//matrices 2 confinamineto agosto (simil fase oro verde)seccional11
+		/** Matriz modificada para los Humanos que estan en la 1er franja etaria. */
+		public static final int CHILD_DEFAULTS11_TMMC[][][] = {
+				{ { 50, 875, 25, 50 }, { 25, 900, 25, 50 }, { 25, 900, 25, 50 }, { 25, 900, 25, 50 } },
+				{ { 900, 50, 25, 25 }, { 800, 10, 95, 95 }, { 800, 10, 95, 95 }, { 800, 10, 95, 95 } },
+				{ { 100, 600, 250, 50 }, { 25, 850, 100, 25 }, { 100, 350, 500, 50 }, { 100, 500, 300, 100 } },
+				{ { 500, 100, 300, 100 }, { 300, 100, 300, 300 }, { 600, 0, 300, 100 }, { 500, 0, 200, 300 } } };
+
+		/** Matriz modificada para los Humanos que estan en la 2er franja etaria. */
+		public static final int YOUNG_DEFAULTS11_TMMC[][][] = CHILD_DEFAULTS11_TMMC;
+
+		/** Matriz modificada para los Humanos que estan en la 3er franja etaria. */
+		public static final int ADULT_DEFAULTS11_TMMC[][][] = {
+				{ { 25, 925, 25, 25 }, { 25, 925, 25, 25 }, { 25, 925, 25, 25 }, { 25, 925, 25, 25 } },
+				{ { 900, 50, 25, 25 }, { 650, 200, 100, 50 }, { 700, 110, 95, 95 }, { 700, 110, 95, 95 } },
+				{ { 250, 500, 225, 25 }, { 100, 850, 25, 25 }, { 200, 675, 100, 25 }, { 200, 675, 100, 25 } },
+				{ { 500, 150, 250, 100 }, { 50, 250, 400, 300 }, { 200, 100, 600, 100 }, { 500, 0, 250, 250 } } };
+
+		/** Matriz modificada para los Humanos que estan en la 4ta franja etaria. */
+		public static final int ELDER_DEFAULTS11_TMMC[][][] = ADULT_DEFAULTS11_TMMC;
+
+		/** Matriz modificada para los Humanos que estan en la 5ta franja etaria. */
+		public static final int HIGHER_DEFAULTS11_TMMC[][][] = {
+				{ { 700, 0, 100, 200 }, { 700, 0, 100, 200 }, { 700, 0, 100, 200 }, { 700, 0, 100, 200 } },
+				{ { 900, 0, 25, 75 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } },
+				{ { 800, 0, 150, 50 }, { 300, 0, 450, 250 }, { 700, 0, 300, 0 }, { 700, 0, 0, 300 } },
+				{ { 950, 0, 25, 25 }, { 950, 0, 25, 25 }, { 950, 0, 25, 25 }, { 950, 0, 25, 25 } } };
+
+		/** Matriz modificada para los Humanos que viven afuera. */
+		public static final int TRAVELER_DEFAULTS11_TMMC[][][] = {
+				{ { 0, 800, 100, 100 }, { 0, 800, 100, 100 }, { 0, 800, 100, 100 }, { 0, 800, 100, 100 } },
+				{ { 900, 0, 50, 50 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } },
+				{ { 300, 400, 200, 100 }, { 300, 500, 100, 100 }, { 300, 350, 250, 100 }, { 300, 400, 200, 100 } },
+				{ { 1000, 0, 0, 0 }, { 1000, 0, 0, 0 }, { 1000, 0, 0, 0 }, { 1000, 0, 0, 0 } } };
+
+	}
