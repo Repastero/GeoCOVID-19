@@ -495,9 +495,14 @@ public class BuildingAgent {
 		return humansMap.size();
 	}
 	
+	public int getCapacity() {
+		return capacity;
+	}
+	
 	public void setCapacity(int limit) {
 		this.capacity = limit;
 	}
+	
 	public boolean isOutdoor() {
 		return outdoor;
 	}

@@ -19,6 +19,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	private String workplaceType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
+	private int defaultCapacity;
 	
 	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workType, int workersPlace, int workersArea) {
 		super(geo, id, blockid, type, area, coveredArea, DataSet.WORKPLACE_AVAILABLE_AREA);
@@ -31,6 +32,19 @@ public class WorkplaceAgent extends BuildingAgent {
 		else
 			System.err.println("Sin cupo de trabajadores de Workplace: " + workplaceType);
 		createWorkPositions();
+	}
+	
+	public void limitCapacity(double sqMetersPerHuman) {
+		int cap = defaultCapacity;
+		// Para calcular el maximo aforo teorico de un local comercial:
+		// dividir la superficie util transitable entre 4
+		if (sqMetersPerHuman > 0d && !OPEN_AIR_PLACES.contains(workplaceType)) { // si no es al aire libre
+			cap = (int) (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * sqMetersPerHuman));
+			if (cap <= workPositionsCount) {
+				cap = workPositionsCount + 1; // permitir al menos un cliente
+			}
+		}
+		setCapacity(cap);
 	}
 	
 	/**
@@ -83,21 +97,7 @@ public class WorkplaceAgent extends BuildingAgent {
 			if (row == 0) row = 1;
 			setStartingRow(row);
 		}
-		
-		// Para calcular el maximo aforo teorico de un local comercial:
-		// dividir la superficie util transitable entre 4
-		if (!OPEN_AIR_PLACES.contains(workplaceType)) { // si no es al aire libre
-			int mean1 =  DataSet.SQUARE_METERS_PER_HUMAN;
-			int std1 = 1;
-			int distance1 = RandomHelper.createNormal(mean1, std1).nextInt();
-			distance1 = (distance1 > mean1+std1) ? mean1+std1 : (distance1 < mean1-std1 ? mean1-std1: distance1);
-			int cap = (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * distance1));
-			//int cap = (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * DataSet.SQUARE_METERS_PER_HUMAN));
-			if (cap <= workPositionsCount) {
-				cap = workPositionsCount + 1; // permitir al menos un cliente
-			}
-			setCapacity(cap);
-		}
+		defaultCapacity = getCapacity();
 	}
 	
 	/**

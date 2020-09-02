@@ -49,7 +49,7 @@
 									
 		/>
 				<parameter name="cantidadInfectados" displayName="Numero de infectados iniciales" type="int" 
-						defaultValue="10" 
+						defaultValue="2" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									

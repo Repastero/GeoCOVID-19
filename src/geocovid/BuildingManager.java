@@ -138,6 +138,16 @@ public final class BuildingManager {
 	}
 	
 	/**
+	 * Metros cuadrados por persona para limitar aforo en Places (en espacios cerrados).
+	 * @param sqMeters
+	 */
+	public static void limitActivitiesCapacity(double sqMeters) {
+		for (List<WorkplaceAgent> workplaces : placesMap.values()) {
+			workplaces.forEach(work -> work.limitCapacity(sqMeters));
+		}
+	}
+	
+	/**
 	 * Selecciona una coordenada aleatoria a partir de los margenes del GIS.
 	 * @return Coordinate
 	 */

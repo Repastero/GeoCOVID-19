@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.jfree.data.time.Second;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -232,11 +230,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		switch (phase) {
 		case 0:
-			// Fase 0 es lo mismo que la inicial
+			// Reapertura progresiva (Fase 4)
 			setHumansDefaultTMMC();
+			BuildingManager.limitActivitiesCapacity(4d);
+			DataSet.MASK_INFECTION_RATE_REDUCTION = 30;
 			break;
 		case 1:
-			//CONFINAMIENTO JULIO2020 PARANA, DISTANCIAMIENTO OBLIGATORIO
+			// Reapertura progresiva (Fase 4)
 			if (sectoral == 0) {
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_AGOSTO_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_AGOSTO_TMMC;
@@ -252,9 +252,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
 			}
 			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
+			BuildingManager.limitActivitiesCapacity(2d);
+			DataSet.MASK_INFECTION_RATE_REDUCTION = 20;
 			break;
 		case 2:
-			//CONFINAMIENTO AGOSTO2020 PARANA, DISTANCIAMIENTO OBLIGATORIO
+			// Nueva normalidad (Fase 5)
 			if (sectoral == 0) {
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
@@ -270,6 +272,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
 			}
 			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
+			BuildingManager.limitActivitiesCapacity(0.5d);
+			DataSet.MASK_INFECTION_RATE_REDUCTION = 15;
 			break;
 		case 3:
 			// TODO Aca va fase 3 o trifasica

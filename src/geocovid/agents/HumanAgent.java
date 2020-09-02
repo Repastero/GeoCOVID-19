@@ -172,8 +172,10 @@ public class HumanAgent {
 	
 	public void setInfectious(boolean initial) {
 		// Si es un primer caso, es siempre asintomatico
-		if (initial)
+		if (initial) {
 			exposed = true;
+			InfeccionReport.modifyExposedCount(ageGroup, 1);
+		}
 		// Verificar que sea expuesto
 		if (!exposed)
 			return;
