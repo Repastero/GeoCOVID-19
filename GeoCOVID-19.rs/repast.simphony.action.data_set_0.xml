@@ -16,15 +16,6 @@
   <atEnd>false</atEnd>
   <methodDataSources class="linked-hash-map">
     <entry>
-      <string>Expuestos</string>
-      <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Expuestos</id>
-        <className>geocovid.InfeccionReport</className>
-        <methodName>getExposedCount</methodName>
-        <aggType>SUM</aggType>
-      </repast.simphony.data2.engine.MethodDataSourceDefinition>
-    </entry>
-    <entry>
       <string>Infectados Asintomaticos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>Asintomaticos</id>

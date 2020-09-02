@@ -10,9 +10,9 @@ import geocovid.DataSet;
 
 public class WorkplaceAgent extends BuildingAgent {
 	// Listado de Places cerrados durante pandemia
-	public static final Set<String> CLOSED_PLACES = Set.of("beauty_school", "bus_station", "church", "dance_school", "escape_room_center", "function_room_facility", "funeral_home", "language_school", "lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "soccer_field", "sports_club", "sportswear_store", "synagogue", "travel_agency", "university");
+	public static final Set<String> CLOSED_PLACES = Set.of("beauty_school", "bus_station", "escape_room_center", "function_room_facility", "language_school", "lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "travel_agency", "university");
 	// Listado de Places a cielo abierto
-	public static final Set<String> OPEN_AIR_PLACES = Set.of("gas_station","park","parking","soccer_field");
+	public static final Set<String> OPEN_AIR_PLACES = Set.of("gas_station","park","parking","soccer_field","soccer_club","amphitheatre");
 	
 	private int[][] workPositions;
 	private int workPositionsCount;

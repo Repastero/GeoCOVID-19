@@ -185,7 +185,7 @@ public class BuildingAgent {
 	public int[] insertHuman(HumanAgent human) {
 		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
 		if (humansMap.size() >= capacity) { // TODO ver esto no es tan preciso, si startingRow > 0, tendria que discriminar trabajadores 
-			System.out.println("Building full - ID: "+getId()+" type: "+getType());
+			//-System.out.println("Building full - ID: "+getId()+" type: "+getType());
 			// TODO ver que hacer con el humano si no hay lugar
 			return null;
 		}
@@ -245,7 +245,7 @@ public class BuildingAgent {
 		//
 		grid[pos[0]][pos[1]] = 0;
 		if (!humansMap.remove(human.getAgentID(), human))
-			System.err.println("Humano no encontrado en Building "+human.getAgentID());
+			System.err.println("Humano no encontrado en Building "+getId()+" - Hid: "+human.getAgentID());
 	}
 	
 	/**

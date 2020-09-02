@@ -203,7 +203,7 @@ public final class BuildingManager {
 		
 		// Hay una probabilidad de que el Humano se traslade fuera del contexto para realizar las actividades de ocio u otros
 		// Esto aplica a todos los agentes Humanos, tanto locales como extranjeros
-		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.TRAVEL_OUTSIDE_CHANCE)
+		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.TRAVEL_OUTSIDE_CHANCE[DataSet.SECTORAL])
 			return foundedPlace;
 		
 		Geometry geo;

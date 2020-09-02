@@ -73,7 +73,7 @@ public final class PlaceProperty {
 						placeProperty.setWorkersPerArea(Integer.valueOf(nextLine[dataIndexes[3]]));
 					} catch (NumberFormatException e) {
 						System.out.println(String.join(", ", nextLine));
-						e.printStackTrace();
+						//e.printStackTrace();
 					}
 					for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
 						placeProperty.setActivityChances(i, 10); // por ahora, todas las chances son iguales

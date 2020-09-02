@@ -84,10 +84,16 @@
   <trackAgents>false</trackAgents>
   <globeLayers/>
   <staticCoverages>
+<!--
     <entry>
-      <string>./data/Esri.tif</string>
+      <string>./data/Esri2.tif</string>
       <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
     </entry>
+    <entry>
+      <string>./data/Esri11.tif</string>
+      <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
+    </entry>
+-->
   </staticCoverages>
   <coverageLayers/>
 </repast.simphony.gis.visualization.engine.GISDisplayDescriptor>

@@ -45,18 +45,6 @@
       </SeriesData>
     </entry>
     <entry>
-      <string>Expuestos</string>
-      <SeriesData>
-        <label>Expuestos</label>
-        <color>
-          <red>255</red>
-          <green>255</green>
-          <blue>0</blue>
-          <alpha>255</alpha>
-        </color>
-      </SeriesData>
-    </entry>
-    <entry>
       <string>Muertos</string>
       <SeriesData>
         <label>Muertos</label>
