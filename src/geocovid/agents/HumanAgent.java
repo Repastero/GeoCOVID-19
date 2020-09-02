@@ -73,6 +73,10 @@ public class HumanAgent {
 		return agentID;
 	}
 	
+	public boolean isForeign() { 
+		return foreignTraveler;
+	}
+	
 	public BuildingAgent getPlaceOfWork() {
 		return workPlace;
 	}
@@ -240,18 +244,24 @@ public class HumanAgent {
 			BuildingManager.deleteInfectiousHuman(agentID);
 		}
 		else {
-			hospitalized = false;
-			InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
-			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
-				// Se muere en ICU
-				InfeccionReport.modifyDeathsCount(ageGroup, 1);
-			}
-			else {
-				// Sale de ICU - continua vida normal
-				recovered = true;
-				InfeccionReport.modifyRecoveredCount(ageGroup, 1);
-				addRecoveredToContext();
-			}
+			// 5 dias mas en ICU
+			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + 60d, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(scheduleParams, this, "dischargeFromICU");
+		}
+	}
+	
+	public void dischargeFromICU() {
+		hospitalized = false;
+		InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
+		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
+			// Se muere en ICU
+			InfeccionReport.modifyDeathsCount(ageGroup, 1);
+		}
+		else {
+			// Sale de ICU - continua vida normal
+			recovered = true;
+			InfeccionReport.modifyRecoveredCount(ageGroup, 1);
+			addRecoveredToContext();
 		}
 	}
 	

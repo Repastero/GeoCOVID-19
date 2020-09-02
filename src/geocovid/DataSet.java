@@ -9,8 +9,8 @@ public final class DataSet {
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/sec2+11-places-markov.csv";
 	
 	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 14383 para sec2 y 16885 para sec11 */
-	public static final int[] LOCAL_HUMANS				= {6500, 10885};	// Cantidad de Humanos locales (no salen a trabajar)
-	public static final int[] LOCAL_TRAVELER_HUMANS		= {7883,  6000};	// Cantidad de Humanos que trabajan afuera
+	public static final int[] LOCAL_HUMANS				= {6500, 11885};	// Cantidad de Humanos locales (no salen a trabajar)
+	public static final int[] LOCAL_TRAVELER_HUMANS		= {7883,  5000};	// Cantidad de Humanos que trabajan afuera
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
 	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, };	// Numero de fase en orden de cambio

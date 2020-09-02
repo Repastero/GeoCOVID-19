@@ -84,14 +84,19 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		// Schedule one shot para agregar infectados
 		params = ScheduleParameters.createOneTime(outbreakStartTick, 0.9d);
-		schedule.schedule(params, this, "infectRandos");
+		schedule.schedule(params, this, "infectLocalRandos", infectedAmount);
 		
 		int[] phases = DataSet.LOCKDOWN_PHASES;
 		int[] phasesStartDay = DataSet.LOCKDOWN_PHASES_DAYS;
 		for (int i = 0; i < phases.length; i++) {
 			params = ScheduleParameters.createOneTime(phasesStartDay[i] * 12, 0.9d);
 			schedule.schedule(params, this, "initiateLockdown", phases[i], DataSet.SECTORAL);
-			//phaseStartTick += phasesStartDay[i] * 12; // TODO no es mejor usar duracion?
+		}
+		
+		// Contagia al azar, segun media y desvio std
+		if (DataSet.SECTORAL == 0) {
+			params = ScheduleParameters.createNormalProbabilityRepeating(48, 12, 36, 12, 0.9d);
+			schedule.schedule(params, this, "infectRandos", 1);
 		}
 		
 		// Schedules one shot para los inicios y los fines de semana, hasta el comienzo de la cuartentena.
@@ -171,13 +176,30 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
-	 * Selecciona al azar la cantidad de Humanos y Mosquitos seteada en los parametros y los infecta.
+	 * Selecciona al azar la cantidad de Humanos locales seteada en los parametros y los infecta.
 	 */
-	public void infectRandos() {
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, infectedAmount);
+	public void infectLocalRandos(int amount) {
+		int infected = 0;
+		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount << 2); // Busco por 4, por las dudas
 		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
 			HumanAgent humano = (HumanAgent) iterator.next();
-			humano.setInfectious(true);
+			if (!humano.isForeign()) {
+				humano.setInfectious(true);
+				if (++infected == amount)
+					break;
+			}
+		}
+	}
+	
+	/**
+	 * Selecciona al azar la cantidad de Humanos seteada en los parametros y los infecta.
+	 */
+	public void infectRandos(int amount) {
+		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount);
+		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
+			HumanAgent humano = (HumanAgent) iterator.next();
+			if (!humano.exposed)
+				humano.setInfectious(true);
 		}
 	}
 	
@@ -223,11 +245,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
-	 * Asignar las matrices de markov que se van a utilizar al comenzar la cuarentena.
+	 * Asignar las matrices de markov que se van a utilizar al comenzar cada fase.
 	 */
 	public void initiateLockdown(int phase, int sectoral) {
-		System.out.println("Inicio fase: "+phase);
-		
 		switch (phase) {
 		case 0:
 			// Reapertura progresiva (Fase 4)
@@ -272,7 +292,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
 			}
 			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
-			BuildingManager.limitActivitiesCapacity(0.5d);
+			BuildingManager.limitActivitiesCapacity(1d);
 			DataSet.MASK_INFECTION_RATE_REDUCTION = 15;
 			break;
 		case 3:
