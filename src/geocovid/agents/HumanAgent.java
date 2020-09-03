@@ -245,7 +245,7 @@ public class HumanAgent {
 		}
 		else {
 			// 5 dias mas en ICU
-			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + 60d, ScheduleParameters.FIRST_PRIORITY);
+			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + DataSet.EXTENDED_ICU_PERIOD, ScheduleParameters.FIRST_PRIORITY);
 			schedule.schedule(scheduleParams, this, "dischargeFromICU");
 		}
 	}

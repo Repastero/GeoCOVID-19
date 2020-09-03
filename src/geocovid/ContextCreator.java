@@ -95,7 +95,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		// Contagia al azar, segun media y desvio std
 		if (DataSet.SECTORAL == 0) {
-			params = ScheduleParameters.createNormalProbabilityRepeating(48, 12, 36, 12, 0.9d);
+			// Al tick 960 media/moda = 3 | al tick 1200 media/moda = 7
+			params = ScheduleParameters.createNormalProbabilityRepeating(48, 12, 24, 12, 0.9d);
 			schedule.schedule(params, this, "infectRandos", 1);
 		}
 		
