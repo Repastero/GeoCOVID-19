@@ -200,10 +200,12 @@ public class HumanAgent {
 				hospitalized = true;
 				InfeccionReport.modifyHospitalizedCount(ageGroup, 1);
 			}
+			else {
+				// Se aisla por tiempo prolongado si no va a ICU
+				startQuarantine();
+			}
 			symInfectious = true;
 			InfeccionReport.modifySYMInfectiousCount(ageGroup, 1);
-			// Se aisla por tiempo prolongado en ICU o no
-			startQuarantine();
 		}
 		//
 		
@@ -233,7 +235,7 @@ public class HumanAgent {
 		
 		// Se recupera de la infeccion
 		asxInfectious = false;
-		symInfectious = false; 
+		symInfectious = false;
 		if (!hospitalized) {
 			recovered = true;
 			InfeccionReport.modifyRecoveredCount(ageGroup, 1);

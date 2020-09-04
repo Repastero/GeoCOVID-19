@@ -61,7 +61,7 @@ public final class DataSet {
 	public static final int QUARANTINED_PERIOD_DEVIATION= 24;	// 2 dia desvio standard
 	
 	/** duracion en ICU luego de terminar periodo de infectado */
-	public static final int EXTENDED_ICU_PERIOD	= 60;	// 5 dia desvio standard
+	public static final int EXTENDED_ICU_PERIOD	= 60;	// 5 dia mas desde infeccioso
 	
 	/** % de casos asintomaticos con respecto a los sintomatcos */
 	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 58d, 42d, 26d, 10d};	// sobre 100 
@@ -114,7 +114,7 @@ public final class DataSet {
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.008d, 0.24d, 0.74d, 4.402d, 28.612d};	// sobre 100 - Pierinox
+	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.08d, 0.24d, 0.74d, 4.402d, 28.612d};	// sobre 100 - Pierinox
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 42d;	// sobre 100
 }

@@ -4,6 +4,7 @@
   <delimiter>,</delimiter>
   <format>TABULAR</format>
   <sourceIds class="linked-hash-set">
+    <string>Expuestos</string>
     <string>Infectados Asintomaticos</string>
     <string>Infectados Sintomaticos</string>
     <string>Hospitalizados</string>

@@ -107,8 +107,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		context.add(new InfeccionReport(simulationMinDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
 		context.add(new Temperature(simulationStartDay)); // Para calcular temperatura diaria, para estela
 		
-		BuildingManager.initManager(context, geography);
-		
 		loadPlacesShapefile();
 		PlaceProperty.loadPlacesProperties(placesProperty);
 		loadParcelsShapefile(DataSet.SECTORAL);
@@ -213,14 +211,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_WEEKEND_TMMC;
 		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_WEEKEND_TMMC;
 		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_WEEKEND_TMMC;
-		
-		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
-		HumanAgent.infectedLocalTMMC[1] = MarkovChains.INFECTED_YOUNG_TMMC;
-		HumanAgent.infectedLocalTMMC[2] = MarkovChains.INFECTED_ADULT_TMMC;
-		HumanAgent.infectedLocalTMMC[3] = MarkovChains.INFECTED_ELDER_TMMC;
-		HumanAgent.infectedLocalTMMC[4] = MarkovChains.INFECTED_HIGHER_TMMC;
-		HumanAgent.infectedTravelerTMMC = MarkovChains.INFECTED_TRAVELER_TMMC;
-		
 		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_WEEKEND_TMMC;
 	}
 	
@@ -228,21 +218,30 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Asignar las matrices de markov que se utilizan al principio de simulacion.<p>
 	 * Ver {@link #initHumans()}
 	 */
+	@SuppressWarnings("unused")
 	public void setHumansDefaultTMMC() {
-		HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
-		HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
-		HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
-		HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
-		HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
-
+		if (DataSet.SECTORAL == 0) {
+			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
+			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
+			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
+			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
+			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
+		}
+		else {
+			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
+			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
+			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
+			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
+			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
+		}
+		HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
+		
 		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
 		HumanAgent.infectedLocalTMMC[1] = MarkovChains.INFECTED_YOUNG_TMMC;
 		HumanAgent.infectedLocalTMMC[2] = MarkovChains.INFECTED_ADULT_TMMC;
 		HumanAgent.infectedLocalTMMC[3] = MarkovChains.INFECTED_ELDER_TMMC;
 		HumanAgent.infectedLocalTMMC[4] = MarkovChains.INFECTED_HIGHER_TMMC;
 		HumanAgent.infectedTravelerTMMC = MarkovChains.INFECTED_TRAVELER_TMMC;
-		
-		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
 	}
 	
 	/**
@@ -272,7 +271,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
 			}
-			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
 			BuildingManager.limitActivitiesCapacity(2d);
 			DataSet.MASK_INFECTION_RATE_REDUCTION = 20;
 			break;
@@ -292,7 +290,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
 			}
-			HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
 			BuildingManager.limitActivitiesCapacity(1d);
 			DataSet.MASK_INFECTION_RATE_REDUCTION = 15;
 			break;
