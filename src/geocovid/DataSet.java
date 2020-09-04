@@ -1,8 +1,18 @@
 package geocovid;
 
 public final class DataSet {
+	static final String SHP_FILE_PARCELS = "./data/ov-4326.shp";
+	static final String SHP_FILE_PLACES = "./data/places-matched-4326.shp";
+
+	/** Cantidad de Humanos locales (no salen a trabajar) */
+	public static final int LOCAL_HUMANS			= 5000;
+	/** Cantidad de Humanos que trabajan afuera */
+	public static final int LOCAL_TRAVELER_HUMANS	= 1000;
+	/** Cantidad de Humanos que viven afuera */
+	public static final int FOREIGN_TRAVELER_HUMANS	= 1000;
+
 	/** cantidad maxima de humanos por m2 (minimo 1) */
-	public static final int HUMANS_PER_SQUARE_METRE	= 4;
+	public static final int HUMANS_PER_SQUARE_METER	= 4;
 	/** cantidad media de humanos por hogar (minimo 1) */
 	public static final int HOUSE_INHABITANTS_MEAN	= 4;
 	/** espacios entre puestos de trabajo/estudio (minimo 1) */
@@ -11,17 +21,17 @@ public final class DataSet {
 	/** porcentaje del area construida ocupable en casas (minimo .1) */
 	public static final double BUILDING_AVAILABLE_AREA	= 0.5;
 	/** porcentaje del area construida ocupable en places (minimo .1) */
-	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;
+	public static final double WORKPLACE_AVAILABLE_AREA	= 0.85;
 	
 	/** % de contagio al estar en contacto con un infectado */
-	public static final int	INFECTION_RATE				= 22;	// sobre 100
+	public static final int	INFECTION_RATE				= 26;	// sobre 100
 	/** radio que puede contagiar un infectado */
 	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks 
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
-	public static final int	CS_INFECTION_RATE			= 22;	// sobre 100
+	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
 	public static final int	CS_MIN_INFECTION_RATE		= 10;	// sobre 100
 	
@@ -36,11 +46,18 @@ public final class DataSet {
 	public static final int EXPOSED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
 	/** duracion de periodo infectado sintomatico/asintomatico en ticks para todos */
-	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 a 6 dias sintomatico
+	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 dias
 	public static final int INFECTED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
+	/** duracion de aislamiento de un infectado sintomatico */
+	public static final int	QUARANTINED_PERIOD_MEAN_AG	= 120;	// 10 dias
+	public static final int QUARANTINED_PERIOD_DEVIATION= 24;	// 2 dia desvio standard
+	
+	/** duracion en ICU luego de terminar periodo de infectado */
+	public static final int EXTENDED_ICU_PERIOD	= 60;	// 5 dia mas desde infeccioso
+	
 	/** % de casos asintomaticos con respecto a los sintomatcos */
-	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 74d, 42d, 42d, 10d};	// sobre 100 
+	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 58d, 42d, 26d, 10d};	// sobre 100 
 	
 	/** Grupos etarios:<ul>
 	 * <li>5-15 anos
@@ -62,6 +79,11 @@ public final class DataSet {
 			{   0d,  80d,  20d},	// 41-64
 			{   0d,   0d, 100d} };	// 65+
 	
+	/** % de trabajadores que trabajan en su casa */
+	public static final int WORKING_FROM_HOME		= 4;
+	/** % de trabajadores que trabajan al exterior */
+	public static final int WORKING_OUTDOORS		= 5;
+	
 	/** para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
 	public static final boolean COUNT_UNIQUE_INTERACTIONS = false;
 	/** grado de precision frente a longitud */
@@ -70,7 +92,7 @@ public final class DataSet {
 	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP	= {750d / DEGREE_PRECISION, 1000d / DEGREE_PRECISION, -1d, -1d, 500d / DEGREE_PRECISION}; // metros div metros por grado (longitud)
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.2d, 0.2d, 5d, 5d, 36d};	// sobre 100
+	public static final double[] ICU_CHANCE_PER_AGE_GROUP		= {0.08d, 0.24d, 0.74d, 4.402d, 28.612d};	// sobre 100
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE					= 42d;	// sobre 100
 }

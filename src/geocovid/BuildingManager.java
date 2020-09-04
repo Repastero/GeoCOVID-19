@@ -38,6 +38,11 @@ public final class BuildingManager {
 	// Chances de visitar cada tipo de place (suma 1000)
 	private static final int otherChances[] = {40, 40, 60, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 20, 20, 20, 20, 20};
 	
+	/**
+	 * Reinicia colecciones de Places, y guarda referencia de Context y Geography
+	 * @param con Context
+	 * @param geo Geography
+	 */
 	public static void initManager(Context<Object> con, Geography<Object> geo) {
 		context = con;
 		geography = geo;

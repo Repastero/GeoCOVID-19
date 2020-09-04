@@ -1,12 +1,14 @@
 package geocovid;
 
 /**
- * Matrices de 4x4x4 - Probabilidades sobre 1000. 4 periodos del dia X 4 posiciones actuales X 4 probabilidades de lugares.<p>
- * <i>MaxiF: La probabilidad de la cadena de markov de movimiento temporal es un arreglo que:
- * probabilidadTMMC[P,i,j], donde P es el periodo del dia (8-11 11-14 14-17 17-20hs)
- * i es el nodo de donde sale, y j es el nodo a donde va.<p>
- * El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
- * Ej: probabilidadTMMC[1][1][2] es la probabilidad de que en el periodo 1 salga del trabajo 1 al lugar de ocio 2</i>
+ * Matrices de 4x4x4 - Probabilidades sobre 1000. 4 periodos del dia X 4
+ * posiciones actuales X 4 probabilidades de lugares.<p>
+ * <i>MaxiF: La probabilidad de la cadena de markov de movimiento temporal es un
+ * arreglo que: probabilidadTMMC[P,i,j], donde P es el periodo del dia (8-11
+ * 11-14 14-17 17-20hs) i es el nodo de donde sale, y j es el nodo a donde va.<p>
+ * El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros
+ * (supermercados, farmacias, etc) Ej: probabilidadTMMC[1][1][2] es la
+ * probabilidad de que en el periodo 1 salga del trabajo 1 al lugar de ocio 2</i>
  */
 public final class MarkovChains {
 	/** Matriz modificada para los Humanos que estan en la 1er franja etaria. */
@@ -146,12 +148,12 @@ public final class MarkovChains {
 	///*******************************FINES DE SEMANA*******************************
 	
 	public static final int CHILD_WEEKEND_TMMC[][][] = {
-		{ {900,  0,100,  0},{900,  0,100,  0},{900,  0,100,  0},{900,  0,100,  0} },
-		{ {675,  0,300, 25},{900,  0,100,  0},{300,  0,675, 25},{500,  0,500,  0} },
-		{ {500,  0,475, 25},{900,  0,100,  0},{500,  0,475, 25},{500,  0,500,  0} },
-		{ {950,  0, 50,  0},{950,  0, 50,  0},{950,  0, 50,  0},{950,  0, 50,  0} },
+		{ { 500, 0, 400, 100 }, { 900, 0, 100, 0 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } },
+		{ { 575, 0, 300, 125 }, { 900, 0, 100, 0 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } },
+		{ { 500, 0, 475, 25 }, { 500, 0, 400, 100 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } },
+		{ { 500, 0, 475, 25 }, { 500, 0, 400, 100 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } }
 	};
-		
+
 	/** Matriz modificada para los Humanos que estan en la 2er franja etaria. */
     public static final int YOUNG_WEEKEND_TMMC[][][] = CHILD_WEEKEND_TMMC;
 		

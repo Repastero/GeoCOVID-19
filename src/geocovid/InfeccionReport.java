@@ -8,6 +8,10 @@ import repast.simphony.engine.schedule.ScheduledMethod;
  * El objetivo de esta clase es puramente informativo y mas que nada para llevar la cuenta de los Humanos infectados que no siempre estan en el Contexto.
  */
 public class InfeccionReport {
+	private static int simulationMinDay;
+	private static int deathLimit;
+	//
+	private static int daysCount;
 	private static int exposedTotalCount;
 	private static int exposedToCSCount;
 	private static int asxInfectiousTotalCount;
@@ -27,7 +31,11 @@ public class InfeccionReport {
 	private static int[] humansInteracting;
 	private static double[] averageSocialInteractions;
 	
-	public InfeccionReport() {
+	public InfeccionReport(int minDay, int maxDeaths) {
+		simulationMinDay = minDay;
+		deathLimit = maxDeaths;
+		
+		daysCount = 0;
 		exposedTotalCount = 0;
 		exposedToCSCount = 0;
 		asxInfectiousTotalCount = 0;
@@ -56,9 +64,17 @@ public class InfeccionReport {
 			sumOfSocialInteractions[i] = 0;
 			humansInteracting[i] = 0;
 		}
+		
 		// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
-		if ((recoveredTotalCount != 0 || deathsTotalCount != 0) && ((deathsTotalCount + recoveredTotalCount) == exposedTotalCount))
+		if ((recoveredTotalCount != 0 || deathsTotalCount != 0) && ((deathsTotalCount + recoveredTotalCount) == exposedTotalCount)) {
+			System.out.println("Simulacion finalizada por fin de epidemia");
 			RunEnvironment.getInstance().endRun();
+		}
+		// Termina la simulacion si se cumple el minimo de dias de simulacion y si se supera el limite te muertes (si existe)
+		else if ((++daysCount >= simulationMinDay) && (deathLimit != 0 && deathLimit < deathsTotalCount)) {
+			System.out.println("Simulacion finalizada por limite de muertes: "+deathLimit);
+			RunEnvironment.getInstance().endRun();
+		}
 	}
 	
 	public static void updateSocialInteractions(int agIndex, int interactions) {

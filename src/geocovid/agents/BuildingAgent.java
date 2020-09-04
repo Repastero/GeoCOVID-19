@@ -124,11 +124,10 @@ public class BuildingAgent {
 	 * Crea la grilla de posiciones, segun forma y area
 	 */
 	private void setBuildingShape() {
+		// Se multiplica el area por la cantidad de Humanos por m2
+		final int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METER;
 		if (geometry instanceof Point) {
 			// Si es solo un punto, tomar la superficie como un cuadrado
-			// Se ultiplica el area por la cantidad de Humanos por m2
-			int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METRE;
-			
 			// Busca el numero de X mas alto que sea factor de realArea
 			for (int i = 1; i * i <= humansCap; i++) {
 	            if (humansCap % i == 0) {
@@ -152,15 +151,15 @@ public class BuildingAgent {
 			// Tomar medida mas chica como el frente de la propiedad
 			size[0] = (width >= height) ? height : width;
 			// El largo de la propiedad varia segun la sup cubierta
-			size[1] = (int)(realArea / size[0]);
+			size[1] = (int)(humansCap / size[0]);
 			
 			// Si el largo queda en cero o un valor muy chico, creo un cuadrado
-			if (size[1] == 0 || size[0] / size[1] >= 10) {
-				size[1] = (int)Math.sqrt(realArea);
+			if ((size[1] == 0) || (size[0] / size[1] >= 10)) {
+				size[1] = (int)Math.sqrt(humansCap);
 				size[0] = size[1] + 1;
 			}
 			// Si el area queda muy chica, sumo 1 metro mas de largo y resto 1 de ancho
-			else if (size[0] * size[1] < realArea - size[1]) {
+			else if ((size[0] * size[1]) < (humansCap - size[1])) {
 				--size[0];
 				++size[1];
 			}
@@ -179,7 +178,7 @@ public class BuildingAgent {
 	public int[] insertHuman(HumanAgent human) {
 		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
 		if (humansMap.size() >= capacity) { // TODO ver esto no es tan preciso, si startingRow > 0, tendria que discriminar trabajadores 
-			System.out.println("Building full - ID: "+getId());
+			System.out.println("Building full - ID: "+getId()+" type: "+getType());
 			// TODO ver que hacer con el humano si no hay lugar
 			return null;
 		}
@@ -239,7 +238,7 @@ public class BuildingAgent {
 		//
 		grid[pos[0]][pos[1]] = 0;
 		if (!humansMap.remove(human.getAgentID(), human))
-			System.err.println("Humano no encontrado en Building "+human.getAgentID());
+			System.err.println("Humano no encontrado en Building "+getId()+" - Hid: "+human.getAgentID());
 	}
 	
 	/**
@@ -303,6 +302,16 @@ public class BuildingAgent {
 		}
 	}
 	
+	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
+		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+			if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
+				prey.setExposed();
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Esparce el virus a los humanos susceptibles con los que tuvo contacto cercano y prolongado.
 	 * @param spHuman HumanAgent contagioso
@@ -325,15 +334,11 @@ public class BuildingAgent {
 			    	if (preyId != 0) { // Si no esta vacio, hay humano
 			    		prey = humansMap.get(preyId);
 						if (!prey.wasExposed()) {
-							if (Math.abs(spHuman.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-								if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-									prey.setExposed();
-								}
-							}
-			    			}
+							checkContagion(spHuman, prey);
 			    		}
-		    		}
-	    		}
+			    	}
+		    	}
+	    	}
 		}
 	}
     
@@ -354,12 +359,8 @@ public class BuildingAgent {
 			yShift = Math.abs(pos[1] - spPos[1]);
 			if (xShift < circleRadius && yShift < circleRadius) { // que X o Y individualmente no exedan el radio de contagio
 				if (xShift + yShift <= circleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
-					if (Math.abs(human.getRelocationTime() - spreader.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-						if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.INFECTION_RATE) {
-							human.setExposed();
-							break;
-						}
-					}
+					if (checkContagion(spreader, human))
+						break;
 				}
 			}
 		}

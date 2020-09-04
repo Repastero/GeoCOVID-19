@@ -22,6 +22,7 @@ public class Temperature {
 		dayOfTheYear = (DOTY > 364) ? 0 : DOTY;
 		odTempStep = (DataSet.OUTDOORS_MAX_TEMPERATURE - DataSet.OUTDOORS_MIN_TEMPERATURE) / 182d;
 		idTempStep = (DataSet.INDOORS_MAX_TEMPERATURE - DataSet.INDOORS_MIN_TEMPERATURE) / 182d;
+		// Setea la temperatura del dia inicial
 		odCurrentTemp = DataSet.OUTDOORS_MIN_TEMPERATURE + (Math.abs(DOTY - 182) * odTempStep);
 		idCurrentTemp = DataSet.INDOORS_MIN_TEMPERATURE + (Math.abs(DOTY - 182) * idTempStep);
 	}
@@ -29,12 +30,12 @@ public class Temperature {
 	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
 	public static void setDailyTemperature() {
 		if (dayOfTheYear < 182) { // Primeros 6 meses
-			odCurrentTemp = odCurrentTemp - odTempStep;
-			idCurrentTemp = idCurrentTemp - idTempStep;
+			odCurrentTemp -= odTempStep;
+			idCurrentTemp -= idTempStep;
 		}
 		else { // Segundos 6 meses
-			odCurrentTemp = odCurrentTemp + odTempStep;
-			idCurrentTemp = idCurrentTemp + idTempStep;
+			odCurrentTemp += odTempStep;
+			idCurrentTemp += idTempStep;
 		}
 		if (++dayOfTheYear == 364) // Fin de año
 			dayOfTheYear = 0;

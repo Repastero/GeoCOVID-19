@@ -29,7 +29,6 @@ public class HumanAgent {
 	private int[] workplacePosition = {0,0};
 	
 	private int currentActivity = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
-	private int indexTMMC;
 	private int ageGroup = 0;
 	private boolean foreignTraveler = false;
 	private double icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[1];
@@ -47,6 +46,8 @@ public class HumanAgent {
     public boolean symInfectious	= false; // Symptomatic Infectious
     public boolean hospitalized		= false; // Hospitalized to ICU
     public boolean recovered		= false;
+    // Extras
+    public boolean quarantined		= false; // Si se aisla por ser sintomatico
     /////////////
     
     private Map<Integer, Integer> socialInteractions = new HashMap<>(); // ID contacto, cantidad de contactos
@@ -69,6 +70,10 @@ public class HumanAgent {
 	
 	public int getAgentID() {
 		return agentID;
+	}
+	
+	public boolean isForeign() { 
+		return foreignTraveler;
 	}
 	
 	public BuildingAgent getPlaceOfWork() {
@@ -161,16 +166,21 @@ public class HumanAgent {
 		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
 		
 		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
-		schedule.schedule(scheduleParams, this, "setInfectious");
+		schedule.schedule(scheduleParams, this, "setInfectious", false);
 	}
 	
-	public void setInfectious() {
+	public void setInfectious(boolean initial) {
+		// Si es un primer caso, es siempre asintomatico
+		if (initial) {
+			exposed = true;
+			InfeccionReport.modifyExposedCount(ageGroup, 1);
+		}
 		// Verificar que sea expuesto
 		if (!exposed)
 			return;
 		
 		// Comienza la etapa de contagio asintomatico o sintomatico
-		if (RandomHelper.nextDoubleFromTo(0, 100) <= asxChance) {
+		if (initial || RandomHelper.nextDoubleFromTo(0, 100) <= asxChance) {
 			asxInfectious = true;
 			InfeccionReport.modifyASXInfectiousCount(ageGroup, 1);
 		}
@@ -180,6 +190,10 @@ public class HumanAgent {
 				// Mover a ICU hasta que se cure o muera
 				hospitalized = true;
 				InfeccionReport.modifyHospitalizedCount(ageGroup, 1);
+			}
+			else {
+				// Se aisla por tiempo prolongado si no va a ICU
+				startQuarantine();
 			}
 			symInfectious = true;
 			InfeccionReport.modifySYMInfectiousCount(ageGroup, 1);
@@ -223,21 +237,43 @@ public class HumanAgent {
 			BuildingManager.deleteInfectiousHuman(agentID);
 		}
 		else {
-			hospitalized = false;
-			InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
-			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
-				// Se muere en ICU
-				InfeccionReport.modifyDeathsCount(ageGroup, 1);
-			}
-			else {
-				// Sale de ICU - continua vida normal
-				recovered = true;
-				InfeccionReport.modifyRecoveredCount(ageGroup, 1);
-				addRecoveredToContext();
-			}
+			// 5 dias mas en ICU
+			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + DataSet.EXTENDED_ICU_PERIOD, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(scheduleParams, this, "dischargeFromICU");
 		}
 	}
-
+	
+	public void dischargeFromICU() {
+		hospitalized = false;
+		InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
+		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
+			// Se muere en ICU
+			InfeccionReport.modifyDeathsCount(ageGroup, 1);
+		}
+		else {
+			// Sale de ICU - continua vida normal
+			recovered = true;
+			InfeccionReport.modifyRecoveredCount(ageGroup, 1);
+			addRecoveredToContext();
+		}
+	}
+	
+	public void startQuarantine() {
+		quarantined = true;
+		
+		int mean = DataSet.QUARANTINED_PERIOD_MEAN_AG;
+		int std = DataSet.QUARANTINED_PERIOD_DEVIATION;
+		double period = RandomHelper.createNormal(mean, std).nextDouble();
+		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
+		
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(scheduleParams, this, "stopQuarantine");
+	}
+	
+	public void stopQuarantine() {
+		quarantined = false;
+	}
+	
 	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
 		BuildingAgent newBuilding;
     	int mean, stdDev, maxDev, ndValue;
@@ -298,9 +334,9 @@ public class HumanAgent {
         
         int[][][] matrixTMMC;
         if (!foreignTraveler)
-        	matrixTMMC = (!symInfectious ? localTMMC[indexTMMC] : infectedLocalTMMC[indexTMMC]);
+        	matrixTMMC = (!quarantined ? localTMMC[ageGroup] : infectedLocalTMMC[ageGroup]);
         else
-        	matrixTMMC = (!symInfectious ? travelerTMMC : infectedTravelerTMMC);
+        	matrixTMMC = (!quarantined ? travelerTMMC : infectedTravelerTMMC);
         
         while (r > matrixTMMC[p][currentActivity][i]) {
         	// La suma de las pobabilidades no debe dar mas de 1000

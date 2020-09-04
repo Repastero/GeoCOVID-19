@@ -1,11 +1,11 @@
 package geocovid.styles;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 
 import geocovid.agents.BuildingAgent;
 import gov.nasa.worldwind.WorldWind;
@@ -17,11 +17,9 @@ import gov.nasa.worldwind.render.WWTexture;
 import repast.simphony.visualization.gis3D.PlaceMark;
 import repast.simphony.visualization.gis3D.style.MarkStyle;
 
-//https://ows.terrestris.de/osm-gray/service?
-
 public class HomeStyle implements MarkStyle<BuildingAgent>{
 	
-	private static Map<Integer, WWTexture> textureMap;
+	private final static Map<Integer, WWTexture> TEXTURE_MAP = new HashMap<Integer, WWTexture>();
 	
 	public HomeStyle() {
 		/**
@@ -29,21 +27,20 @@ public class HomeStyle implements MarkStyle<BuildingAgent>{
 		 * since the same texture can be reused.  Textures can be created for different
 		 * agent states and re-used when needed.
 		 */
-		textureMap = new HashMap<Integer, WWTexture>();
 		BufferedImage image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(6, 6), .75f, new Color(0xFFFFFF), Color.BLACK);
-		textureMap.put(0, new BasicWWTexture(image));
+		TEXTURE_MAP.put(0, new BasicWWTexture(image));
 		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF99), Color.BLACK);
-		textureMap.put(1, new BasicWWTexture(image));
+		TEXTURE_MAP.put(1, new BasicWWTexture(image));
 		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF66), Color.BLACK);
-		textureMap.put(2, new BasicWWTexture(image));
+		TEXTURE_MAP.put(2, new BasicWWTexture(image));
 		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF33), Color.BLACK);
-		textureMap.put(3, new BasicWWTexture(image));
+		TEXTURE_MAP.put(3, new BasicWWTexture(image));
 		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFFF00), Color.BLACK);
-		textureMap.put(4, new BasicWWTexture(image));
+		TEXTURE_MAP.put(4, new BasicWWTexture(image));
 		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xFFCC00), Color.BLACK);
-		textureMap.put(5, new BasicWWTexture(image));
+		TEXTURE_MAP.put(5, new BasicWWTexture(image));
 		image = PatternFactory.createPattern(PatternFactory.PATTERN_SQUARE, new Dimension(8, 8), .75f, new Color(0xCC9900), Color.BLACK);
-		textureMap.put(6, new BasicWWTexture(image));
+		TEXTURE_MAP.put(6, new BasicWWTexture(image));
 	}
 	
 	@Override
@@ -57,23 +54,23 @@ public class HomeStyle implements MarkStyle<BuildingAgent>{
 		int humAmount = object.getHumansAmount();
 		if (humAmount > 6) // Maximo 6 personas en hogar
 			humAmount = 6;
-		return textureMap.get(humAmount);
+		return TEXTURE_MAP.get(humAmount);
 	}
 
 	@Override
 	public PlaceMark getPlaceMark(BuildingAgent object, PlaceMark mark) {
 		// PlaceMark is null on first call.
-		if (mark == null)
+		if (mark == null) {
 			mark = new PlaceMark();
-		
-		/**
-		 * The Altitude mode determines how the mark appears using the elevation.
-		 *   WorldWind.ABSOLUTE places the mark at elevation relative to sea level
-		 *   WorldWind.RELATIVE_TO_GROUND places the mark at elevation relative to ground elevation
-		 *   WorldWind.CLAMP_TO_GROUND places the mark at ground elevation
-		 */
-		mark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-		mark.setLineEnabled(false);
+			/**
+			 * The Altitude mode determines how the mark appears using the elevation.
+			 *   WorldWind.ABSOLUTE places the mark at elevation relative to sea level
+			 *   WorldWind.RELATIVE_TO_GROUND places the mark at elevation relative to ground elevation
+			 *   WorldWind.CLAMP_TO_GROUND places the mark at ground elevation
+			 */
+			mark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
+			mark.setLineEnabled(false);
+		}
 		return mark;
 	}
 
