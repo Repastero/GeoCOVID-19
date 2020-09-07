@@ -221,12 +221,19 @@ public class ContextCreator implements ContextBuilder<Object> {
 	@SuppressWarnings("unused")
 	public void setHumansDefaultTMMC() {
 		if (DataSet.SECTORAL == 0) {
-			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
+			/*HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
+		*/
+			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
+			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
+			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS2_TMMC;
+			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS2_TMMC;
+			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS2_TMMC;
 		}
+		
 		else {
 			/*
 			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
@@ -267,19 +274,19 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 1:
 			// Reapertura progresiva (Fase 4)
 			if (sectoral == 0) {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_AGOSTO_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
 			}
 			else {
 				
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
 						/*
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
@@ -295,11 +302,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 2:
 			// Nueva normalidad (Fase 5)
 			if (sectoral == 0) {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_AGOSTO_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_AGOSTO_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_AGOSTO_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_AGOSTO_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_AGOSTO_TMMC;
 			}
 			else {
 				
@@ -309,13 +316,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
 				*/
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_AGOSTO_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_AGOSTO_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_AGOSTO_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_AGOSTO_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
 			}
-			BuildingManager.limitActivitiesCapacity(4d);
+			BuildingManager.limitActivitiesCapacity(3d);
 			DataSet.MASK_INFECTION_RATE_REDUCTION = 30;
 			break;
 		case 3:
