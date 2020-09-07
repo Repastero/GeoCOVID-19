@@ -2,7 +2,7 @@ package geocovid;
 
 public final class DataSet {
 	/** Indice secciona: 0 = Secciona 2 | 1 = Seccional 11 */
-	public static final int SECTORAL = 0;
+	public static final int SECTORAL = 1;
 	
 	public static final String[] SHP_FILE_PARCELS	= {"./data/sec2.shp",		"./data/sec11.shp"};
 	public static final String[] SHP_FILE_PLACES	= {"./data/sec2-places.shp","./data/sec11-places.shp"};
@@ -14,7 +14,7 @@ public final class DataSet {
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
 	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, };	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0, 38, 56};	// Dia de inicio de cada fase
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0, 38, 63};	// Dia de inicio de cada fase
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
@@ -61,7 +61,7 @@ public final class DataSet {
 	public static final int QUARANTINED_PERIOD_DEVIATION= 24;	// 2 dia desvio standard
 	
 	/** duracion en ICU luego de terminar periodo de infectado */
-	public static final int EXTENDED_ICU_PERIOD	= 60;	// 5 dia mas desde infeccioso
+	public static final int EXTENDED_ICU_PERIOD	= 48;	// 4 dia mas desde infeccioso
 	
 	/** % de casos asintomaticos con respecto a los sintomatcos */
 	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 58d, 42d, 26d, 10d};	// sobre 100 
@@ -114,7 +114,7 @@ public final class DataSet {
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.08d, 0.24d, 0.74d, 4.402d, 28.612d};	// sobre 100 - Pierinox
+	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.008d, 0.024d, 0.074d, 4.402d, 28.612d};	// sobre 100 - Pierinox
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 42d;	// sobre 100
 }

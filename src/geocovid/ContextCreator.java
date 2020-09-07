@@ -96,7 +96,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		// Contagia al azar, segun media y desvio std
 		if (DataSet.SECTORAL == 0) {
 			// Al tick 960 media/moda = 3 | al tick 1200 media/moda = 7
-			params = ScheduleParameters.createNormalProbabilityRepeating(48, 12, 24, 12, 0.9d);
+			params = ScheduleParameters.createNormalProbabilityRepeating(48, 12, 36, 12, 0.9d);
 			schedule.schedule(params, this, "infectRandos", 1);
 		}
 		
@@ -228,12 +228,21 @@ public class ContextCreator implements ContextBuilder<Object> {
 			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
 		}
 		else {
+			/*
 			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
 			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
 			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
 			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
 			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
+			*/
+			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS11_TMMC;
+			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS11_TMMC;
+			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS11_TMMC;
+			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
+			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
+		
 		}
+		
 		HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
 		
 		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
@@ -265,14 +274,23 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_AGOSTO_TMMC;
 			}
 			else {
+				
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
+						/*
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
+			*/
 			}
-			BuildingManager.limitActivitiesCapacity(2d);
-			DataSet.MASK_INFECTION_RATE_REDUCTION = 20;
+			
+				BuildingManager.limitActivitiesCapacity(4d);
+				DataSet.MASK_INFECTION_RATE_REDUCTION = 30;
 			break;
 		case 2:
 			// Nueva normalidad (Fase 5)
@@ -284,14 +302,21 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS2_TMMC;
 			}
 			else {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS11_TMMC;
+				
+				/*HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS11_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS11_TMMC;
 				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS11_TMMC;
 				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
+				*/
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
 			}
-			BuildingManager.limitActivitiesCapacity(1d);
-			DataSet.MASK_INFECTION_RATE_REDUCTION = 15;
+			BuildingManager.limitActivitiesCapacity(4d);
+			DataSet.MASK_INFECTION_RATE_REDUCTION = 30;
 			break;
 		case 3:
 			// TODO Aca va fase 3 o trifasica
