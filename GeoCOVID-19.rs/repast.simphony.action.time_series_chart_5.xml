@@ -21,9 +21,9 @@
   <showLegend>true</showLegend>
   <seriesIds>
     <entry>
-      <string>Hospitalizados</string>
+      <string>Camas</string>
       <SeriesData>
-        <label>Hospitalizados</label>
+        <label>Camas</label>
         <color>
           <red>0</red>
           <green>0</green>

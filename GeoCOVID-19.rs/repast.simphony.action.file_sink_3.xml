@@ -9,8 +9,9 @@
     <string>Infecciosos</string>
     <string>Asintomaticos</string>
     <string>Sintomaticos</string>
-    <string>Hospitalizados</string>
+    <string>Camas</string>
     <string>Recuperados</string>
+    <string>Hospitalizados</string>
     <string>Muertos</string>
   </sourceIds>
   <fileName>Reporte.csv</fileName>

@@ -52,9 +52,9 @@
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Hospitalizados</string>
+      <string>Camas</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Hospitalizados</id>
+        <id>Camas</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getInsHospitalized</methodName>
         <aggType>SUM</aggType>
@@ -75,6 +75,15 @@
         <id>Muertos</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getCumDeaths</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Hospitalizados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Hospitalizados</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumHospitalized</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
