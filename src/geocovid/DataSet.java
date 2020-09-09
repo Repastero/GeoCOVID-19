@@ -13,15 +13,15 @@ public final class DataSet {
 	public static final int[] LOCAL_TRAVELER_HUMANS		= {7883,  5000};	// Cantidad de Humanos que trabajan afuera
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, };	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0, 38, 63};	// Dia de inicio de cada fase
+	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2};	// Numero de fase en orden de cambio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,63};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
 	/** cantidad media de humanos por hogar (minimo 1) */
-	public static final int[] HOUSE_INHABITANTS_MEAN= {4, 6};
+	public static final double[] HOUSE_INHABITANTS_MEAN= {3.5, 5.5};
 	/** espacios entre puestos de trabajo/estudio (minimo 1) */
-	public static final int SPACE_BETWEEN_WORKERS	= 3;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
+	public static final int SPACE_BETWEEN_WORKERS	= 4;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
 	
 	/** porcentaje del area construida ocupable en casas (minimo .1) */
 	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
@@ -33,9 +33,15 @@ public final class DataSet {
 	/** radio que puede contagiar un infectado */
 	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** tiempo de contacto que debe tener un infectado para contagiar */
-	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks 
+	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks
+	
+	/** % de reduccion de INFECTION_RATE al estar en aislamiento */
+	public static final int	ISOLATION_INFECTION_RATE_REDUCTION	= 80;	// sobre 100 (0 para desactivar)
+	
 	/** % de reduccion de INFECTION_RATE al usar barbijo */
-	public static int MASK_INFECTION_RATE_REDUCTION		= 30;	// sobre 100
+	public static int maskInfRateReduction	= 30;		// sobre 100 (0 para desactivar)
+	public static boolean wearMaskOutdoor	= false; 	// Si al aire libre se usa tapaboca
+	public static boolean wearMaskWorkspace	= false; 	// Si entre empleados usan tapaboca
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
@@ -74,6 +80,7 @@ public final class DataSet {
 	 * <li>65 o mas anos</ul>
 	 */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
+	public static final String[] AGE_GROUP_LABELS				= {"Niños", "Jovenes", "Adultos", "Mayores", "Muy Mayores"};
 	public static final double[] HUMANS_PER_AGE_GROUP			= {14.4d, 17.92d, 22.88d, 31.1d, 13.7d}; // Abelardo Parana
 	
 	public static final double[][] LOCAL_HUMANS_PER_AGE_GROUP	= {	// Humanos con hogar dentro y trabajo/estudio fuera - Inventado
@@ -114,7 +121,7 @@ public final class DataSet {
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.008d, 0.024d, 0.074d, 4.402d, 28.612d};	// sobre 100 - Pierinox
+	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 42d;	// sobre 100
 }

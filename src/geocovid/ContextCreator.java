@@ -57,16 +57,19 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	private long simulationStartTime;
 	
+	private int foreignInfections; // Cantidad casos iniciados fuera de seccional 2
+	
 	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
 	private int unemployedCount; // Contador de empleos faltantes
 	private int unschooledCount; // Contador de bancos faltantes en escuelas
 	
 	/** Ver <b>corridas</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	static int corridas = 50;
+	private int simulationRun = 100;
 	
 	static final int WEEKLY_TICKS = 12*7; // ticks que representan el tiempo de una semana
 	static final int WEEKEND_TICKS = 12*2; // ticks que representan el tiempo que dura el fin de semana
 	
+	@SuppressWarnings("unused")
 	@Override
 	public Context<Object> build(Context<Object> context) {
 		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
@@ -95,16 +98,16 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		// Contagia al azar, segun media y desvio std
 		if (DataSet.SECTORAL == 0) {
-			// Al tick 960 media/moda = 3 | al tick 1200 media/moda = 7
-			params = ScheduleParameters.createNormalProbabilityRepeating(48, 12, 36, 12, 0.9d);
-			schedule.schedule(params, this, "infectRandos", 1);
+			foreignInfections = 1;
+			params = ScheduleParameters.createNormalProbabilityRepeating(60, 12, 30, 12, 0.9d);
+			schedule.schedule(params, this, "infectRandos");
 		}
 		
 		// Schedules one shot para los inicios y los fines de semana, hasta el comienzo de la cuartentena.
 		//-setWeekendMovement();
 		
 		this.context = context;
-		context.add(new InfeccionReport(simulationMinDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
+		context.add(new InfectionReport(simulationMinDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
 		context.add(new Temperature(simulationStartDay)); // Para calcular temperatura diaria, para estela
 		
 		loadPlacesShapefile();
@@ -114,6 +117,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 		BuildingManager.createActivitiesChances();
 		
 		initHumans();
+		
+		homePlaces.clear();
+		workPlaces.clear();
+		schoolPlaces.clear();
+		universityPlaces.clear();
 		
 		return context;
 	}
@@ -141,37 +149,23 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	public void printSimulationDuration() {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
-		System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
+		final int humansSum = DataSet.LOCAL_HUMANS[DataSet.SECTORAL] + DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL] + DataSet.FOREIGN_TRAVELER_HUMANS[DataSet.SECTORAL];
 		
-		System.out.println("Susceptibles: " + (DataSet.LOCAL_HUMANS[DataSet.SECTORAL] + DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL] + DataSet.FOREIGN_TRAVELER_HUMANS[DataSet.SECTORAL]));
+		System.out.printf("Simulacion N°: %3d | Tiempo: %.2f minutos%n", simulationRun, (simTime / (double)(1000*60)));
+		System.out.printf("Dias epidemia: %3d%n", (int) (RunEnvironment.getInstance().getCurrentSchedule().getTickCount() - outbreakStartTick) / 12);
 		
-		System.out.println("Infectados acumulados: " + InfeccionReport.getExposedCount());
-		System.out.println("Infectados por estela: " + InfeccionReport.getExposedToCSCount());
-    
-		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
-		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
+		System.out.printf("Susceptibles: %5d | Infectados: %d | Infectados por estela: %d%n",
+				humansSum,
+				InfectionReport.getCumExposed(),
+				InfectionReport.getCumExposedToCS());
+    	
+		System.out.printf("Recuperados:  %5d | Muertos: %d%n",
+				InfectionReport.getCumRecovered(),
+				InfectionReport.getCumDeaths());
 		
-		System.out.println("Infectados acumulados Niños: " + InfeccionReport.getChildExposedCount());
-		System.out.println("Recuperados Niños: " + InfeccionReport.getChildRecoveredCount());
-		System.out.println("Muertos Niños: " + InfeccionReport.getChildDeathsCount());
-		
-		System.out.println("Infectados acumulados Jovenes: " + InfeccionReport.getYoungExposedCount());
-		System.out.println("Recuperados Jovenes: " + InfeccionReport.getYoungRecoveredCount());
-		System.out.println("Muertos Jovenes: " + InfeccionReport.getYoungDeathsCount());
-		
-		System.out.println("Infectados acumulados Adultos: " + InfeccionReport.getAdultExposedCount());
-		System.out.println("Recuperados Adultos: " + InfeccionReport.getAdultRecoveredCount());
-		System.out.println("Muertos Adultos: " + InfeccionReport.getAdultDeathsCount());
-		
-		System.out.println("Infectados acumulados Mayores: " + InfeccionReport.getElderExposedCount());
-		System.out.println("Recuperados Mayores: " + InfeccionReport.getElderRecoveredCount());
-		System.out.println("Muertos Mayores: " + InfeccionReport.getElderDeathsCount());
-		
-		System.out.println("Infectados acumulados Muy Mayores: " + InfeccionReport.getHigherExposedCount());
-		System.out.println("Recuperados Muy Mayores: " + InfeccionReport.getHigherRecoveredCount());
-		System.out.println("Muertos Muy Mayores: " + InfeccionReport.getHigherDeathsCount());
-		
-		System.out.println("Dias de epidemia: " + (int) (RunEnvironment.getInstance().getCurrentSchedule().getTickCount() - outbreakStartTick) / 12);
+		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+			System.out.println(InfectionReport.getInfectedReport(i));
+		}
 	}
 	
 	/**
@@ -193,12 +187,21 @@ public class ContextCreator implements ContextBuilder<Object> {
 	/**
 	 * Selecciona al azar la cantidad de Humanos seteada en los parametros y los infecta.
 	 */
-	public void infectRandos(int amount) {
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount);
+	public void infectRandos() {
+		int preys = foreignInfections;
+		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, preys << 4); // Busco por 16, por las dudas
 		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
 			HumanAgent humano = (HumanAgent) iterator.next();
-			if (!humano.exposed)
-				humano.setInfectious(true);
+			if (!humano.exposed) {
+				if (humano.isForeign())
+					humano.setInfectious(true);
+				else if (humano.getPlaceOfWork() == null)
+					humano.setExposed();
+				else
+					continue;
+				if (--preys == 0)
+					break;
+			}
 		}
 	}
 	
@@ -221,35 +224,20 @@ public class ContextCreator implements ContextBuilder<Object> {
 	@SuppressWarnings("unused")
 	public void setHumansDefaultTMMC() {
 		if (DataSet.SECTORAL == 0) {
-			/*HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
+			++foreignInfections;
+			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
 			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
-		*/
-			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
-			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
-			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS2_TMMC;
-			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS2_TMMC;
-			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS2_TMMC;
 		}
-		
 		else {
-			/*
-			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
-			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
-			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
-			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
-			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
-			*/
 			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS11_TMMC;
 			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS11_TMMC;
 			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS11_TMMC;
 			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
 			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
-		
 		}
-		
 		HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
 		
 		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
@@ -269,39 +257,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 			// Reapertura progresiva (Fase 4)
 			setHumansDefaultTMMC();
 			BuildingManager.limitActivitiesCapacity(4d);
-			DataSet.MASK_INFECTION_RATE_REDUCTION = 30;
+			DataSet.maskInfRateReduction = 30;
 			break;
 		case 1:
 			// Reapertura progresiva (Fase 4)
 			if (sectoral == 0) {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
-			}
-			else {
-				
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
-						/*
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
-			*/
-			}
-			
-				BuildingManager.limitActivitiesCapacity(4d);
-				DataSet.MASK_INFECTION_RATE_REDUCTION = 30;
-			break;
-		case 2:
-			// Nueva normalidad (Fase 5)
-			if (sectoral == 0) {
+				++foreignInfections;
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_AGOSTO_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_AGOSTO_TMMC;
 				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_AGOSTO_TMMC;
@@ -309,21 +270,34 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_AGOSTO_TMMC;
 			}
 			else {
-				
-				/*HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS11_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS11_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS11_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
-				*/
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_AGOSTO_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
 			}
-			BuildingManager.limitActivitiesCapacity(3d);
-			DataSet.MASK_INFECTION_RATE_REDUCTION = 30;
+			//BuildingManager.limitActivitiesCapacity(4d);
+			//DataSet.maskInfRateReduction = 30;
+			break;
+		case 2:
+			// Nueva normalidad (Fase 5)
+			if (sectoral == 0) {
+				++foreignInfections;
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS2_TMMC;
+			}
+			else {
+				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
+			}
+			//BuildingManager.limitActivitiesCapacity(4d);
+			//DataSet.maskInfRateReduction = 30;
 			break;
 		case 3:
 			// TODO Aca va fase 3 o trifasica
@@ -354,8 +328,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		lockdownStartTick	= ((Integer) params.getValue("diaInicioCuarentena")).intValue() * 12;
 		// Cuarentena comienza segun primer caso + inicio cuarentena
 		lockdownStartTick	+= outbreakStartTick;
-		
-		corridas			= (Integer) params.getValue("corridas");
+		// Cantidad de corridas para hacer en batch
+		simulationRun		= (Integer) params.getValue("corridas");
 	}
 
 	private void loadPlacesShapefile() {
@@ -625,7 +599,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		int localHumansCount = DataSet.LOCAL_HUMANS[DataSet.SECTORAL] + DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL];
 		// Crear casas ficticias si es que faltan
-		int extraHomes = (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN[DataSet.SECTORAL]) - homePlaces.size();
+		int extraHomes = (int) (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN[DataSet.SECTORAL]) - homePlaces.size();
 		if (extraHomes > 0) {
 			createFictitiousHomes(extraHomes);
 			System.out.println("HOGARES PROMEDIO FALTANTES: "+extraHomes);
@@ -684,7 +658,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 			}
 		}
 		
-		//System.out.println("HUMANOS TOTALES: " + (localHumansCount + foreignTravelerHumans));
 		if (unemployedCount != 0)
 			System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
 		if (unschooledCount != 0)
@@ -693,7 +666,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 
 	/**
 	 * Busca lugar de trabajo/estudio en las distintas colecciones (escuela, facultad, trabajo), segun franja etaria y ocupacion<p>
-	 * @param sectoral
 	 * @param ageGroup
 	 * @param home 
 	 * @return WorkplaceAgent, BuildingAgent o null
@@ -714,8 +686,10 @@ public class ContextCreator implements ContextBuilder<Object> {
         		workplace = findWorkingPlace(schoolPlaces);
         	else
         		workplace = findWorkingPlace(universityPlaces);
-        	if (workplace == null)
+        	if (workplace == null) {
+        		workplace = home;
         		++unschooledCount;
+        	}
         }
         else if (i == 1) { // trabajor
         	int wp = RandomHelper.nextIntFromTo(1, 100);

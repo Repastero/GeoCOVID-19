@@ -10,7 +10,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import geocovid.DataSet;
-import geocovid.InfeccionReport;
+import geocovid.InfectionReport;
 import repast.simphony.random.RandomHelper;
 
 public class BuildingAgent {
@@ -312,14 +312,23 @@ public class BuildingAgent {
 	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
 		int infectionRate = DataSet.INFECTION_RATE;
 		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-			// Si es un lugar de trabajo y cerrado, se asume que usan cubreboca
-			if (workingPlace && !outdoor) {
-				// Si hay contagio entre cliente-cliente o empleado-cliente
-				if (!(spreader.atWork() && prey.atWork()))
-					infectionRate -= (infectionRate * DataSet.MASK_INFECTION_RATE_REDUCTION) / 100;
+			// Si es un lugar de trabajo se chequea si usan cubreboca
+			if (workingPlace) {
+				// Si es un lugar cerrado o se usa cubreboca en exteriores
+				if ((!outdoor) || DataSet.wearMaskOutdoor) {
+					// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
+					if (!(spreader.atWork() && prey.atWork()) || DataSet.wearMaskWorkspace) {
+						infectionRate -= (infectionRate * DataSet.maskInfRateReduction) / 100;
+					}
+				}
 			}
+			else if (spreader.quarantined) {
+				// Si esta aislado, se supone tiene todas las precauciones para no contagiar
+				infectionRate -= (infectionRate * DataSet.ISOLATION_INFECTION_RATE_REDUCTION) / 100;
+			}
+			
 			if (RandomHelper.nextIntFromTo(1, 100) <= infectionRate) {
-				prey.setExposed(spreader.symInfectious | spreader.quarantined);
+				prey.setExposed();
 				return true;
 			}
 		}
@@ -392,8 +401,8 @@ public class BuildingAgent {
 			// Si en el ultimo checkeo la superficie seguia contaminada
 			if (surface.isContaminated()) {
 				if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
-					human.setExposed(false);
-					InfeccionReport.addExposedToCS();
+					human.setExposed();
+					InfectionReport.addExposedToCS();
 				}
 			}
 		// Es preferible no eliminar la superficie contaminada, para utilizar el objeto posteriormente

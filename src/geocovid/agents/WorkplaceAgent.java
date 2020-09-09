@@ -12,7 +12,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	// Listado de Places cerrados durante pandemia
 	public static final Set<String> CLOSED_PLACES = Set.of("beauty_school", "bus_station", "escape_room_center", "function_room_facility", "language_school", "lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "travel_agency", "university");
 	// Listado de Places a cielo abierto
-	public static final Set<String> OPEN_AIR_PLACES = Set.of("gas_station","park","parking","soccer_field","soccer_club","amphitheatre");
+	public static final Set<String> OPEN_AIR_PLACES = Set.of("gas_station","park","soccer_field","soccer_club","amphitheatre");
 	
 	private int[][] workPositions;
 	private int workPositionsCount;
@@ -38,7 +38,7 @@ public class WorkplaceAgent extends BuildingAgent {
 		int cap = defaultCapacity;
 		// Para calcular el maximo aforo teorico de un local comercial:
 		// dividir la superficie util transitable entre 4
-		if (sqMetersPerHuman > 0d && !OPEN_AIR_PLACES.contains(workplaceType)) { // si no es al aire libre
+		if (sqMetersPerHuman > 0d && !isOutdoor()) { // si no es al aire libre
 			cap = (int) (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * sqMetersPerHuman));
 			if (cap <= workPositionsCount) {
 				cap = workPositionsCount + 1; // permitir al menos un cliente
@@ -55,12 +55,7 @@ public class WorkplaceAgent extends BuildingAgent {
 		int y = getHeight();
 		workPositions = new int[vacancies][2];
 		workPositionsCount = workPositions.length;
-		int mean =  DataSet.SPACE_BETWEEN_WORKERS;
-		int std = 1;
-		int distance = RandomHelper.createNormal(mean, std).nextInt();
-		distance = (distance > mean+std) ? mean+std : (distance < mean-std ? mean-std: distance);
-		
-		//int distance = DataSet.SPACE_BETWEEN_WORKERS;
+		int distance = DataSet.SPACE_BETWEEN_WORKERS;
 		int col = 0;
 		int row = 0;
 		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row

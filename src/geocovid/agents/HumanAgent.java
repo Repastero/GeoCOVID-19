@@ -7,7 +7,7 @@ import java.util.Map;
 
 import geocovid.BuildingManager;
 import geocovid.DataSet;
-import geocovid.InfeccionReport;
+import geocovid.InfectionReport;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.*;
 import repast.simphony.random.RandomHelper;
@@ -47,8 +47,7 @@ public class HumanAgent {
     public boolean hospitalized		= false; // Hospitalized to ICU
     public boolean recovered		= false;
     // Extras
-    public boolean suspiciousCase	= false; // Si se contagia en trabajo o casa
-    public boolean quarantined		= false; // Si se aisla por ser sintomatico o "suspiciousCase"
+    public boolean quarantined		= false; // Si se aisla por ser sintomatico
     /////////////
     
     private Map<Integer, Integer> socialInteractions = new HashMap<>(); // ID contacto, cantidad de contactos
@@ -124,7 +123,7 @@ public class HumanAgent {
 				for (Object value : socialInteractions.values())
 					count += (Integer)value;
 			}
-			InfeccionReport.updateSocialInteractions(ageGroup, count);
+			InfectionReport.updateSocialInteractions(ageGroup, count);
 		}
 		socialInteractions.clear();
 	}
@@ -158,13 +157,13 @@ public class HumanAgent {
 		switchLocation();
 	}
 	
-	public void setExposed(boolean fromSyntomatic) {
+	public void setExposed() {
 		// Una vez expuesto, no puede volver a contagiarse
 		if (exposed)
 			return;
 		// Se contagia del virus
 		exposed = true;
-		InfeccionReport.modifyExposedCount(ageGroup, 1);
+		InfectionReport.addExposed(ageGroup);
 		int mean = DataSet.EXPOSED_PERIOD_MEAN;
 		int std = DataSet.EXPOSED_PERIOD_DEVIATION;
 		double period = RandomHelper.createNormal(mean, std).nextDouble();
@@ -178,7 +177,7 @@ public class HumanAgent {
 		// Si es un primer caso, es siempre asintomatico
 		if (initial) {
 			exposed = true;
-			InfeccionReport.modifyExposedCount(ageGroup, 1);
+			InfectionReport.addExposed(ageGroup);
 		}
 		// Verificar que sea expuesto
 		if (!exposed)
@@ -187,25 +186,21 @@ public class HumanAgent {
 		// Comienza la etapa de contagio asintomatico o sintomatico
 		if (initial || RandomHelper.nextDoubleFromTo(0, 100) <= asxChance) {
 			asxInfectious = true;
-			InfeccionReport.modifyASXInfectiousCount(ageGroup, 1);
-			// Si es asintomatico pero se contagio de un sintomatico, se aisla igual
-			if (suspiciousCase) {
-				startQuarantine();
-			}
+			InfectionReport.modifyASXInfectiousCount(ageGroup, 1);
 		}
 		else {
 			// Si se complica el caso, se interna - si no continua vida normal
 			if (RandomHelper.nextDoubleFromTo(0, 100) <= icuChance) {
 				// Mover a ICU hasta que se cure o muera
 				hospitalized = true;
-				InfeccionReport.modifyHospitalizedCount(ageGroup, 1);
+				InfectionReport.modifyHospitalizedCount(ageGroup, 1);
 			}
 			else {
 				// Se aisla por tiempo prolongado si no va a ICU
 				startQuarantine();
 			}
 			symInfectious = true;
-			InfeccionReport.modifySYMInfectiousCount(ageGroup, 1);
+			InfectionReport.modifySYMInfectiousCount(ageGroup, 1);
 		}
 		//
 		
@@ -227,9 +222,9 @@ public class HumanAgent {
 	public void setRecovered() {
 		// Verificar que este infectado
 		if (asxInfectious)
-			InfeccionReport.modifyASXInfectiousCount(ageGroup, -1);
+			InfectionReport.modifyASXInfectiousCount(ageGroup, -1);
 		else if (symInfectious)
-			InfeccionReport.modifySYMInfectiousCount(ageGroup, -1);
+			InfectionReport.modifySYMInfectiousCount(ageGroup, -1);
 		else
 			return;
 		
@@ -238,7 +233,7 @@ public class HumanAgent {
 		symInfectious = false;
 		if (!hospitalized) {
 			recovered = true;
-			InfeccionReport.modifyRecoveredCount(ageGroup, 1);
+			InfectionReport.addRecovered(ageGroup);
 			
 			if (currentBuilding != null)
 				currentBuilding.removeSpreader(this, currentPosition);
@@ -254,22 +249,21 @@ public class HumanAgent {
 	
 	public void dischargeFromICU() {
 		hospitalized = false;
-		InfeccionReport.modifyHospitalizedCount(ageGroup, -1);
+		InfectionReport.modifyHospitalizedCount(ageGroup, -1);
 		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
 			// Se muere en ICU
-			InfeccionReport.modifyDeathsCount(ageGroup, 1);
+			InfectionReport.addDead(ageGroup);
 		}
 		else {
 			// Sale de ICU - continua vida normal
 			recovered = true;
-			InfeccionReport.modifyRecoveredCount(ageGroup, 1);
+			InfectionReport.addRecovered(ageGroup);
 			addRecoveredToContext();
 		}
 	}
 	
 	public void startQuarantine() {
 		quarantined = true;
-		suspiciousCase = false;
 		
 		int mean = DataSet.QUARANTINED_PERIOD_MEAN_AG;
 		int std = DataSet.QUARANTINED_PERIOD_DEVIATION;
@@ -360,14 +354,13 @@ public class HumanAgent {
         }
 
         newBuilding = switchActivity(currentActivity, i);
-        currentActivity = i;
-        
         if (switchBuilding) {
         	// Si esta dentro de un inmueble
             if (currentBuilding != null) {
             	currentBuilding.removeHuman(this, currentPosition);
             	currentBuilding = null;
             }
+            currentActivity = i;
             
         	// Si el nuevo lugar es un inmueble
         	if (newBuilding != null) {
