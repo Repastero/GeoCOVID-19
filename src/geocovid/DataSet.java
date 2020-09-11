@@ -2,7 +2,7 @@ package geocovid;
 
 public final class DataSet {
 	/** Indice secciona: 0 = Secciona 2 | 1 = Seccional 11 */
-	public static final int SECTORAL = 1;
+	public static final int SECTORAL = 0;
 	
 	public static final String[] SHP_FILE_PARCELS	= {"./data/sec2.shp",		"./data/sec11.shp"};
 	public static final String[] SHP_FILE_PLACES	= {"./data/sec2-places.shp","./data/sec11-places.shp"};
@@ -13,8 +13,8 @@ public final class DataSet {
 	public static final int[] LOCAL_TRAVELER_HUMANS		= {7883,  5000};	// Cantidad de Humanos que trabajan afuera
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,63};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
+	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, 1};	// Numero de fase en orden de cambio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,63,80};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
@@ -116,7 +116,7 @@ public final class DataSet {
 	/** grado de precision frente a longitud */
 	public static final double DEGREE_PRECISION				= 11.132d / 0.0001d; // Fuente https://en.wikipedia.org/wiki/Decimal_degrees
 	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
-	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP= {1000d / DEGREE_PRECISION, 1250d / DEGREE_PRECISION, -1d, -1d, 750d / DEGREE_PRECISION}; // metros div metros por grado (longitud)
+	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP= {1000d / DEGREE_PRECISION, 1500d / DEGREE_PRECISION, -1d, -1d, 1000d / DEGREE_PRECISION}; // metros div metros por grado (longitud)
 	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
 	

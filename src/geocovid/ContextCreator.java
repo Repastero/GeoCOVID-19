@@ -99,7 +99,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		// Contagia al azar, segun media y desvio std
 		if (DataSet.SECTORAL == 0) {
 			foreignInfections = 1;
-			params = ScheduleParameters.createNormalProbabilityRepeating(60, 12, 30, 12, 0.9d);
+			params = ScheduleParameters.createNormalProbabilityRepeating(60, 12, 24, 12, 0.9d);
 			schedule.schedule(params, this, "infectRandos");
 		}
 		
@@ -173,9 +173,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	public void infectLocalRandos(int amount) {
 		int infected = 0;
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount << 2); // Busco por 4, por las dudas
+		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount << 4); // Busca por 16, por las dudas
 		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
 			HumanAgent humano = (HumanAgent) iterator.next();
+			//-if (!humano.isForeign() && humano.getAgeGroup() == 2 && humano.getPlaceOfWork() instanceof WorkplaceAgent) {
 			if (!humano.isForeign()) {
 				humano.setInfectious(true);
 				if (++infected == amount)
@@ -189,16 +190,14 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	public void infectRandos() {
 		int preys = foreignInfections;
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, preys << 4); // Busco por 16, por las dudas
+		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, preys << 4); // Busca por 16, por las dudas
 		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
 			HumanAgent humano = (HumanAgent) iterator.next();
 			if (!humano.exposed) {
 				if (humano.isForeign())
 					humano.setInfectious(true);
-				else if (humano.getPlaceOfWork() == null)
-					humano.setExposed();
 				else
-					continue;
+					humano.setExposed();
 				if (--preys == 0)
 					break;
 			}
@@ -282,7 +281,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 2:
 			// Nueva normalidad (Fase 5)
 			if (sectoral == 0) {
-				++foreignInfections;
+				foreignInfections += 2;
 				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
 				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS2_TMMC;

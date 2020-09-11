@@ -72,6 +72,10 @@ public class HumanAgent {
 		return agentID;
 	}
 	
+	public int getAgeGroup() {
+		return ageGroup;
+	}
+	
 	public boolean isForeign() { 
 		return foreignTraveler;
 	}
