@@ -68,15 +68,17 @@ public class InfectionReport {
 			humansInteracting[i] = 0;
 		}
 		
-		// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
-		if ((cumRecoveredAll != 0 || cumDeathsAll != 0) && ((cumDeathsAll + cumRecoveredAll) == cumExposedAll)) {
-			System.out.println("Simulacion finalizada por fin de epidemia");
-			RunEnvironment.getInstance().endRun();
-		}
-		// Termina la simulacion si se cumple el minimo de dias de simulacion y si se supera el limite te muertes (si existe)
-		else if ((++daysCount >= simulationMinDay) && (deathLimit != 0 && deathLimit < cumDeathsAll)) {
-			System.out.println("Simulacion finalizada por limite de muertes: "+deathLimit);
-			RunEnvironment.getInstance().endRun();
+		if (++daysCount >= simulationMinDay) {
+			// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
+			if ((cumRecoveredAll != 0 || cumDeathsAll != 0) && ((cumDeathsAll + cumRecoveredAll) == cumExposedAll)) {
+				System.out.println("Simulacion finalizada por fin de epidemia");
+				RunEnvironment.getInstance().endRun();
+			}
+			// Termina la simulacion si se cumple el minimo de dias de simulacion y si se supera el limite te muertes (si existe)
+			else if (deathLimit != 0 && deathLimit < cumDeathsAll){
+				System.out.println("Simulacion finalizada por limite de muertes: "+deathLimit);
+				RunEnvironment.getInstance().endRun();
+			}
 		}
 	}
 	

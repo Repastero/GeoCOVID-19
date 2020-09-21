@@ -38,8 +38,10 @@ public class WorkplaceAgent extends BuildingAgent {
 		int cap = defaultCapacity;
 		// Para calcular el maximo aforo teorico de un local comercial:
 		// dividir la superficie util transitable entre 4
-		if (sqMetersPerHuman > 0d && !isOutdoor()) { // si no es al aire libre
+		if (sqMetersPerHuman > 0d) {
 			cap = (int) (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * sqMetersPerHuman));
+			if (isOutdoor()) // si es al aire libre, la capacidad se dobla
+				cap <<= 1;
 			if (cap <= workPositionsCount) {
 				cap = workPositionsCount + 1; // permitir al menos un cliente
 			}

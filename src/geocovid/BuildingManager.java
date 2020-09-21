@@ -89,7 +89,7 @@ public final class BuildingManager {
 			buildList.add(build);
 			placesMap.put(type, buildList);
 			//
-			if (prop.getActivityType() == 2)
+			if (prop.getActivityType() == 2) // Ocio
 				enterPropList.add(prop);
 			else
 				otherPropList.add(prop);
@@ -209,13 +209,12 @@ public final class BuildingManager {
 	 * @return
 	 */
 	public static BuildingAgent findRandomPlace(int type, BuildingAgent currentBuilding, double radius, int ageGroup) {
-		BuildingAgent foundedPlace = null;
-		
 		// Hay una probabilidad de que el Humano se traslade fuera del contexto para realizar las actividades de ocio u otros
 		// Esto aplica a todos los agentes Humanos, tanto locales como extranjeros
 		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.TRAVEL_OUTSIDE_CHANCE[DataSet.SECTORAL])
-			return foundedPlace;
+			return null;
 		
+		BuildingAgent foundedPlace = null;
 		Geometry geo;
 		if (currentBuilding != null) {
 			geo = currentBuilding.getGeometry();

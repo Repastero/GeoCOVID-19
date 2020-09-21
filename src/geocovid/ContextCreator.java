@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.geotools.data.shapefile.ShapefileDataStore;
@@ -41,9 +42,16 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private List<WorkplaceAgent>schoolPlaces = new ArrayList<WorkplaceAgent>();
 	private List<WorkplaceAgent>universityPlaces = new ArrayList<WorkplaceAgent>();
 	
+	private HumanAgent[] contextHumans;
+	private int localHumansCount;
+	private int foreignHumansCount;
+	
+	private Set<Integer> socialDistIndexes;
+	
 	private Map<Long, String> placesType = new HashMap<>();
 	private Map<String, PlaceProperty> placesProperty = new HashMap<>();
 	
+	private ISchedule schedule;
 	private Context<Object> context;
 	private Geography<Object> geography;
 	
@@ -54,10 +62,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private int infectedAmount;
 	private int outbreakStartTick;
 	private int lockdownStartTick;
+	private int weekendStartTick;
 	
 	private long simulationStartTime;
-	
-	private int foreignInfections; // Cantidad casos iniciados fuera de seccional 2
 	
 	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
 	private int unemployedCount; // Contador de empleos faltantes
@@ -66,13 +73,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 	/** Ver <b>corridas</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
 	private int simulationRun = 100;
 	
+	private boolean weekendTMMCEnabled = false;
 	static final int WEEKLY_TICKS = 12*7; // ticks que representan el tiempo de una semana
 	static final int WEEKEND_TICKS = 12*2; // ticks que representan el tiempo que dura el fin de semana
 	
-	@SuppressWarnings("unused")
 	@Override
 	public Context<Object> build(Context<Object> context) {
-		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
+		schedule = RunEnvironment.getInstance().getCurrentSchedule();
 		ScheduleParameters params = ScheduleParameters.createOneTime(0d, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, this, "startSimulation");
 		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
@@ -93,18 +100,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 		int[] phasesStartDay = DataSet.LOCKDOWN_PHASES_DAYS;
 		for (int i = 0; i < phases.length; i++) {
 			params = ScheduleParameters.createOneTime(phasesStartDay[i] * 12, 0.9d);
-			schedule.schedule(params, this, "initiateLockdown", phases[i], DataSet.SECTORAL);
-		}
-		
-		// Contagia al azar, segun media y desvio std
-		if (DataSet.SECTORAL == 0) {
-			foreignInfections = 1;
-			params = ScheduleParameters.createNormalProbabilityRepeating(60, 12, 24, 12, 0.9d);
-			schedule.schedule(params, this, "infectRandos");
+			schedule.schedule(params, this, "initiateLockdownPhase", phases[i], DataSet.SECTORAL);
 		}
 		
 		// Schedules one shot para los inicios y los fines de semana, hasta el comienzo de la cuartentena.
-		//-setWeekendMovement();
+		setWeekendMovement();
 		
 		this.context = context;
 		context.add(new InfectionReport(simulationMinDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
@@ -115,6 +115,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		loadParcelsShapefile(DataSet.SECTORAL);
 		
 		BuildingManager.createActivitiesChances();
+		
+		DataSet.setDefaultValues();
 		
 		initHumans();
 		
@@ -131,15 +133,14 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Cuando termina se asigna "setHumansDefaultTMMC"
 	 */
 	private void setWeekendMovement() {
-		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
 		ScheduleParameters params;
 		int endWKND;
-		for (int i = WEEKLY_TICKS - WEEKEND_TICKS; i < lockdownStartTick; i += WEEKLY_TICKS) {
+		for (int i = weekendStartTick; i < simulationMaxTick; i += WEEKLY_TICKS) {
 			params = ScheduleParameters.createOneTime(i, ScheduleParameters.FIRST_PRIORITY);
-			schedule.schedule(params, this, "setHumansWeekendTMMC");
-			endWKND = (i + WEEKEND_TICKS > lockdownStartTick) ? lockdownStartTick : i + WEEKEND_TICKS;
+			schedule.schedule(params, this, "setHumansWeekendTMMC", true);
+			endWKND = (i + WEEKEND_TICKS > simulationMaxTick) ? simulationMaxTick : i + WEEKEND_TICKS;
 			params = ScheduleParameters.createOneTime(endWKND, ScheduleParameters.FIRST_PRIORITY);
-			schedule.schedule(params, this, "setHumansDefaultTMMC");
+			schedule.schedule(params, this, "setHumansWeekendTMMC", false);
 		}
 	}
 	
@@ -149,13 +150,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	public void printSimulationDuration() {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
-		final int humansSum = DataSet.LOCAL_HUMANS[DataSet.SECTORAL] + DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL] + DataSet.FOREIGN_TRAVELER_HUMANS[DataSet.SECTORAL];
 		
 		System.out.printf("Simulacion N°: %3d | Tiempo: %.2f minutos%n", simulationRun, (simTime / (double)(1000*60)));
-		System.out.printf("Dias epidemia: %3d%n", (int) (RunEnvironment.getInstance().getCurrentSchedule().getTickCount() - outbreakStartTick) / 12);
+		System.out.printf("Dias epidemia: %3d%n", (int) (schedule.getTickCount() - outbreakStartTick) / 12);
 		
 		System.out.printf("Susceptibles: %5d | Infectados: %d | Infectados por estela: %d%n",
-				humansSum,
+				(localHumansCount + foreignHumansCount),
 				InfectionReport.getCumExposed(),
 				InfectionReport.getCumExposedToCS());
     	
@@ -172,137 +172,160 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Selecciona al azar la cantidad de Humanos locales seteada en los parametros y los infecta.
 	 */
 	public void infectLocalRandos(int amount) {
+		if (amount == 0)
+			return;
+		
 		int infected = 0;
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount << 4); // Busca por 16, por las dudas
-		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
-			HumanAgent humano = (HumanAgent) iterator.next();
-			//-if (!humano.isForeign() && humano.getAgeGroup() == 2 && humano.getPlaceOfWork() instanceof WorkplaceAgent) {
-			if (!humano.isForeign()) {
-				humano.setInfectious(true);
-				if (++infected == amount)
-					break;
+		Set<Integer> indexes = new HashSet<Integer>(amount, 1f);
+		int i;
+		do {
+			i = RandomHelper.nextIntFromTo(foreignHumansCount, localHumansCount + foreignHumansCount - 1);
+			// Chequea si no es repetido
+			if (indexes.add(i)) {
+				contextHumans[i].setInfectious(true); // Asintomatico
+				++infected;
+				//-if (localHumans[i].getAgeGroup() == 2 && localHumans[i].getPlaceOfWork() instanceof WorkplaceAgent) {
 			}
-		}
+		} while (infected != amount);
 	}
 	
 	/**
-	 * Selecciona al azar la cantidad de Humanos seteada en los parametros y los infecta.
+	 * Setea aleatoriamente a Humanos si respetan el distanciamiento social, segun porcentaje de la poblacion dado 
+	 * @param porcentaje
 	 */
-	public void infectRandos() {
-		int preys = foreignInfections;
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, preys << 4); // Busca por 16, por las dudas
-		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
-			HumanAgent humano = (HumanAgent) iterator.next();
-			if (!humano.exposed) {
-				if (humano.isForeign())
-					humano.setInfectious(true);
-				else
-					humano.setExposed();
-				if (--preys == 0)
+	@SuppressWarnings("unused")
+	private void setSocialDistancing(int porc) {
+		int newAmount = (int) Math.ceil((localHumansCount + foreignHumansCount) * porc) / 100;
+		int oldAmount = 0;
+		// El porcentaje era cero
+		if (DataSet.socialDistPercentage == 0 && porc > 0)
+			socialDistIndexes = new HashSet<Integer>(newAmount);
+		else
+			oldAmount = socialDistIndexes.size();
+		DataSet.socialDistPercentage = porc;
+		
+		// El nuevo porcentaje es menor
+		if (newAmount < oldAmount) {
+			int toRemove = oldAmount - newAmount;
+			for (java.util.Iterator<Integer> it = socialDistIndexes.iterator(); it.hasNext();) {
+				Integer index = it.next();
+				contextHumans[index].setSociallyDistanced(false);
+				it.remove();
+				if (--toRemove == 0)
 					break;
 			}
+		}
+		// El nuevo porcentaje es mayor
+		else if (newAmount > oldAmount) {
+			int toAdd = newAmount - oldAmount;
+			int i;
+			do {
+				i = RandomHelper.nextIntFromTo(0, localHumansCount + foreignHumansCount - 1);
+				if (socialDistIndexes.add(i)) {
+					contextHumans[i].setSociallyDistanced(true);
+					--toAdd;
+				}
+			} while (toAdd != 0);
 		}
 	}
 	
 	/**
 	 * Asignar las matrices de markov que se utilizan los fines de semana.
 	 */
-	public void setHumansWeekendTMMC() {
-		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_WEEKEND_TMMC;
-		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_WEEKEND_TMMC;
-		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_WEEKEND_TMMC;
-		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_WEEKEND_TMMC;
-		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_WEEKEND_TMMC;
-		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_WEEKEND_TMMC;
+	public void setHumansWeekendTMMC(boolean enabled) {
+		weekendTMMCEnabled = enabled;
+		for (int i = 0; i < DataSet.AGE_GROUPS-1; i++) {
+			MarkovChains.setWeekendDiff(HumanAgent.localTMMC[i], enabled);
+		}
+		HumanAgent.travelerTMMC = (enabled ? MarkovChains.TRAVELER_WEEKEND_TMMC : MarkovChains.TRAVELER_DEFAULT_TMMC);
 	}
 	
 	/**
 	 * Asignar las matrices de markov que se utilizan al principio de simulacion.<p>
 	 * Ver {@link #initHumans()}
 	 */
-	@SuppressWarnings("unused")
-	public void setHumansDefaultTMMC() {
-		if (DataSet.SECTORAL == 0) {
-			++foreignInfections;
-			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_JULIO_TMMC;
-			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_JULIO_TMMC;
-			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_JULIO_TMMC;
-			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_JULIO_TMMC;
-			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_JULIO_TMMC;
+	public void setHumansDefaultTMMC(int sectoral) {
+		if (sectoral == 0) {
+			HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_JUNE_TMMC;
+			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_JUNE_TMMC;
+			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC2_JUNE_TMMC;
+			HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC2_JUNE_TMMC;
+			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC2_JUNE_TMMC;
 		}
 		else {
-			HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS11_TMMC;
-			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS11_TMMC;
-			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS11_TMMC;
-			HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS11_TMMC;
-			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS11_TMMC;
+			HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC11_JUNE_TMMC;
+			HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC11_JUNE_TMMC;
+			HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC11_JUNE_TMMC;
+			HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_JUNE_TMMC;
+			HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_JUNE_TMMC;
 		}
-		HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULTS2S11_TMMC;
+		HumanAgent.travelerTMMC	= MarkovChains.TRAVELER_DEFAULT_TMMC;
 		
-		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
-		HumanAgent.infectedLocalTMMC[1] = MarkovChains.INFECTED_YOUNG_TMMC;
-		HumanAgent.infectedLocalTMMC[2] = MarkovChains.INFECTED_ADULT_TMMC;
-		HumanAgent.infectedLocalTMMC[3] = MarkovChains.INFECTED_ELDER_TMMC;
-		HumanAgent.infectedLocalTMMC[4] = MarkovChains.INFECTED_HIGHER_TMMC;
-		HumanAgent.infectedTravelerTMMC = MarkovChains.INFECTED_TRAVELER_TMMC;
+		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+			HumanAgent.isolatedLocalTMMC[i] = MarkovChains.ISOLATED_TMMC;
+		}
+		HumanAgent.infectedTravelerTMMC = MarkovChains.ISOLATED_TMMC;
 	}
 	
 	/**
 	 * Asignar las matrices de markov que se van a utilizar al comenzar cada fase.
 	 */
-	public void initiateLockdown(int phase, int sectoral) {
+	public void initiateLockdownPhase(int phase, int sectoral) {
 		switch (phase) {
 		case 0:
 			// Reapertura progresiva (Fase 4)
-			setHumansDefaultTMMC();
+			// No setea matrices por que se usan las por defecto "setHumansDefaultTMMC"
 			BuildingManager.limitActivitiesCapacity(4d);
-			DataSet.maskInfRateReduction = 30;
+			//setSocialDistancing(70);
+			DataSet.maskInfRateReduction = 28;
 			break;
 		case 1:
 			// Reapertura progresiva (Fase 4)
 			if (sectoral == 0) {
-				++foreignInfections;
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS2_AGOSTO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS2_AGOSTO_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_JULY_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_JULY_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC2_JULY_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC2_JULY_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC2_JULY_TMMC;
 			}
 			else {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_AGOSTO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_AGOSTO_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC11_JULY_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC11_JULY_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC11_JULY_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_JULY_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_JULY_TMMC;
 			}
-			//BuildingManager.limitActivitiesCapacity(4d);
-			//DataSet.maskInfRateReduction = 30;
+			//setSocialDistancing(60);
+			DataSet.maskInfRateReduction = 26;
 			break;
 		case 2:
 			// Nueva normalidad (Fase 5)
 			if (sectoral == 0) {
-				foreignInfections += 2;
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_DEFAULTS2_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_DEFAULTS2_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC2_AUGUST_TMMC;
 			}
 			else {
-				HumanAgent.localTMMC[0]	= MarkovChains.CHILD_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[3]	= MarkovChains.ELDER_PARANAS11_JULIO_TMMC;
-				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_PARANAS11_JULIO_TMMC;
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_AUGUST_TMMC;
 			}
-			//BuildingManager.limitActivitiesCapacity(4d);
-			//DataSet.maskInfRateReduction = 30;
+			//setSocialDistancing(50);
+			DataSet.maskInfRateReduction = 22;
 			break;
 		case 3:
 			// TODO Aca va fase 3 o trifasica
 			break;
 		default:
 			break;
+		}
+		// Chequea si se cambio de fase durante el fin de semana y no es la primera
+		if (weekendTMMCEnabled && schedule.getTickCount() > 0d) {
+			setHumansWeekendTMMC(true); // para actualizar las matrices de finde
 		}
 	}
 
@@ -317,6 +340,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		simulationMaxTick	= ((Integer) params.getValue("diasSimulacion")).intValue() * 12;
 		// Dias minimo de simulacion - por mas que supere "cantidadMuertosLimite" (0 ...)
 		simulationMinDay	= ((Integer) params.getValue("diasMinimoSimulacion")).intValue();
+		// Dias hasta primer sabado (0 ...)
+		weekendStartTick	= ((Integer) params.getValue("diasPrimerFinde")).intValue() * 12;
 		// Cantidad de muertos que debe superar para finalizar simulacion - ver "diaMinimoSimulacion" (0 = Infinito)
 		deathLimit			= ((Integer) params.getValue("cantidadMuertosLimite")).intValue();
 		// Dia de entrada de infectados
@@ -570,7 +595,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	/**
 	 * Crea Humanos y asigna a cada uno un lugar aleatorio en la grilla, como posicion del hogar.
 	 */
-	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work) {
+	private HumanAgent createHuman(int ageGroup, BuildingAgent home, BuildingAgent work) {
 		int[] workPos = null;
 		HumanAgent tempHuman;
 		// Se le asigna una posicion fija en el trabajo, si es que trabaja
@@ -584,21 +609,21 @@ public class ContextCreator implements ContextBuilder<Object> {
 			tempHuman = new ForeignHumanAgent(ageGroup, home, work, workPos);
 		context.add(tempHuman);
 		tempHuman.setStartLocation();
+		return tempHuman;
 	}
 
 	/**
 	 * Crea Humanos dependiendo la franja etaria, lugar de trabajo y vivienda.
-	 * @see DataSet#HUMANS_PER_AGE_GROUP
-	 * @see DataSet#localHumans
 	 */
 	private void initHumans() {
 		HumanAgent.initAgentID(); // Reinicio contador de IDs
-		setHumansDefaultTMMC();
+		setHumansDefaultTMMC(DataSet.SECTORAL);
 		BuildingAgent.initInfectionRadius(); // Crea posiciones de infeccion en grilla
 		
-		int localHumansCount = DataSet.LOCAL_HUMANS[DataSet.SECTORAL] + DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL];
+		int localCount = DataSet.LOCAL_HUMANS[DataSet.SECTORAL] + DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL];
+		int foreignCount = DataSet.FOREIGN_TRAVELER_HUMANS[DataSet.SECTORAL];
 		// Crear casas ficticias si es que faltan
-		int extraHomes = (int) (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN[DataSet.SECTORAL]) - homePlaces.size();
+		int extraHomes = (int) (localCount / DataSet.HOUSE_INHABITANTS_MEAN[DataSet.SECTORAL]) - homePlaces.size();
 		if (extraHomes > 0) {
 			createFictitiousHomes(extraHomes);
 			System.out.println("HOGARES PROMEDIO FALTANTES: "+extraHomes);
@@ -612,20 +637,27 @@ public class ContextCreator implements ContextBuilder<Object> {
 		int[] localTravelers = new int[DataSet.AGE_GROUPS];
 		int[] foreignTravelers = new int[DataSet.AGE_GROUPS];
 		
+		localHumansCount = 0;
+		foreignHumansCount = 0;
 		int i, j;
-		// Crear humanos que viven y trabajan/estudian en OV
+		// Crear humanos que viven y trabajan/estudian en contexto
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			locals[i] = (int) Math.ceil((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[i]) / 100);
+			locals[i] = (int) Math.ceil((localCount * DataSet.HUMANS_PER_AGE_GROUP[i]) / 100);
+			localHumansCount += locals[i];
 			localTravelers[i] = (int) Math.ceil((DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL] * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[DataSet.SECTORAL][i]) / 100);
 			locals[i] -= localTravelers[i];
 			//
-			foreignTravelers[i] = (int) Math.ceil((DataSet.FOREIGN_TRAVELER_HUMANS[DataSet.SECTORAL] * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[DataSet.SECTORAL][i]) / 100);
+			foreignTravelers[i] = (int) Math.ceil((foreignCount * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[DataSet.SECTORAL][i]) / 100);
+			foreignHumansCount += foreignTravelers[i];
 		}
 		//
 		
 		// DEBUG
 		//for (i = 0; i < DataSet.AGE_GROUPS; i++)
 		//	System.out.println(locals[i] + " | " + localTravelers[i] + " | " + foreignTravelers[i]);
+		
+		contextHumans = new HumanAgent[localHumansCount + foreignHumansCount];
+		int humInd = 0;
 		
 		BuildingAgent tempHome = null;
 		BuildingAgent tempJob = null;
@@ -636,7 +668,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			for (j = 0; j < foreignTravelers[i]; j++) {
 				tempJob = findAGWorkingPlace(i, null);
-				createHuman(i, null, tempJob);
+				contextHumans[humInd++] = createHuman(i, null, tempJob);
 			}
 		}
 		
@@ -644,7 +676,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			for (j = 0; j < localTravelers[i]; j++) {
 				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-				createHuman(i, tempHome, null);
+				contextHumans[humInd++] = createHuman(i, tempHome, null);
 			}
 		}
 		
@@ -653,7 +685,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			for (j = 0; j < locals[i]; j++) {
 				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
 				tempJob = findAGWorkingPlace(i, tempHome);
-				createHuman(i, tempHome, tempJob);
+				contextHumans[humInd++] = createHuman(i, tempHome, tempJob);
 			}
 		}
 		

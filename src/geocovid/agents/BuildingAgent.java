@@ -312,13 +312,26 @@ public class BuildingAgent {
 	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
 		int infectionRate = DataSet.INFECTION_RATE;
 		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-			// Si es un lugar de trabajo se chequea si usan cubreboca
+			// Si es un lugar de trabajo se chequea si respetan distanciamiento y usan cubreboca
 			if (workingPlace) {
-				// Si es un lugar cerrado o se usa cubreboca en exteriores
-				if ((!outdoor) || DataSet.wearMaskOutdoor) {
-					// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
-					if (!(spreader.atWork() && prey.atWork()) || DataSet.wearMaskWorkspace) {
-						infectionRate -= (infectionRate * DataSet.maskInfRateReduction) / 100;
+				if (DataSet.socialDistPercentage != 0) {
+					// Si es un lugar cerrado o se respeta el distanciamiento en exteriores
+					if ((!outdoor) || DataSet.socialDistOutdoor) {
+						// Si los dos humanos respetan el distanciamiento
+						if (spreader.distanced && prey.distanced) {
+							// Si se respeta el distanciamiento en lugares de trabajo
+							if (!(spreader.atWork() && prey.atWork()) || DataSet.socialDistWorkspace)
+								return false;
+						}
+					}
+				}
+				if (DataSet.maskInfRateReduction != 0) {
+					// Si es un lugar cerrado o se usa cubreboca en exteriores
+					if ((!outdoor) || DataSet.wearMaskOutdoor) {
+						// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
+						if (!(spreader.atWork() && prey.atWork()) || DataSet.wearMaskWorkspace) {
+							infectionRate -= (infectionRate * DataSet.maskInfRateReduction) / 100;
+						}
 					}
 				}
 			}

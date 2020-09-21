@@ -31,7 +31,7 @@ public class ForeignHumanAgent extends HumanAgent {
 		double newDayTick = Math.ceil(schedule.getTickCount() / 12) * 12;
 		
         // Schedule one shot
-		ScheduleParameters params = ScheduleParameters.createOneTime(newDayTick, 0.6d); // ScheduleParameters.FIRST_PRIORITY
+		ScheduleParameters params = ScheduleParameters.createOneTime(newDayTick, 0.6d);
 		schedule.schedule(params, this, "switchLocation");
 	}
 	
@@ -39,13 +39,13 @@ public class ForeignHumanAgent extends HumanAgent {
 	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
 		BuildingAgent newBuilding = null;
 		double endTime = schedule.getTickCount();
-		// Si toca casa, sale del contexto por 2 ticks
+		// Si toca casa, sale del contexto por 1 tick
 		if (activityIndex == 0) {
 			if (inContext) {
     			RemoveAgentFromContext("GeoCOVID-19", this);
     			inContext = false;
     		}
-    		endTime += 2;
+    		endTime += 1;
 		}
 		else {
     		if (!inContext) {
@@ -56,7 +56,7 @@ public class ForeignHumanAgent extends HumanAgent {
 		}
 		
         // Schedule one shot
-		ScheduleParameters params = ScheduleParameters.createOneTime(endTime, 0.6d); // ScheduleParameters.FIRST_PRIORITY
+		ScheduleParameters params = ScheduleParameters.createOneTime(endTime, 0.6d);
 		schedule.schedule(params, this, "switchLocation");
 		
 		return newBuilding;

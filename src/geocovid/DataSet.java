@@ -4,17 +4,20 @@ public final class DataSet {
 	/** Indice secciona: 0 = Secciona 2 | 1 = Seccional 11 */
 	public static final int SECTORAL = 0;
 	
+	/** Limite de chance de contagio al realizar una actividad fuera del contexto (a menor limite, mayor chance) */
+	public static final int[] OOC_CONTAGION = {100000, 1000000};
+	
 	public static final String[] SHP_FILE_PARCELS	= {"./data/sec2.shp",		"./data/sec11.shp"};
 	public static final String[] SHP_FILE_PLACES	= {"./data/sec2-places.shp","./data/sec11-places.shp"};
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/sec2+11-places-markov.csv";
 	
 	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 14383 para sec2 y 16885 para sec11 */
-	public static final int[] LOCAL_HUMANS				= {6500, 11885};	// Cantidad de Humanos locales (no salen a trabajar)
-	public static final int[] LOCAL_TRAVELER_HUMANS		= {7883,  5000};	// Cantidad de Humanos que trabajan afuera
+	public static final int[] LOCAL_HUMANS				= {6883, 11885};	// Cantidad de Humanos locales (no salen a trabajar)
+	public static final int[] LOCAL_TRAVELER_HUMANS		= {7500,  5000};	// Cantidad de Humanos que trabajan afuera
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
 	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, 1};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,63,80};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,37,65,79};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
@@ -39,9 +42,18 @@ public final class DataSet {
 	public static final int	ISOLATION_INFECTION_RATE_REDUCTION	= 80;	// sobre 100 (0 para desactivar)
 	
 	/** % de reduccion de INFECTION_RATE al usar barbijo */
-	public static int maskInfRateReduction	= 30;		// sobre 100 (0 para desactivar)
-	public static boolean wearMaskOutdoor	= false; 	// Si al aire libre se usa tapaboca
-	public static boolean wearMaskWorkspace	= false; 	// Si entre empleados usan tapaboca
+	public static int maskInfRateReduction;	// sobre 100 - 30 segun bibliografia (0 para desactivar)
+	/** Si al aire libre se usa tapaboca */
+	public static boolean wearMaskOutdoor	= false;
+	/** Si entre empleados usan tapaboca */
+	public static boolean wearMaskWorkspace	= false;
+	
+	/** % de la poblacion que respeta el distanciamiento social */
+	public static int socialDistPercentage;	// sobre 100 (0 para desactivar)
+	/** Si al aire libre se respeta el distanciamiento social */
+	public static boolean socialDistOutdoor		= true;
+	/** Si entre empleados respetan el distanciamiento social */
+	public static boolean socialDistWorkspace	= false;
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
@@ -124,4 +136,17 @@ public final class DataSet {
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 42d;	// sobre 100
+	
+	/**
+	 * Como la simulacion puede comenzar antes de la pandemia<p>
+	 * se inicia sin uso de barbijo ni distanciamiento social
+	 */
+	public static void setDefaultValues() {
+		maskInfRateReduction = 0;
+		wearMaskOutdoor = false;
+		wearMaskWorkspace = false;
+		socialDistPercentage = 0;
+		socialDistOutdoor = true;
+		socialDistWorkspace = false;
+	}
 }
