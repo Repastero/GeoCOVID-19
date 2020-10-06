@@ -1,9 +1,12 @@
 package geocovid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -12,6 +15,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import geocovid.agents.BuildingAgent;
+import geocovid.agents.HumanAgent;
 import geocovid.agents.InfectiousHumanAgent;
 import geocovid.agents.WorkplaceAgent;
 import repast.simphony.context.Context;
@@ -25,7 +29,10 @@ public final class BuildingManager {
 	private static Geography<Object> geography; // Lo uso para crear el Query con PropertyEquals
 	private static GeometryFactory geometryFactory = new GeometryFactory(); // Para crear punto al azar
 	
+	private static PublicTransport publicTransport; // Por si viajan en transporte publico
+	
 	private static Map<String, List<WorkplaceAgent>> placesMap = new HashMap<>(); // Lugares de entretenimiento / otros
+	private static Map<String, List<WorkplaceAgent>> workplacesMap = new HashMap<>(); // Lugares unicamente de trabajo
 	
 	private static Map<Integer, InfectiousHumanAgent> infectiousHumans = new HashMap<>(); // Humanos infectaods
 	
@@ -48,6 +55,12 @@ public final class BuildingManager {
 	// Sumatoria de chances por cada grupo etario
 	private static int[] otherChancesSum;
 	
+	// Listado de types de Places y Workplaces que estan cerrados 
+	private static final Set<String> closedPlaces = new HashSet<String>();
+	
+	// Ultimo limite de aforo en Places
+	private static double activitiesCapacityLimit = DataSet.DEFAULT_PLACES_CAP_LIMIT;
+	
 	/**
 	 * Reinicia colecciones de Places, y guarda referencia de Context y Geography
 	 * @param con Context
@@ -61,6 +74,10 @@ public final class BuildingManager {
 		//
 		enterPropList.clear(); // Por las dudas
 		otherPropList.clear(); // Por las dudas
+		//
+		closedPlaces.clear(); // Por las dudas
+		//
+		publicTransport = new PublicTransport();
 	}
 	
 	/**
@@ -75,7 +92,7 @@ public final class BuildingManager {
 	}
 	
 	/**
-	 * Agregar el Building a la lista que pertenece segun Type.
+	 * Agregar el Building a la lista que pertenece segun Type de actividad.
 	 * @param type
 	 * @param build
 	 * @param placeProp 
@@ -95,14 +112,123 @@ public final class BuildingManager {
 				otherPropList.add(prop);
 		}
 	}
-
+	
+	/**
+	 * Agregar el Building a la lista que pertenece segun Type de lugar de trabajo.
+	 * @param type
+	 * @param build 
+	 */
+	public static void addWorkplace(String type, WorkplaceAgent build) {
+		if (workplacesMap.containsKey(type)) {
+			workplacesMap.get(type).add(build);
+		}
+		else {
+			List<WorkplaceAgent> buildList = new ArrayList<WorkplaceAgent>();
+			buildList.add(build);
+			workplacesMap.put(type, buildList);
+		}
+	}
+	
+	/**
+	 * Cierra los lugares de trabajo/estudio y las actividades dadas.
+	 * @param typesToClose tipos de Places
+	 */
+	public static void closePlaces(String[] typesToClose) {
+		// Paso la lista de tipos de actividades para agilizar la busqueda y mantener indices
+		List<String> otList = Arrays.asList(otherTypes);
+		List<String> etList = Arrays.asList(entertainmentTypes);
+		//
+		int i;
+		for (String type : typesToClose) {
+			if (closedPlaces.contains(type)) // Ya esta cerrado
+				continue;
+			// Primero busca entre los lugares de trabajo
+			if (workplacesMap.containsKey(type)) {
+				workplacesMap.get(type).forEach(work -> work.close()); // Cierra el workplace
+				closedPlaces.add(type);
+			}
+			// Si no, es una actividad
+			else if (placesMap.containsKey(type)) {
+				// Cierra los Places del mismo tipo
+				placesMap.get(type).forEach(work -> work.close());
+				// Busca a que tipo de actividad pertenece, para restar las chances que correspondan
+				i = otList.indexOf(type);
+				if (i != -1) {	// Es Otros
+					closePlace(otherChancesSum, otherChances[i]);
+				}
+				else {			// Es Ocio
+					i = etList.indexOf(type);
+					closePlace(entertainmentChancesSum, entertainmentChances[i]);
+				}
+				closedPlaces.add(type);
+			}
+		}
+	}
+	
+	/**
+	 * Abre los lugares de trabajo/estudio y las actividades dadas.
+	 * @param typesToOpen tipos de Places
+	 */
+	public static void openPlaces(String[] typesToOpen) {
+		// Paso la lista de tipos de actividades para agilizar la busqueda y mantener indices
+		List<String> otList = Arrays.asList(otherTypes);
+		List<String> etList = Arrays.asList(entertainmentTypes);
+		//
+		int i;
+		for (String type : typesToOpen) {
+			if (closedPlaces.contains(type)) // No esta cerrado
+				continue;
+			// Primero busca entre los lugares de trabajo
+			if (workplacesMap.containsKey(type)) {
+				// Abre los Workplaces del mismo tipo
+				workplacesMap.get(type).forEach(work -> work.open());
+				closedPlaces.remove(type);
+			}
+			// Si no, es una actividad
+			else if (closedPlaces.contains(type)) {
+				// Busca a que tipo de actividad pertenece, para sumar las chances que correspondan
+				i = otList.indexOf(type);
+				if (i != -1) {	// Es Otros
+					openPlace(otherChancesSum, otherChances[i]);
+				}
+				else {			// Es Ocio
+					i = etList.indexOf(type);
+					openPlace(entertainmentChancesSum, entertainmentChances[i]);
+				}
+				closedPlaces.remove(type);
+			}
+		}
+	}
+	
+	/**
+	 * Resta del total de chances, la chance de realizar la actividad cerrada.
+	 * @param chancesSum suma de chances de todas las actividades
+	 * @param chances valores de chances de la actividad a cerrar
+	 */
+	public static void closePlace(int[] chancesSum, int[] chances) {
+		for (int i = 0; i < chances.length; i++) {
+			chancesSum[i] -= chances[i]; // Restar la % de cada franja etaria
+		}
+	}
+	
+	/**
+	 * Suma del total de chances, la chance de realizar la actividad abierta.
+	 * @param chancesSum suma de chances de todas las actividades
+	 * @param chances valores de chances de la actividad a abrir
+	 */
+	public static void openPlace(int[] chancesSum, int[] chances) {
+		for (int i = 0; i < chances.length; i++) {
+			chancesSum[i] += chances[i]; // Suma la % de cada franja etaria
+		}
+	}
+	
 	private static void fillActivitiesChances(List<PlaceProperty> propList, String[] types, int[][] chances, int[] chancesSum) {
 		PlaceProperty pp;
 		int i, j;
 		for (i = 0; i < propList.size(); i++) {
 			pp = propList.get(i);
 			types[i] = pp.getGoogleMapsType();
-			chances[i] = pp.getActivityChances(); // TODO copiar la referencia en lugar de cada int ???
+			chances[i] = pp.getActivityChances();
 			for (j = 0; j < chances[i].length; j++) {
 				chancesSum[j] += chances[i][j];
 			}
@@ -142,6 +268,9 @@ public final class BuildingManager {
 	 * @param sqMeters
 	 */
 	public static void limitActivitiesCapacity(double sqMeters) {
+		if (sqMeters == activitiesCapacityLimit)
+			return;
+		activitiesCapacityLimit = sqMeters;
 		for (List<WorkplaceAgent> workplaces : placesMap.values()) {
 			workplaces.forEach(work -> work.limitCapacity(sqMeters));
 		}
@@ -168,13 +297,15 @@ public final class BuildingManager {
 	 */
 	public static WorkplaceAgent findPlace(Geometry geo, String[] types, int[][] chances, int[] chancesSum, double radius, int groupAge) {
 		WorkplaceAgent newPlace = null;
+		// Primero busca el tipo de actividad a realizar
         int rnd = RandomHelper.nextIntFromTo(1, chancesSum[groupAge]);
-        int i = 0;
-        while (rnd > chances[i][groupAge]) {
-        	// La suma de las pobabilidades no debe dar mas de 1000
-        	rnd -= chances[i][groupAge];
-        	++i;
-        }
+        int i;
+    	for (i = 0; i < chances.length; i++) {
+    		if (rnd <= chances[i][groupAge] && !closedPlaces.contains(types[i]))
+    			break;
+    		// La suma de las pobabilidades no debe dar mas de 1000
+    		rnd -= chances[i][groupAge];
+		}
         //
         List<WorkplaceAgent> placesList = placesMap.get(types[i]);
         if (placesList == null) {
@@ -203,16 +334,20 @@ public final class BuildingManager {
 	/**
 	 * Clasifica la busqueda de acuerdo al tipo y radio.
 	 * @param type
+	 * @param human 
 	 * @param currentBuilding
 	 * @param radius
 	 * @param ageGroup 
 	 * @return
 	 */
-	public static BuildingAgent findRandomPlace(int type, BuildingAgent currentBuilding, double radius, int ageGroup) {
+	public static BuildingAgent findRandomPlace(int type, HumanAgent human, BuildingAgent currentBuilding, double radius, int ageGroup) {
 		// Hay una probabilidad de que el Humano se traslade fuera del contexto para realizar las actividades de ocio u otros
 		// Esto aplica a todos los agentes Humanos, tanto locales como extranjeros
-		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.TRAVEL_OUTSIDE_CHANCE[DataSet.SECTORAL])
+		if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.TRAVEL_OUTSIDE_CHANCE[DataSet.SECTORAL]) {
+			if (RandomHelper.nextIntFromTo(1, 100) <= DataSet.PUBLIC_TRANSPORT_CHANCE)
+				publicTransport.jumpAboard(human);
 			return null;
+		}
 		
 		BuildingAgent foundedPlace = null;
 		Geometry geo;

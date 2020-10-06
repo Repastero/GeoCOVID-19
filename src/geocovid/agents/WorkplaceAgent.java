@@ -3,16 +3,16 @@ package geocovid.agents;
 import repast.simphony.random.RandomHelper;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 import geocovid.DataSet;
 
 public class WorkplaceAgent extends BuildingAgent {
-	// Listado de Places cerrados durante pandemia
-	public static final Set<String> CLOSED_PLACES = Set.of("beauty_school", "bus_station", "escape_room_center", "function_room_facility", "language_school", "lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "travel_agency", "university");
 	// Listado de Places a cielo abierto
-	public static final Set<String> OPEN_AIR_PLACES = Set.of("gas_station","park","soccer_field","soccer_club","amphitheatre");
+	public static final Set<String> OPEN_AIR_PLACES = Stream.of("gas_station","park","soccer_field","soccer_club","amphitheatre").collect(Collectors.toSet());
 	
 	private int[][] workPositions;
 	private int workPositionsCount;
@@ -20,6 +20,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
 	private int defaultCapacity;
+	private boolean closed = false;
 	
 	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workType, int workersPlace, int workersArea) {
 		super(geo, id, blockid, type, area, coveredArea, DataSet.WORKPLACE_AVAILABLE_AREA);
@@ -91,10 +92,13 @@ public class WorkplaceAgent extends BuildingAgent {
 		}
 		// Separar los trabajadores de los clientes, si quedan filas disponibles
 		if (!fullBuilding) {
-			if (row == 0) row = 1;
+			if (row + 2 < y)
+				++row;
 			setStartingRow(row);
 		}
 		defaultCapacity = getCapacity();
+		// Se setea un limite, por si la simulacion ya comienza con las medidas de distanciaiento
+		limitCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
 	}
 	
 	/**
@@ -114,5 +118,21 @@ public class WorkplaceAgent extends BuildingAgent {
 	
 	public void reduceVacancies() {
 		--this.vacancies;
+	}
+	
+	public void close() {
+		closed = true;
+	}
+	
+	public void open() {
+		closed = false;
+	}
+	
+	@Override
+	public int[] insertHuman(HumanAgent human, int[] pos) {
+		// Prevenir que ingresen cuando esta cerrado
+		if (closed)
+			return null;
+		return super.insertHuman(human, pos);
 	}
 }

@@ -31,6 +31,9 @@ public class InfectionReport {
 	private static int[] sumOfSocialInteractions;
 	private static int[] humansInteracting;
 	private static double[] averageSocialInteractions;
+	//
+	private static int[] dailyActivitiesTicks;
+	private static int totalDailyActTicks;
 	
 	public InfectionReport(int minDay, int maxDeaths) {
 		simulationMinDay = minDay;
@@ -57,6 +60,9 @@ public class InfectionReport {
 		sumOfSocialInteractions = new int[DataSet.AGE_GROUPS];
 		humansInteracting = new int[DataSet.AGE_GROUPS];
 		averageSocialInteractions = new double[DataSet.AGE_GROUPS];
+		
+		dailyActivitiesTicks = new int[4];
+		totalDailyActTicks = 0;
 	}
 	
 	@ScheduledMethod(start = 12d, interval = 12d, priority = 0.99d)
@@ -67,6 +73,11 @@ public class InfectionReport {
 			sumOfSocialInteractions[i] = 0;
 			humansInteracting[i] = 0;
 		}
+		
+		for (int i = 0; i < 4; i++) {
+			dailyActivitiesTicks[i] = 0;
+		}
+		totalDailyActTicks = 0;
 		
 		if (++daysCount >= simulationMinDay) {
 			// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
@@ -80,6 +91,11 @@ public class InfectionReport {
 				RunEnvironment.getInstance().endRun();
 			}
 		}
+	}
+	
+	public static void addActivityTime(int actIndex, int ticks) {
+		dailyActivitiesTicks[actIndex] += ticks;
+		totalDailyActTicks += ticks;
 	}
 	
 	public static void updateSocialInteractions(int agIndex, int interactions) {
@@ -203,5 +219,10 @@ public class InfectionReport {
 	public static double getAdultAVGInteractions()	{ return averageSocialInteractions[2]; }
 	public static double getElderAVGInteractions()	{ return averageSocialInteractions[3]; }
 	public static double getHigherAVGInteractions()	{ return averageSocialInteractions[4]; }
+	
+	public static int getDailyHomeTime()	{ return (dailyActivitiesTicks[0] * 100) / totalDailyActTicks; }
+	public static int getDailyWorkTime()	{ return (dailyActivitiesTicks[1] * 100) / totalDailyActTicks; }
+	public static int getDailyLeisureTime()	{ return (dailyActivitiesTicks[2] * 100) / totalDailyActTicks; }
+	public static int getDailyOtherTime()	{ return (dailyActivitiesTicks[3] * 100) / totalDailyActTicks; }
 	//
 }

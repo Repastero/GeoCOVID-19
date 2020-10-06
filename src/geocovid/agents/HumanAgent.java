@@ -32,13 +32,11 @@ public class HumanAgent {
 	private int currentActivity = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
 	private int ageGroup = 0;
 	private boolean foreignTraveler = false;
-	private double icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[1];
-	private double asxChance = DataSet.ASX_INFECTIOUS_RATE[1];
 	private double travelRadius = -1;
 	private double relocationTime = -1d;
 	
 	protected static ISchedule schedule;
-	protected static Normal actDist = RandomHelper.createNormal(2, 1);
+	private static Normal actDist = RandomHelper.createNormal(2, 1);
 	private static int agentIDCounter = 0;
 	private int agentID = ++agentIDCounter;
 	
@@ -61,9 +59,7 @@ public class HumanAgent {
 		this.workplacePosition = workPos;
 		this.ageGroup = ageGroup;
 		this.foreignTraveler = foreign;
-		this.icuChance = DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup];
 		this.travelRadius = DataSet.TRAVEL_RADIUS_PER_AGE_GROUP[ageGroup];
-		this.asxChance = DataSet.ASX_INFECTIOUS_RATE[ageGroup];
 	}
 	
 	public static void initAgentID() {
@@ -195,13 +191,13 @@ public class HumanAgent {
 			return;
 		
 		// Comienza la etapa de contagio asintomatico o sintomatico
-		if (initial || RandomHelper.nextDoubleFromTo(0, 100) <= asxChance) {
+		if (initial || RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ASX_INFECTIOUS_RATE[ageGroup]) {
 			asxInfectious = true;
 			InfectionReport.modifyASXInfectiousCount(ageGroup, 1);
 		}
 		else {
 			// Si se complica el caso, se interna - si no continua vida normal
-			if (RandomHelper.nextDoubleFromTo(0, 100) <= icuChance) {
+			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup]) {
 				// Mover a ICU hasta que se cure o muera
 				hospitalized = true;
 				InfectionReport.modifyHospitalizedCount(ageGroup, 1);
@@ -304,14 +300,22 @@ public class HumanAgent {
 	    		mean = 30;
 	    		break;
 	    	case 2: // 2 Ocio
-	    		newBuilding = BuildingManager.findRandomPlace(2, currentBuilding, travelRadius, ageGroup);
+	    		newBuilding = BuildingManager.findRandomPlace(2, this, currentBuilding, travelRadius, ageGroup);
 	    		mean = 5 + (5 * ndValue); // 1, 1.5, 2
 	    		break;
 	    	default: // 3 Otros (supermercados, farmacias, etc)
-	    		newBuilding = BuildingManager.findRandomPlace(3, currentBuilding, travelRadius, ageGroup);
+	    		newBuilding = BuildingManager.findRandomPlace(3, this, currentBuilding, travelRadius, ageGroup);
 	    		mean = 5;
 	    		break;
         }
+        
+        // Incrementa el tiempo de la actividad realizada
+        if (activityIndex != 1)
+        	InfectionReport.addActivityTime(activityIndex, mean);
+        else if (DataSet.COUNT_WORK_FROM_HOME_AS_HOME && newBuilding == homePlace) // Si estudia/trabaja desde el hogar
+        	InfectionReport.addActivityTime(0, mean);
+        else
+        	InfectionReport.addActivityTime(1, mean);
         
         // Calcular tiempo hasta que cambie nuevamente de posicion
         double temp = schedule.getTickCount() + (mean * 0.1d);
@@ -365,9 +369,6 @@ public class HumanAgent {
             }
             else if (!exposed) {
             	// Si estuvo afuera, tiene una chance de volver infectado
-            	/*int infectChance = (int) (InfectionReport.getInsASXInfectious()
-            			* (schedule.getTickCount() - relocationTime)
-            			* DataSet.INF_FACTOR[DataSet.SECTORAL]);*/
             	int infectChance = (int) (schedule.getTickCount() - relocationTime);
         		if (RandomHelper.nextIntFromTo(1, DataSet.OOC_CONTAGION[DataSet.SECTORAL]) <= infectChance) {
         			setExposed();
@@ -380,6 +381,11 @@ public class HumanAgent {
         		// Si tiene un lugar de trabajo especifico
         		if ((currentActivity == 1) && (workplacePosition != null)) {
         			currentPosition = newBuilding.insertHuman(this, workplacePosition);
+        			if (currentPosition == null) { // Si queda fuera del trabajo
+        				newBuilding = homePlace; // Se queda en la casa...
+        				if (newBuilding != null) // si tiene
+        					currentPosition = newBuilding.insertHuman(this);
+        			}
         		}
         		else
         			currentPosition = newBuilding.insertHuman(this);

@@ -2,8 +2,10 @@ package geocovid;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,6 +79,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 	static final int WEEKLY_TICKS = 12*7; // ticks que representan el tiempo de una semana
 	static final int WEEKEND_TICKS = 12*2; // ticks que representan el tiempo que dura el fin de semana
 	
+	public ContextCreator() {
+		printJarVersion(this.getClass());
+	}
+	
 	@Override
 	public Context<Object> build(Context<Object> context) {
 		schedule = RunEnvironment.getInstance().getCurrentSchedule();
@@ -141,6 +147,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			endWKND = (i + WEEKEND_TICKS > simulationMaxTick) ? simulationMaxTick : i + WEEKEND_TICKS;
 			params = ScheduleParameters.createOneTime(endWKND, ScheduleParameters.FIRST_PRIORITY);
 			schedule.schedule(params, this, "setHumansWeekendTMMC", false);
+			//System.out.println(i/12+" "+(endWKND-1)/12);
 		}
 	}
 	
@@ -198,11 +205,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 		int newAmount = (int) Math.ceil((localHumansCount + foreignHumansCount) * porc) / 100;
 		int oldAmount = 0;
 		// El porcentaje era cero
-		if (DataSet.socialDistPercentage == 0 && porc > 0)
+		if (DataSet.getSDPercentage() == 0 && porc > 0) {
 			socialDistIndexes = new HashSet<Integer>(newAmount);
+		}
 		else
 			oldAmount = socialDistIndexes.size();
-		DataSet.socialDistPercentage = porc;
+		DataSet.setSDPercentage(porc);
 		
 		// El nuevo porcentaje es menor
 		if (newAmount < oldAmount) {
@@ -271,16 +279,31 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Asignar las matrices de markov que se van a utilizar al comenzar cada fase.
 	 */
 	public void initiateLockdownPhase(int phase, int sectoral) {
+		boolean lockdownOverWKD = false;
+		// Chequea si se cambio de fase durante el fin de semana y no es la primer fase
+		if (weekendTMMCEnabled && schedule.getTickCount() > 0d) {
+			lockdownOverWKD = true;
+			setHumansWeekendTMMC(false); // para restar la matriz de finde
+		}
+		//
 		switch (phase) {
 		case 0:
 			// Reapertura progresiva (Fase 4)
+			BuildingManager.closePlaces(new String[] {
+					// Trabajo/estudio
+					"lodging", "nursery_school", "political_party", "primary_school", "secondary_school", "university",
+					// Ocio
+					"amphitheatre", "bar", "basketball_club", "beauty_salon", "beauty_school", "bus_station", "church",
+					"dance_school", "escape_room_center", "function_room_facility", "gym", "language_school",
+					"restaurant", "soccer_club", "soccer_field", "sports_club", "synagogue" });
 			// No setea matrices por que se usan las por defecto "setHumansDefaultTMMC"
 			BuildingManager.limitActivitiesCapacity(4d);
-			//setSocialDistancing(70);
-			DataSet.maskInfRateReduction = 28;
+			setSocialDistancing(75);//80
+			DataSet.setMaskEffectivity(28);
 			break;
 		case 1:
 			// Reapertura progresiva (Fase 4)
+			BuildingManager.closePlaces(new String[] {"bar", "dance_school", "gym","restaurant", "sports_club"}); // Ocio
 			if (sectoral == 0) {
 				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_JULY_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_JULY_TMMC;
@@ -295,11 +318,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_JULY_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_JULY_TMMC;
 			}
-			//setSocialDistancing(60);
-			DataSet.maskInfRateReduction = 26;
+			//BuildingManager.limitActivitiesCapacity(4d);
+			//setSocialDistancing(70);//75
+			DataSet.setMaskEffectivity(26);
 			break;
 		case 2:
 			// Nueva normalidad (Fase 5)
+			BuildingManager.openPlaces(new String[] {"bar", "dance_school", "gym","restaurant", "sports_club"}); // Ocio
 			if (sectoral == 0) {
 				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
@@ -314,19 +339,36 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_AUGUST_TMMC;
 			}
-			//setSocialDistancing(50);
-			DataSet.maskInfRateReduction = 22;
+			//BuildingManager.limitActivitiesCapacity(3d);
+			//setSocialDistancing(65);//70
+			DataSet.setMaskEffectivity(22);
 			break;
 		case 3:
-			// TODO Aca va fase 3 o trifasica
+			BuildingManager.openPlaces(new String[] {"bar", "gym","restaurant"}); // Ocio
+			if (sectoral == 0) {
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC2_AUGUST_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC2_AUGUST_TMMC;
+			}
+			else {
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_AUGUST_TMMC;
+			}
+			//BuildingManager.limitActivitiesCapacity(3d);
+			//setSocialDistancing(60);
+			//DataSet.setMaskEffectivity(18);
 			break;
 		default:
 			break;
 		}
-		// Chequea si se cambio de fase durante el fin de semana y no es la primera
-		if (weekendTMMCEnabled && schedule.getTickCount() > 0d) {
-			setHumansWeekendTMMC(true); // para actualizar las matrices de finde
-		}
+		// Si corresponde, suma la matriz de fin de semana a las nuevas matrices
+		if (lockdownOverWKD)
+			setHumansWeekendTMMC(true);  // para sumar la matriz de finde
 	}
 
 	/**
@@ -491,41 +533,41 @@ public class ContextCreator implements ContextBuilder<Object> {
 			}
 			else {
 				placeType = placesType.remove(id);
-				if (!WorkplaceAgent.CLOSED_PLACES.contains(placeType)) { // si no esta cerrado
-					// Si tiene menos de 25 m2 cubiertos y no es un Place al aire libre, se incrementa
-					if ((coveredArea < 25) && !WorkplaceAgent.OPEN_AIR_PLACES.contains(placeType)) {
-						coveredArea = (int) (area * 0.8);
+				// Si tiene menos de 25 m2 cubiertos y no es un Place al aire libre, se incrementa
+				if ((coveredArea < 25) && !WorkplaceAgent.OPEN_AIR_PLACES.contains(placeType)) {
+					coveredArea = (int) (area * 0.8);
+				}
+				//
+				placeProp = placesProperty.get(placeType);
+				if (placeProp.getActivityType() == 0) { // lodging
+					// Si es alojamiento, divido la superficie por 80 por casa
+					for (int i = 0; i < (area / 80); i++) {
+						tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
+						homePlaces.add(tempBuilding);
+						context.add(tempBuilding);
+						geography.move(tempBuilding, geom);
 					}
-					//
-					placeProp = placesProperty.get(placeType);
-					if (placeProp.getActivityType() == 0) { // lodging
-						// Si es alojamiento, divido la superficie por 80 por casa
-						for (int i = 0; i < (area / 80); i++) {
-							tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
-							homePlaces.add(tempBuilding);
-							context.add(tempBuilding);
-							geography.move(tempBuilding, geom);
-						}
-					}
-					else {
-						tempWorkspace = new WorkplaceAgent(geom, id, blockId, placeType, area, coveredArea, placeType, placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
-						if (placeProp.getActivityType() == 1) { // trabajo / estudio
-							if (placeType.contains("school"))
-								schoolPlaces.add(tempWorkspace);
-							else if (placeType.contains("university"))
-								universityPlaces.add(tempWorkspace);
-							else {
-								workPlaces.add(tempWorkspace);
-							}
-						}
-						else { // ocio, otros
+				}
+				else {
+					tempWorkspace = new WorkplaceAgent(geom, id, blockId, placeType, area, coveredArea, placeType, placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
+					if (placeProp.getActivityType() == 1) { // trabajo / estudio
+						if (placeType.contains("school"))
+							schoolPlaces.add(tempWorkspace);
+						else if (placeType.contains("university"))
+							universityPlaces.add(tempWorkspace);
+						else {
 							workPlaces.add(tempWorkspace);
-							// Si es lugar con atencion al publico, se agrega a la lista de actividades
-							BuildingManager.addPlace(placeType, tempWorkspace, placeProp);
 						}
-						context.add(tempWorkspace);
-						geography.move(tempWorkspace, geom);
+						// Si es lugar sin atencion al publico, se agrega a la lista de lugares de trabajo/estudio
+						BuildingManager.addWorkplace(placeType, tempWorkspace);
 					}
+					else { // ocio, otros
+						workPlaces.add(tempWorkspace);
+						// Si es lugar con atencion al publico, se agrega a la lista de actividades
+						BuildingManager.addPlace(placeType, tempWorkspace, placeProp);
+					}
+					context.add(tempWorkspace);
+					geography.move(tempWorkspace, geom);
 				}
 			}
 		}
@@ -618,7 +660,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private void initHumans() {
 		HumanAgent.initAgentID(); // Reinicio contador de IDs
 		setHumansDefaultTMMC(DataSet.SECTORAL);
-		BuildingAgent.initInfectionRadius(); // Crea posiciones de infeccion en grilla
+		BuildingAgent.initInfAndPDRadius(); // Crea posiciones de infeccion en grilla
 		
 		int localCount = DataSet.LOCAL_HUMANS[DataSet.SECTORAL] + DataSet.LOCAL_TRAVELER_HUMANS[DataSet.SECTORAL];
 		int foreignCount = DataSet.FOREIGN_TRAVELER_HUMANS[DataSet.SECTORAL];
@@ -761,5 +803,22 @@ public class ContextCreator implements ContextBuilder<Object> {
 				list.remove(index);
 		}
 		return workplace;
+	}
+	
+	/**
+	 * Imprime la hora de compilacion del jar (si existe).
+	 * @param cl
+	 */
+	private static void printJarVersion(Class<?> cl) {
+	    try {
+	        String rn = cl.getName().replace('.', '/') + ".class";
+	        JarURLConnection j = (JarURLConnection) cl.getClassLoader().getResource(rn).openConnection();
+	        long totalMS = j.getJarFile().getEntry("META-INF/MANIFEST.MF").getTime();
+	        // Convierte de ms a formato fecha hora
+			SimpleDateFormat sdFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+			System.out.println("Fecha y hora de compilacion: " + sdFormat.format(totalMS));
+	    } catch (Exception e) {
+	    	// Si no es jar, no imprime hora de compilacion
+	    }
 	}
 }

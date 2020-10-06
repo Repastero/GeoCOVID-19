@@ -21,11 +21,11 @@
 		isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 	<parameter name="diasSimulacion"
-		displayName="Dias maximo de simulacion" type="int" defaultValue="100"
+		displayName="Dias maximo de simulacion" type="int" defaultValue="110"
 		isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 	<parameter name="diasMinimoSimulacion"
-		displayName="Dias minimo de simulacion" type="int" defaultValue="0"
+		displayName="Dias minimo de simulacion" type="int" defaultValue="110"
 		isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 	<parameter name="diaInicioSimulacion"
@@ -34,7 +34,7 @@
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 	<parameter name="diasPrimerFinde"
 		displayName="Dias hasta comenzar fin de semana" type="int"
-		defaultValue="0" isReadOnly="false"
+		defaultValue="1" isReadOnly="false"
 		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 	<parameter name="cantidadInfectados"
 		displayName="Numero de infectados iniciales" type="int"
