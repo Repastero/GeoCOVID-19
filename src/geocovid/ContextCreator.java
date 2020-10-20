@@ -324,7 +324,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			break;
 		case 2:
 			// Nueva normalidad (Fase 5)
-			BuildingManager.openPlaces(new String[] {"bar", "dance_school", "gym","restaurant", "sports_club"}); // Ocio
+			BuildingManager.openPlaces(new String[] {"bar", "beauty_salon", "dance_school", "gym","restaurant", "sports_club"}); // Ocio
 			if (sectoral == 0) {
 				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
 				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_AUGUST_TMMC;
@@ -358,6 +358,26 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
 				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_AUGUST_TMMC;
+			}
+			//BuildingManager.limitActivitiesCapacity(3d);
+			//setSocialDistancing(60);
+			//DataSet.setMaskEffectivity(18);
+			break;
+		case 4:
+			BuildingManager.openPlaces(new String[] {"basketball_club", "church", "soccer_club", "soccer_field", "synagogue"}); // Ocio
+			if (sectoral == 0) {
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC2_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC2_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC2_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC2_SEPTEMBER_TMMC;
+			}
+			else {
+				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC11_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[1]	= MarkovChains.YOUNG_SEC11_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[2]	= MarkovChains.ADULT_SEC11_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_SEPTEMBER_TMMC;
+				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_SEPTEMBER_TMMC;
 			}
 			//BuildingManager.limitActivitiesCapacity(3d);
 			//setSocialDistancing(60);

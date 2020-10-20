@@ -16,8 +16,8 @@ public final class DataSet {
 	public static final int[] LOCAL_TRAVELER_HUMANS		= {7500,  5000};	// Cantidad de Humanos que trabajan afuera
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 3, 1, 2, 1, 2};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,52,59,66,80,94};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
+	public static final int[] LOCKDOWN_PHASES		= {0, 1, 3, 1, 2, 1, 2,  4};	// Numero de fase en orden de cambio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,52,59,66,80,94,101};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
