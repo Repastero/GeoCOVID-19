@@ -4,7 +4,6 @@ import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext
 import static repast.simphony.essentials.RepastEssentials.AddAgentToContext;
 import java.util.HashMap;
 import java.util.Map;
-
 import cern.jet.random.Normal;
 import geocovid.BuildingManager;
 import geocovid.DataSet;
@@ -49,7 +48,12 @@ public class HumanAgent {
     // Extras
     public boolean quarantined		= false; // Si se aisla por ser sintomatico
     public boolean distanced		= false; // Si respeta distanciamiento social
+    //
+    private boolean inCloseContact	= false; // Si estuvo en contacto estrecho con sinto
+    private boolean preInfectious	= false; // Si "contagia" a contactos estrechos
     /////////////
+    
+    private double infectiousStartTime;
     
     private Map<Integer, Integer> socialInteractions = new HashMap<>(); // ID contacto, cantidad de contactos
     
@@ -101,6 +105,29 @@ public class HumanAgent {
 	
 	public double getRelocationTime() {
 		return relocationTime;
+	}
+	
+	public boolean isPreInfectious() {
+		return preInfectious;
+	}
+	
+	public double getInfectiousStartTime() {
+		return infectiousStartTime;
+	}
+	
+	public void setPreInfectious(boolean value) {
+		// Si verdaderamente cambia de estado
+		if (value != preInfectious) {
+			// Si esta en el ambito (trabajo/estudio) donde puede tener contactos estrechos
+			if (atWork() && currentBuilding instanceof WorkplaceAgent) {
+				// Se agrega o remueve de la lista de "pre contagiosos"
+				if (value)
+					currentBuilding.addPreSpreader(this);
+				else
+					currentBuilding.removePreSpreader(this, currentPosition);
+			}
+			preInfectious = value;
+		}
 	}
 	
 	public void setSociallyDistanced(boolean sociallyDistanced) {
@@ -164,6 +191,15 @@ public class HumanAgent {
 		switchLocation();
 	}
 	
+	public void setCloseContact(double startTime) {
+		if (!inCloseContact) {
+			inCloseContact = true;
+			// Programa el inicio de cuarentena preventiva
+			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(startTime, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(scheduleParams, this, "startSelfQuarantine");
+		}
+	}
+	
 	public void setExposed() {
 		// Una vez expuesto, no puede volver a contagiarse
 		if (exposed)
@@ -176,11 +212,22 @@ public class HumanAgent {
 		double period = RandomHelper.createNormal(mean, std).nextDouble();
 		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
 		
-		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
-		schedule.schedule(scheduleParams, this, "setInfectious", false);
+		// Define al comienzo de infeccion si va a ser asintomatico o sintomatico
+		boolean asynto = (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ASX_INFECTIOUS_RATE[ageGroup]) ? true : false;
+		
+		// Programa el inicio del periodo de contagio
+		infectiousStartTime = schedule.getTickCount() + period;
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(infectiousStartTime, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(scheduleParams, this, "setInfectious", asynto, false);
+		
+		// Si es sintomatico, programa el inicio del periodo de "pre contagio" a contactos estrechos
+		if (!asynto && DataSet.closeContactsEnabled()) {
+			scheduleParams = ScheduleParameters.createOneTime(infectiousStartTime - DataSet.CLOSE_CONTACT_INFECTIOUS_TIME, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(scheduleParams, this, "setPreInfectious", true);
+		}
 	}
 	
-	public void setInfectious(boolean initial) {
+	public void setInfectious(boolean asyntomatic, boolean initial) {
 		// Si es un primer caso, es siempre asintomatico
 		if (initial) {
 			exposed = true;
@@ -191,11 +238,17 @@ public class HumanAgent {
 			return;
 		
 		// Comienza la etapa de contagio asintomatico o sintomatico
-		if (initial || RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ASX_INFECTIOUS_RATE[ageGroup]) {
+		if (asyntomatic) {
 			asxInfectious = true;
 			InfectionReport.modifyASXInfectiousCount(ageGroup, 1);
 		}
 		else {
+			// Si es local y cuarentena preventiva esta habilitada
+			if (!foreignTraveler && DataSet.prevQuarantineEnabled()) {
+				// Todos los habitantes del hogar se ponen en cuarentena (exepto los ya expuestos)
+				((HomeAgent) homePlace).startPreventiveQuarentine(schedule.getTickCount());
+			}
+			
 			// Si se complica el caso, se interna - si no continua vida normal
 			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup]) {
 				// Mover a ICU hasta que se cure o muera
@@ -230,8 +283,10 @@ public class HumanAgent {
 		// Verificar que este infectado
 		if (asxInfectious)
 			InfectionReport.modifyASXInfectiousCount(ageGroup, -1);
-		else if (symInfectious)
+		else if (symInfectious) {
 			InfectionReport.modifySYMInfectiousCount(ageGroup, -1);
+			setPreInfectious(false); // termina el periodo de contacto estrecho
+		}
 		else
 			return;
 		
@@ -281,8 +336,18 @@ public class HumanAgent {
 		schedule.schedule(scheduleParams, this, "stopQuarantine");
 	}
 	
+	public void startSelfQuarantine() {
+		inCloseContact = false;
+		quarantined = true;
+		// Programa el fin de cuarentena preventiva
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + DataSet.PREVENTIVE_QUARANTINE_TIME, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(scheduleParams, this, "stopQuarantine");
+	}
+	
 	public void stopQuarantine() {
-		quarantined = false;
+		// Sale unicamente de cuarentena cuando no tiene sintomas
+		if (!symInfectious)
+			quarantined = false;
 	}
 	
 	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
@@ -379,7 +444,7 @@ public class HumanAgent {
         	// Si el nuevo lugar es un inmueble
         	if (newBuilding != null) {
         		// Si tiene un lugar de trabajo especifico
-        		if ((currentActivity == 1) && (workplacePosition != null)) {
+        		if (atWork() && (workplacePosition != null)) {
         			currentPosition = newBuilding.insertHuman(this, workplacePosition);
         			if (currentPosition == null) { // Si queda fuera del trabajo
         				newBuilding = homePlace; // Se queda en la casa...
@@ -396,7 +461,7 @@ public class HumanAgent {
    					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getGeometry().getCoordinate());
     			}
         	}
-        	else if (isContagious() && currentActivity == 1) {
+        	else if (isContagious() && atWork()) {
         		// Si va afuera a trabajar y es contagioso, oculto el marcador
         		BuildingManager.hideInfectiousHuman(agentID);
         	}

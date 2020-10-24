@@ -37,6 +37,7 @@ public class BuildingAgent {
 	private static int yShiftsPD[];
 	// Listas de Agentes dentro de Building 
 	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent trasmisores
+	private List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent pre trasmisores (sintomaticos)
 	private Map<Integer, HumanAgent> humansMap = new HashMap<>(); // Mapa <Id Humano, HumanAgent>
 	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>(); // Mapa <Id Superficie, SurfaceAgent>
 	//
@@ -249,13 +250,22 @@ public class BuildingAgent {
 		if (!human.wasExposed()) {
 			// Primero busca fuentes de contagio directo
 			if (!spreadersList.isEmpty())
-				findNearbySpreaders(human, pos);
+				findNearbySpreaders(human, pos, spreadersList);
 			// Si se contagia directamente, no checkea estela
 			if (!human.wasExposed() && !surfacesMap.isEmpty())
 				checkIfSurfaceContaminated(human, posId);
 		}
+		// Si es un lugar de trabajo y existen pre contagiosos, se chequean contactos estrechos
+		if (workingPlace && !preSpreadersList.isEmpty()) {
+			if (human.isPreInfectious()) {
+				spreadVirus(human, pos);
+				removePreSpreader(human, pos); // No puede ser de ambos tipos de spreader
+			}
+			else if (!human.wasExposed()) // Los ya expuestos estan exeptuados
+				findNearbySpreaders(human, pos, preSpreadersList);
+		}
 		// Si es contagioso se buscan contactos cercanos susceptibles
-		else if (human.isContagious()) {
+		if (human.isContagious()) {
 			if ((humansMap.size() - spreadersList.size()) != 0)
 				spreadVirus(human, pos);
 			// 
@@ -324,6 +334,32 @@ public class BuildingAgent {
 		}
 	}
 	
+	/**
+	 * Se agregan recien llegados y los que cambiaron de estado luego de ingresar al building.
+	 * @param human HumanAgent pre contagioso
+	 */
+	public void addPreSpreader(HumanAgent human) {
+		preSpreadersList.add(human);
+	}
+	
+	/**
+	 * Se remueven pre contagiosos.
+	 * @param human HumanAgent que sale del building o cambia de estado
+	 * @param pos {x, y} en grilla
+	 */
+	public void removePreSpreader(HumanAgent human, int[] pos) {
+		// Si quedo afuera, no se continua
+		if (pos == null)
+			return;
+		preSpreadersList.remove(human);
+	}
+	
+	/**
+	 * Chequea todos los modificadores/escenarios para verificar si hay contagio.
+	 * @param spreader
+	 * @param prey
+	 * @return <b>true</b> si hubo contagio
+	 */
 	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
 		int infectionRate = DataSet.INFECTION_RATE;
 		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
@@ -340,7 +376,18 @@ public class BuildingAgent {
 						}
 					}
 				}
-				if (DataSet.getMaskEffectivity() != 0) {
+				// Si esta en la etapa donde puede crear casos de contactos cercanos
+				if (spreader.isPreInfectious()) {
+					if (spreader.atWork() && prey.atWork()) {
+						// Si no usan cubrebocas en el lugar de trabajo, existe contacto estrecho
+						if (!DataSet.wearMaskWorkspace()) {
+							prey.setCloseContact(spreader.getInfectiousStartTime());
+							return true;
+						}
+						return false;
+					}
+				}
+				else if (DataSet.getMaskEffectivity() != 0) {
 					// Si es un lugar cerrado o se usa cubreboca en exteriores
 					if ((!outdoor) || DataSet.wearMaskOutdoor()) {
 						// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
@@ -392,17 +439,18 @@ public class BuildingAgent {
 	}
     
 	/**
-	 * Busca en la lista de trasmisores los que tuvo contacto cercano y prolongado, y se contagia.
+	 * Busca en la lista de trasmisores los que tuvo contacto cercano y prolongado, y chequea contagio.
 	 * @param human HumanAgent susceptible
-	 * @param pos posicion en grilla de human 
+	 * @param pos posicion en grilla de human
+	 * @param spreaders lista de HumanAgent contagiosos
 	 * @see DataSet#INFECTION_EXPOSURE_TIME
 	 * @see DataSet#INFECTION_RATE
 	 */
-	private void findNearbySpreaders(HumanAgent human, int[] pos) {
+	private void findNearbySpreaders(HumanAgent human, int[] pos, List<HumanAgent> spreaders) {
 		// TODO ver que es mas rapido -> calcular distancia con infectados o buscar en grid
 		int[] spPos = new int[2];
 		int xShift, yShift;
-		for (HumanAgent spreader : spreadersList) {
+		for (HumanAgent spreader : spreaders) {
 			spPos = spreader.getCurrentPosition();
 			xShift = Math.abs(pos[0] - spPos[0]);
 			yShift = Math.abs(pos[1] - spPos[1]);

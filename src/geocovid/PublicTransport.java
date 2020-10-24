@@ -32,7 +32,7 @@ public class PublicTransport {
 	private SurfaceAgent removeSpreader(SurfaceAgent surface) {
 		if (surface == null) {
 			// Se crea una superficie con la posicion como ID
-			surface = new SurfaceAgent(false);
+			surface = new SurfaceAgent(true); // Se crea como superficie al exterior
 		}
 		else {
 			// Si la superficie ya estaba contaminada, se 'renueva' el virus

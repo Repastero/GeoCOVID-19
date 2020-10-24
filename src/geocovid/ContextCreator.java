@@ -26,6 +26,7 @@ import cern.jet.random.Uniform;
 import geocovid.agents.BuildingAgent;
 import geocovid.agents.HumanAgent;
 import geocovid.agents.ForeignHumanAgent;
+import geocovid.agents.HomeAgent;
 import geocovid.agents.WorkplaceAgent;
 import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
@@ -39,7 +40,7 @@ import repast.simphony.space.gis.Geography;
 import repast.simphony.space.gis.GeographyParameters;
 
 public class ContextCreator implements ContextBuilder<Object> {
-	private List<BuildingAgent> homePlaces = new ArrayList<BuildingAgent>();
+	private List<HomeAgent> homePlaces = new ArrayList<HomeAgent>();
 	private List<WorkplaceAgent>workPlaces = new ArrayList<WorkplaceAgent>();
 	private List<WorkplaceAgent>schoolPlaces = new ArrayList<WorkplaceAgent>();
 	private List<WorkplaceAgent>universityPlaces = new ArrayList<WorkplaceAgent>();
@@ -189,7 +190,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			i = RandomHelper.nextIntFromTo(foreignHumansCount, localHumansCount + foreignHumansCount - 1);
 			// Chequea si no es repetido
 			if (indexes.add(i)) {
-				contextHumans[i].setInfectious(true); // Asintomatico
+				contextHumans[i].setInfectious(true, true); // Asintomatico
 				++infected;
 				//-if (localHumans[i].getAgeGroup() == 2 && localHumans[i].getPlaceOfWork() instanceof WorkplaceAgent) {
 			}
@@ -364,6 +365,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 			//DataSet.setMaskEffectivity(18);
 			break;
 		case 4:
+			// Nuevas medidas del 11 de septiembre
+			DataSet.enableCloseContacts();
+			DataSet.enablePrevQuarantine();
+			break;
+		case 5:
 			BuildingManager.openPlaces(new String[] {"basketball_club", "church", "soccer_club", "soccer_field", "synagogue"}); // Ocio
 			if (sectoral == 0) {
 				HumanAgent.localTMMC[0]	= MarkovChains.YOUNG_SEC2_SEPTEMBER_TMMC;
@@ -460,7 +466,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		schoolPlaces.clear();
 		universityPlaces.clear();
 		
-		BuildingAgent tempBuilding = null;
+		HomeAgent tempBuilding = null;
 		WorkplaceAgent tempWorkspace = null;
 		String placeType;
 		maxParcelId = 0;
@@ -546,7 +552,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 				else if (coveredArea > 120) // Sec11
 					coveredArea = 120;
 				
-				tempBuilding = new BuildingAgent(geom, id, blockId, type, area, coveredArea);
+				tempBuilding = new HomeAgent(geom, id, blockId, type, area, coveredArea);
 				homePlaces.add(tempBuilding);
 				context.add(tempBuilding);
 				geography.move(tempBuilding, geom);
@@ -562,7 +568,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 				if (placeProp.getActivityType() == 0) { // lodging
 					// Si es alojamiento, divido la superficie por 80 por casa
 					for (int i = 0; i < (area / 80); i++) {
-						tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
+						tempBuilding = new HomeAgent(geom, id, blockId, type, 80, 70);
 						homePlaces.add(tempBuilding);
 						context.add(tempBuilding);
 						geography.move(tempBuilding, geom);
@@ -634,7 +640,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * @param extraHomes
 	 */
 	private void createFictitiousHomes(int extraHomes) {
-		BuildingAgent tempBuilding, tempHome;
+		HomeAgent tempBuilding, tempHome;
 		int[] ciIndexes = IntStream.range(0, homePlaces.size()).toArray();
 		int indexesCount = homePlaces.size()-1;
 		int randomIndex;
@@ -645,7 +651,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 				tempHome = homePlaces.get(ciIndexes[randomIndex]);
 				ciIndexes[randomIndex] = ciIndexes[indexesCount--];
 				//
-				tempBuilding = new BuildingAgent(tempHome);
+				tempBuilding = new HomeAgent(tempHome);
 				tempBuilding.setId(++maxParcelId);
 				homePlaces.add(tempBuilding);
 				context.add(tempBuilding);
@@ -721,7 +727,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		contextHumans = new HumanAgent[localHumansCount + foreignHumansCount];
 		int humInd = 0;
 		
-		BuildingAgent tempHome = null;
+		HumanAgent tempHuman = null;
+		HomeAgent tempHome = null;
 		BuildingAgent tempJob = null;
 		unemployedCount = 0;
 		unschooledCount = 0;
@@ -738,7 +745,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			for (j = 0; j < localTravelers[i]; j++) {
 				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-				contextHumans[humInd++] = createHuman(i, tempHome, null);
+				//
+				tempHuman = createHuman(i, tempHome, null);
+				tempHome.addOccupant(tempHuman);
+				contextHumans[humInd++] = tempHuman;
 			}
 		}
 		
@@ -747,7 +757,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 			for (j = 0; j < locals[i]; j++) {
 				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
 				tempJob = findAGWorkingPlace(i, tempHome);
-				contextHumans[humInd++] = createHuman(i, tempHome, tempJob);
+				//
+				tempHuman = createHuman(i, tempHome, tempJob);
+				tempHome.addOccupant(tempHuman);
+				contextHumans[humInd++] = tempHuman;
 			}
 		}
 		

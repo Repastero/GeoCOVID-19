@@ -5,7 +5,7 @@ public final class DataSet {
 	public static final int SECTORAL = 0;
 	
 	/** Limite de chance de contagio al realizar una actividad fuera del contexto (a menor limite, mayor chance) */
-	public static final int[] OOC_CONTAGION = {100000, 1000000};
+	public static final int[] OOC_CONTAGION = {100000, 100000};
 	
 	public static final String[] SHP_FILE_PARCELS	= {"./data/sec2.shp",		"./data/sec11.shp"};
 	public static final String[] SHP_FILE_PLACES	= {"./data/sec2-places.shp","./data/sec11-places.shp"};
@@ -16,8 +16,19 @@ public final class DataSet {
 	public static final int[] LOCAL_TRAVELER_HUMANS		= {7500,  5000};	// Cantidad de Humanos que trabajan afuera
 	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 3, 1, 2, 1, 2,  4};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,52,59,66,80,94,101};	// Dia de inicio de cada fase - Dia 0 = 12 de Junio
+	public static final int[] LOCKDOWN_PHASES		= {0, 1, 3, 1, 2, 1, 4, 2,  5};	// Numero de fase en orden de cambio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,52,59,66,80,91,94,101};	// Dia 0 = 12 de Junio
+	/* Dia de inicio de cada fase
+	 * 12 junio
+	 * 20 julio
+	 *  3 agosto
+	 * 10 agosto
+	 * 17 agosto
+	 * 31 agosto
+	 * 11 septiembre
+	 * 14 septiembre
+	 * 21 septiembre
+	 */
 	
 	/** cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
@@ -57,6 +68,16 @@ public final class DataSet {
 	private static boolean socialDistOutdoor;
 	/** Si entre empleados respetan el distanciamiento social */
 	private static boolean socialDistWorkspace;
+	
+	/** tiempo antes del periodo sintomatico durante cual puede producir contacto estrecho (si closeContactsEnabled) */
+	public static final int	CLOSE_CONTACT_INFECTIOUS_TIME	= 24;	// en ticks (2 dias)
+	/** tiempo de cuarentena preventivo al ser contacto estrecho o convivir con sintomatico (si prevQuarantineEnabled) */
+	public static final int	PREVENTIVE_QUARANTINE_TIME		= 168;	// en ticks (14 dias)
+	
+	/** Si está habilitada la "pre infeccion" de contactos estrechos y cuarentena preventiva de los mismos */
+	private static boolean closeContactsEnabled;
+	/** Si está habilitada la cuarentena preventiva para las personas que conviven con un sintomatico */
+	private static boolean prevQuarantineEnabled;
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
@@ -155,25 +176,26 @@ public final class DataSet {
 	public static final double	ICU_DEATH_RATE				= 42d;	// sobre 100
 	
 	/**
-	 * Como la simulacion puede comenzar antes de la pandemia<p>
-	 * se inicia sin uso de barbijo ni distanciamiento social.
+	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
 	 */
 	public static void setDefaultValues() {
 		setMaskValues(0, false, false);
 		setSDValues(0, true, false);
+		disableCloseContacts();
+		disablePrevQuarantine();
 	}
 	
 	/**
-	 * @param minusRate porcentaje de reduccion de infeccion 
+	 * @param minusRate porcentaje de reduccion de infeccion (0...100)
 	 */
 	public static void setMaskEffectivity(int minusRate) {
 		maskInfRateReduction = minusRate;
 	}
 	
 	/**
-	 * @param minusRate porcentaje de reduccion de infeccion
+	 * @param minusRate porcentaje de reduccion de infeccion (0...100)
 	 * @param enableOutdoor utilizar cubreboca en espacios abiertos
-	 * @param enableWorkplace utilizar cubreboca entre trabajadores
+	 * @param enableWorkplace utilizar cubreboca entre trabajadores/estudiantes
 	 */
 	public static void setMaskValues(int minusRate, boolean enableOutdoor, boolean enableWorkplace) {
 		maskInfRateReduction = minusRate;
@@ -183,16 +205,16 @@ public final class DataSet {
 	
 	/**
 	 * <b>SETEA EL PORCENTAJE! NO EL ATRIBUTO DE LOS HUMANOS!</b>
-	 * @param percentage porcentaje de Humanos que respeta la distancia
+	 * @param percentage porcentaje de Humanos que respeta la distancia (0...100)
 	 */
 	public static void setSDPercentage(int percentage) {
 		socialDistPercentage = percentage;
 	}
 	
 	/**
-	 * @param percentage porcentaje de Huamanos que respeta la distancia
+	 * @param percentage porcentaje de Huamanos que respeta la distancia (0...100)
 	 * @param enableOutdoor respetar la distancia en espacios abiertos
-	 * @param enableWorkplace respetar la distancia entre trabajadores
+	 * @param enableWorkplace respetar la distancia entre trabajadores/estudiantes
 	 */
 	public static void setSDValues(int percentage, boolean enableOutdoor, boolean enableWorkplace) {
 		socialDistPercentage = percentage;
@@ -200,11 +222,31 @@ public final class DataSet {
 		socialDistWorkspace = enableWorkplace;
 	}
 	
+	/** @return <b>0...100</b> porcentaje de reduccion de infeccion */
 	public static int getMaskEffectivity()		{ return maskInfRateReduction; }
+	/** @return <b>true</b> si se utiliza cubrebocas en espacios abiertos */
 	public static boolean wearMaskOutdoor()		{ return wearMaskOutdoor; }
+	/** @return <b>true</b> si trabajadores/estudiantes utilizan cubrebocas en su trabajo/estudio */
 	public static boolean wearMaskWorkspace()	{ return wearMaskWorkspace; }
 	
-	public static int getSDPercentage()	{ return socialDistPercentage; }
-	public static boolean sDOutdoor()	{ return socialDistOutdoor; }
-	public static boolean sDWorkspace()	{ return socialDistWorkspace; }
+	/** @return <b>0...100</b> porcentaje de Humanos que respeta la distancia */
+	public static int getSDPercentage()			{ return socialDistPercentage; }
+	/** @return <b>true</b> si se respeta la distancia en espacios abiertos */
+	public static boolean sDOutdoor()			{ return socialDistOutdoor; }
+	/** @return <b>true</b> si trabajadores/estudiantes respetan la distancia en su trabajo/estudio */
+	public static boolean sDWorkspace()			{ return socialDistWorkspace; }
+	
+	/** @return <b>true</b> si estan habilitados los contactos estrechos y la cuarentena preventiva de los mismos */
+	public static boolean closeContactsEnabled(){ return closeContactsEnabled; }
+	/** Habilita contactos estrechos y su cuarentena preventiva. */
+	public static void enableCloseContacts()	{ closeContactsEnabled = true; }
+	/** Deshabilita contactos estrechos y su cuarentena preventiva. */
+	public static void disableCloseContacts()	{ closeContactsEnabled = false; }
+	
+	/** @return <b>true</b> si los habitantes del hogar de un sintomatico se ponen en cuarentena */
+	public static boolean prevQuarantineEnabled(){ return prevQuarantineEnabled; }
+	/** Habilita cuarentena preventiva en hogares de sintomaticos. */
+	public static void enablePrevQuarantine()	{ prevQuarantineEnabled = true; }
+	/** Deshabilita cuarentena preventiva en hogares de sintomaticos. */
+	public static void disablePrevQuarantine()	{ prevQuarantineEnabled = false; }
 }
