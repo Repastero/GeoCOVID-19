@@ -299,8 +299,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 					"restaurant", "soccer_club", "soccer_field", "sports_club", "synagogue" });
 			// No setea matrices por que se usan las por defecto "setHumansDefaultTMMC"
 			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(75);//80
-			DataSet.setMaskEffectivity(28);
+			setSocialDistancing(95);//80
+			DataSet.setMaskEffectivity(30);
 			break;
 		case 1:
 			// Reapertura progresiva (Fase 4)
@@ -319,9 +319,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_JULY_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_JULY_TMMC;
 			}
-			//BuildingManager.limitActivitiesCapacity(4d);
-			//setSocialDistancing(70);//75
-			DataSet.setMaskEffectivity(26);
+			BuildingManager.limitActivitiesCapacity(4d);
+			setSocialDistancing(90);//75
+			DataSet.setMaskEffectivity(30);
 			break;
 		case 2:
 			// Nueva normalidad (Fase 5)
@@ -340,9 +340,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_AUGUST_TMMC;
 			}
-			//BuildingManager.limitActivitiesCapacity(3d);
-			//setSocialDistancing(65);//70
-			DataSet.setMaskEffectivity(22);
+			BuildingManager.limitActivitiesCapacity(4d);//3
+			setSocialDistancing(90);//70
+			DataSet.setMaskEffectivity(30);
 			break;
 		case 3:
 			BuildingManager.openPlaces(new String[] {"bar", "gym","restaurant"}); // Ocio
@@ -360,14 +360,18 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_AUGUST_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_AUGUST_TMMC;
 			}
-			//BuildingManager.limitActivitiesCapacity(3d);
-			//setSocialDistancing(60);
-			//DataSet.setMaskEffectivity(18);
+			BuildingManager.limitActivitiesCapacity(3d);//2.5
+			setSocialDistancing(70);
+			DataSet.setMaskEffectivity(30);
 			break;
 		case 4:
 			// Nuevas medidas del 11 de septiembre
+			
 			DataSet.enableCloseContacts();
 			DataSet.enablePrevQuarantine();
+			BuildingManager.limitActivitiesCapacity(2d);//2
+			setSocialDistancing(65);
+			DataSet.setMaskEffectivity(20);
 			break;
 		case 5:
 			BuildingManager.openPlaces(new String[] {"basketball_club", "church", "soccer_club", "soccer_field", "synagogue"}); // Ocio
@@ -385,9 +389,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 				HumanAgent.localTMMC[3]	= MarkovChains.ADULT_SEC11_SEPTEMBER_TMMC;
 				HumanAgent.localTMMC[4]	= MarkovChains.HIGHER_SEC11_SEPTEMBER_TMMC;
 			}
-			//BuildingManager.limitActivitiesCapacity(3d);
-			//setSocialDistancing(60);
-			//DataSet.setMaskEffectivity(18);
+			BuildingManager.limitActivitiesCapacity(4d);
+			setSocialDistancing(60);//60
+			DataSet.setMaskEffectivity(20);
 			break;
 		default:
 			break;
