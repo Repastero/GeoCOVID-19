@@ -1,0 +1,15 @@
+<repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.7.0">
+  <name>Reporte Actividades</name>
+  <dataSet>Actividades</dataSet>
+  <delimiter>,</delimiter>
+  <format>TABULAR</format>
+  <sourceIds class="linked-hash-set">
+    <string>Hogar</string>
+    <string>Trabajo</string>
+    <string>Ocio</string>
+    <string>Otros</string>
+    <string>tick</string>
+  </sourceIds>
+  <fileName>ReportAct.csv</fileName>
+  <addTimeStamp>true</addTimeStamp>
+</repast.simphony.data2.engine.FileSinkDescriptor>
