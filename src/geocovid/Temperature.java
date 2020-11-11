@@ -43,13 +43,12 @@ public class Temperature {
 	
 	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
 	public static void setDailyTemperature() {
-		System.out.println("setDailyTemperature "+dayOfTheYear+" -> "+odCurrentTemp+" | "+idCurrentTemp);
 		odCurrentTemp = temperature[++dayOfTheYear];
 		if (dayOfTheYear < 182) // Primeros 6 meses
 			idCurrentTemp -= idTempStep;
 		else // Segundos 6 meses
 			idCurrentTemp += idTempStep;
-		// Ultimo dia del ano, lee los datos del año siguiente
+		// Ultimo dia del ano, lee los datos del aÃ±o siguiente
 		if (dayOfTheYear == 364) {
 			dayOfTheYear = 0;
 			loadWeatherData(++currentYear);
