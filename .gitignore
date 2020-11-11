@@ -12,6 +12,7 @@ output/
 repast-licenses/
 
 # Files
+/.csv
 *.log
 *.txt
 *.patch
