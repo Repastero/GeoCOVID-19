@@ -58,6 +58,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private Context<Object> context;
 	private Geography<Object> geography;
 	
+	private int simulationStartYear;
 	private int simulationStartDay;
 	private int simulationMaxTick;
 	private int simulationMinDay;
@@ -115,7 +116,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		this.context = context;
 		context.add(new InfectionReport(simulationMinDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
-		context.add(new Temperature(simulationStartDay)); // Para calcular temperatura diaria, para estela
+		context.add(new Temperature(simulationStartYear, simulationStartDay)); // Para calcular temperatura diaria, para estela
 		
 		loadPlacesShapefile();
 		PlaceProperty.loadPlacesProperties(placesProperty);
@@ -406,6 +407,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	private void setBachParameters() {
 		Parameters params = RunEnvironment.getInstance().getParameters();
+		// Ano simulacion, para calcular temperatura (2020 - 2022)
+		simulationStartYear	= ((Integer) params.getValue("anoInicioSimulacion")).intValue();
 		// Dia calendario, para calcular temperatura (0 - 364)
 		simulationStartDay	= ((Integer) params.getValue("diaInicioSimulacion")).intValue();
 		// Dias maximo de simulacion - por mas que "diaMinimoSimulacion" sea mayor (0 = Infinito)

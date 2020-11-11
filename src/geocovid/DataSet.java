@@ -249,6 +249,4 @@ public final class DataSet {
 	public static void enablePrevQuarantine()	{ prevQuarantineEnabled = true; }
 	/** Deshabilita cuarentena preventiva en hogares de sintomaticos. */
 	public static void disablePrevQuarantine()	{ prevQuarantineEnabled = false; }
-	
-	public static int		anoSimulacion	= 2020;
 }

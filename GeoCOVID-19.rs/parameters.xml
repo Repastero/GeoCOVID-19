@@ -48,6 +48,12 @@
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
+				<parameter name="anoInicioSimulacion" displayName="Ano de inicio simulacion" type="int" 
+						defaultValue="2020" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
 				<parameter name="diaInicioSimulacion" displayName="Dia del ano inicio simulacion" type="int" 
 						defaultValue="164" 
 						isReadOnly="false" 
