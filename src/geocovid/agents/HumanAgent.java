@@ -1,21 +1,25 @@
 package geocovid.agents;
 
-import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext;
 import static repast.simphony.essentials.RepastEssentials.AddAgentToContext;
+import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import cern.jet.random.Normal;
 import geocovid.BuildingManager;
 import geocovid.DataSet;
 import geocovid.InfectionReport;
 import repast.simphony.engine.environment.RunEnvironment;
-import repast.simphony.engine.schedule.*;
+import repast.simphony.engine.schedule.ISchedule;
+import repast.simphony.engine.schedule.ScheduleParameters;
+import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 
 public class HumanAgent {
 	// Puntero matriz markov //
-	public static int[][][][] localTMMC			= new int[DataSet.AGE_GROUPS][][][];
-	public static int[][][][] isolatedLocalTMMC	= new int[DataSet.AGE_GROUPS][][][];
+	public static int[][][][][] localTMMC			= new int[2][DataSet.AGE_GROUPS][][][];
+	public static int[][][][] isolatedLocalTMMC		= new int[DataSet.AGE_GROUPS][][][];
 	
 	public static int[][][] travelerTMMC;
 	public static int[][][] infectedTravelerTMMC;
@@ -28,10 +32,11 @@ public class HumanAgent {
 	private int[] currentPosition = {0,0};
 	private int[] workplacePosition = {0,0};
 	
+	private int sectoralType;
+	private int sectoralIndex;
 	private int currentActivity = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
 	private int ageGroup = 0;
 	private boolean foreignTraveler = false;
-	private double travelRadius = -1;
 	private double relocationTime = -1d;
 	
 	protected static ISchedule schedule;
@@ -57,13 +62,14 @@ public class HumanAgent {
     
     private Map<Integer, Integer> socialInteractions = new HashMap<>(); // ID contacto, cantidad de contactos
     
-	public HumanAgent(int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign) {
+	public HumanAgent(int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign) {
+		this.sectoralType = secHome;
+		this.sectoralIndex = secHomeIndex;
 		this.homePlace = home;
 		this.workPlace = work;
 		this.workplacePosition = workPos;
 		this.ageGroup = ageGroup;
 		this.foreignTraveler = foreign;
-		this.travelRadius = DataSet.TRAVEL_RADIUS_PER_AGE_GROUP[ageGroup];
 	}
 	
 	public static void initAgentID() {
@@ -147,8 +153,8 @@ public class HumanAgent {
 	 */
 	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
 	public void newDayBegin() {
-		// Se tiene en cuenta unicamente los que viven y "trabajan" en la ciudad
-		if ((!foreignTraveler) && (workPlace != null)) {
+		// Se tiene en cuenta unicamente los que viven en la ciudad
+		if (!foreignTraveler) {
 			int count = 0;
 			if (DataSet.COUNT_UNIQUE_INTERACTIONS) {
 				count = socialInteractions.size();
@@ -267,7 +273,7 @@ public class HumanAgent {
 		if (!hospitalized && currentBuilding != null && currentPosition != null) {
 			// Si no fue a ICU y tiene position dentro de un Building, se crear el marcador de infeccioso
 			currentBuilding.addSpreader(this);
-			BuildingManager.createInfectiousHuman(agentID, currentBuilding.getGeometry().getCoordinate());
+			BuildingManager.createInfectiousHuman(agentID, currentBuilding.getCoordinate());
 		}
 		
 		int mean = DataSet.INFECTED_PERIOD_MEAN_AG;
@@ -365,11 +371,11 @@ public class HumanAgent {
 	    		mean = 30;
 	    		break;
 	    	case 2: // 2 Ocio
-	    		newBuilding = BuildingManager.findRandomPlace(2, this, currentBuilding, travelRadius, ageGroup);
+	    		newBuilding = BuildingManager.findRandomPlace(sectoralType, sectoralIndex, 2, this, currentBuilding, ageGroup);
 	    		mean = 5 + (5 * ndValue); // 1, 1.5, 2
 	    		break;
 	    	default: // 3 Otros (supermercados, farmacias, etc)
-	    		newBuilding = BuildingManager.findRandomPlace(3, this, currentBuilding, travelRadius, ageGroup);
+	    		newBuilding = BuildingManager.findRandomPlace(sectoralType, sectoralIndex, 3, this, currentBuilding, ageGroup);
 	    		mean = 5;
 	    		break;
         }
@@ -410,7 +416,7 @@ public class HumanAgent {
         
         int[][][] matrixTMMC;
         if (!foreignTraveler)
-        	matrixTMMC = (!quarantined ? localTMMC[ageGroup] : isolatedLocalTMMC[ageGroup]);
+        	matrixTMMC = (!quarantined ? localTMMC[sectoralType][ageGroup] : isolatedLocalTMMC[ageGroup]);
         else
         	matrixTMMC = (!quarantined ? travelerTMMC : infectedTravelerTMMC);
         
@@ -434,8 +440,9 @@ public class HumanAgent {
             }
             else if (!exposed) {
             	// Si estuvo afuera, tiene una chance de volver infectado
+            	// TODO tendria que tener en cuenta si ya inicio la pandemia
             	int infectChance = (int) (schedule.getTickCount() - relocationTime);
-        		if (RandomHelper.nextIntFromTo(1, DataSet.OOC_CONTAGION[DataSet.SECTORAL]) <= infectChance) {
+        		if (RandomHelper.nextIntFromTo(1, DataSet.OOC_CONTAGION) <= infectChance) {
         			setExposed();
         		}
             }
@@ -458,7 +465,7 @@ public class HumanAgent {
 
         		if (isContagious() && currentPosition != null) {
    					// Si en periodo de contagio y dentro del edificio, mover el marcador
-   					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getGeometry().getCoordinate());
+   					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getCoordinate());
     			}
         	}
         	else if (isContagious() && atWork()) {

@@ -3,33 +3,53 @@ package geocovid;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
 public final class PlaceProperty {
 	private String googleMapsType;
+	private String googlePlaceType;
 	private int activityType;
+	private int buildingArea;
+	private int buildingCoveredArea;
 	private int workersPerPlace;
-	private int WorkersPerArea;
+	private int workersPerArea;
 	private int[] activityChances = new int[DataSet.AGE_GROUPS];
 	
-	public PlaceProperty(String gmapsType) {
+	public PlaceProperty(String gmapsType, String gplaceType) {
 		this.googleMapsType = gmapsType;
+		this.googlePlaceType = gplaceType;
 	}
 	
-	public PlaceProperty(String gmapsType, int type, int workersPlace, int workersArea, int[] chances) {
+	public PlaceProperty(String gmapsType, String gplaceType, PlaceProperty pp) {
 		this.googleMapsType = gmapsType;
+		this.googlePlaceType = gplaceType;
+		this.activityType = pp.activityType;
+		this.buildingArea = pp.buildingArea;
+		this.buildingCoveredArea = pp.buildingCoveredArea;
+		this.workersPerPlace = pp.workersPerPlace;
+		this.workersPerArea = pp.workersPerArea;
+		this.activityChances = pp.activityChances;
+	}
+	
+	public PlaceProperty(String gmapsType, String gplaceType, int type, int avgArea, int avgCoveredArea, int workersPlace, int workersArea, int[] chances) {
+		this.googleMapsType = gmapsType;
+		this.googlePlaceType = gplaceType;
 		this.activityType = type;
+		this.buildingArea = avgArea;
+		this.buildingCoveredArea = avgCoveredArea;
 		this.workersPerPlace = workersPlace;
-		this.WorkersPerArea = workersArea;
+		this.workersPerArea = workersArea;
 		this.activityChances = chances;
 	}
 	
 	private static int[] readHeader(String[] rows) throws Exception {
-		//String[] header = {"Google_Place_type","Google_Maps_description","Google_Maps_type","Activity_type","Workers_place","Workers_area","Chance_1","Chance_2","Chance_3","Chance_4","Chance_5"};
-		String[] headers = {"Google_Maps_type","Activity_type","Workers_place","Workers_area","Chance_1","Chance_2","Chance_3","Chance_4","Chance_5"};
-		int[] indexes = new int[9];
+		String[] headers = {"Google_Maps_type","Google_Place_type","Activity_type","Area","Covered_area","Workers_place","Workers_area","Chance_1","Chance_2","Chance_3","Chance_4","Chance_5"};
+		int[] indexes = new int[headers.length];
 		
 		int i,j;
 		for (i = 0; i < headers.length; i++) {
@@ -46,48 +66,65 @@ public final class PlaceProperty {
 		return indexes;
 	}
 	
-	public static void loadPlacesProperties(Map<String, PlaceProperty> placesProperty) {
-		String gmapsType;
-		String chance;
+	public static Map<String, PlaceProperty> loadPlacesProperties() {
 		PlaceProperty placeProperty;
-		int placesCount = placesProperty.size();
-		
+		String gMapsType;
+		String gPlaceType;
+		String chance;
+		Map<String, PlaceProperty> placesProperty = new HashMap<>();
 		boolean headerFound = false;
 		CSVReader reader = null;
 		String[] nextLine;
 		int[] dataIndexes = {};
 		try {
-			reader = new CSVReader(new FileReader(DataSet.CSV_FILE_PLACES_PROPERTIES), ';');
+			reader = new CSVReader(new FileReader(DataSet.CSV_FILE_PLACES_PROPERTIES), ',');
 			while ((nextLine = reader.readNext()) != null) {
 				if (!headerFound) {
 					dataIndexes = readHeader(nextLine);
 					headerFound = true;
+					continue;
 				}
-				
-				gmapsType = nextLine[dataIndexes[0]];
-				if (placesProperty.containsKey(gmapsType)) {
-					placeProperty = placesProperty.get(gmapsType);
+				gMapsType = nextLine[dataIndexes[0]]; // Type de Google Maps
+				gPlaceType = nextLine[dataIndexes[1]]; // Type de Google Places o custom
+				// Si es Type principal, debe tener todos los atributos
+				if (gMapsType.equals(gPlaceType)) {
+					placeProperty = new PlaceProperty(gMapsType, gPlaceType);
 					try {
-						placeProperty.setActivityType(Integer.valueOf(nextLine[dataIndexes[1]]));
-						placeProperty.setWorkersPerPlace(Integer.valueOf(nextLine[dataIndexes[2]]));
-						placeProperty.setWorkersPerArea(Integer.valueOf(nextLine[dataIndexes[3]]));
+						placeProperty.setActivityType	(Integer.valueOf(nextLine[dataIndexes[2]]));
+						placeProperty.setBuildingArea	(Integer.valueOf(nextLine[dataIndexes[3]]));
+						placeProperty.setBuildingCArea	(Integer.valueOf(nextLine[dataIndexes[4]]));
+						placeProperty.setWorkersPerPlace(Integer.valueOf(nextLine[dataIndexes[5]]));
+						placeProperty.setWorkersPerArea	(Integer.valueOf(nextLine[dataIndexes[6]]));
 					} catch (NumberFormatException e) {
 						System.out.println(String.join(", ", nextLine));
-						//e.printStackTrace();
 					}
+					// Leer las chances para cada grupo etario
 					for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
-						placeProperty.setActivityChances(i, 10); // por ahora, todas las chances son iguales
-						/*
-						chance = nextLine[dataIndexes[4+i]];
-						if (chance.isBlank() || chance.contentEquals("0"))
-							placeProperty.setActivityChances(i, 0);
+						chance = nextLine[dataIndexes[7 + i]];
+						if (!StringUtils.isBlank(chance))
+							placeProperty.setActivityChances(i, Integer.valueOf(chance));
 						else
-							placeProperty.setActivityChances(i, (int) Math.round(Double.valueOf(chance)*1000));
-						*/
+							placeProperty.setActivityChances(i, 0);
 					}
-					if (--placesCount == 0)
-						break;
 				}
+				// Si es type secundario, pueden variar el area y trabajadores
+				else {
+					// Crear copia del type primario
+					placeProperty = new PlaceProperty(gMapsType, gPlaceType, placesProperty.get(gPlaceType));
+					try {
+						if (!StringUtils.isBlank(nextLine[dataIndexes[3]]))
+							placeProperty.setBuildingArea	(Integer.valueOf(nextLine[dataIndexes[3]]));
+						if (!StringUtils.isBlank(nextLine[dataIndexes[4]]))
+							placeProperty.setBuildingCArea	(Integer.valueOf(nextLine[dataIndexes[4]]));
+						if (!StringUtils.isBlank(nextLine[dataIndexes[5]]))
+							placeProperty.setWorkersPerPlace(Integer.valueOf(nextLine[dataIndexes[5]]));
+						if (!StringUtils.isBlank(nextLine[dataIndexes[6]]))
+							placeProperty.setWorkersPerArea	(Integer.valueOf(nextLine[dataIndexes[6]]));
+					} catch (NumberFormatException e) {
+						System.out.println(String.join(", ", nextLine));
+					}
+				}
+				placesProperty.put(gMapsType, placeProperty);
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -100,14 +137,27 @@ public final class PlaceProperty {
 				reader.close();
 			} catch (IOException e) { }
 		}
+		return placesProperty;
 	}
 
 	public String getGoogleMapsType() {
 		return googleMapsType;
 	}
 
+	public String getGooglePlaceType() {
+		return googlePlaceType;
+	}
+
 	public int getActivityType() {
 		return activityType;
+	}
+
+	public int getBuildingArea() {
+		return buildingArea;
+	}
+
+	public int getBuildingCArea() {
+		return buildingCoveredArea;
 	}
 
 	public int getWorkersPerPlace() {
@@ -115,7 +165,7 @@ public final class PlaceProperty {
 	}
 
 	public int getWorkersPerArea() {
-		return WorkersPerArea;
+		return workersPerArea;
 	}
 
 	public int[] getActivityChances() {
@@ -126,16 +176,28 @@ public final class PlaceProperty {
 		this.googleMapsType = googleMapsType;
 	}
 
+	public void setGooglePlaceType(String googlePlaceType) {
+		this.googlePlaceType = googlePlaceType;
+	}
+
 	public void setActivityType(int activityType) {
 		this.activityType = activityType;
 	}
 
-	public void setWorkersPerPlace(int workersPerPlace) {
-		this.workersPerPlace = workersPerPlace;
+	public void setBuildingArea(int buildingArea) {
+		this.buildingArea = buildingArea;
 	}
 
-	public void setWorkersPerArea(int workersPerArea) {
-		WorkersPerArea = workersPerArea;
+	public void setBuildingCArea(int buildingCoveredArea) {
+		this.buildingCoveredArea = buildingCoveredArea;
+	}
+
+	public void setWorkersPerPlace(int workersPlace) {
+		this.workersPerPlace = workersPlace;
+	}
+
+	public void setWorkersPerArea(int workersArea) {
+		workersPerArea = workersArea;
 	}
 
 	public void setActivityChances(int[] activityChances) {

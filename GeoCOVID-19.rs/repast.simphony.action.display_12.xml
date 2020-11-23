@@ -83,6 +83,11 @@
   <viewType>FLAT</viewType>
   <trackAgents>false</trackAgents>
   <globeLayers/>
-  <staticCoverages/>
+  <staticCoverages>
+    <entry>
+      <string>./data/Esri.tif</string>
+      <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
+    </entry>
+  </staticCoverages>
   <coverageLayers/>
 </repast.simphony.gis.visualization.engine.GISDisplayDescriptor>

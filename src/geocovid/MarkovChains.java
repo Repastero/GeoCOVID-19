@@ -60,6 +60,9 @@ public final class MarkovChains {
 			{ { 600, 0,200,200 }, { 450, 0,250,300 }, { 650, 0, 50,300 }, { 650, 0, 50,300 } },
 			{ { 950, 0, 25, 25 }, { 950, 0, 25, 25 }, { 950, 0, 25, 25 }, { 950, 0, 25, 25 } } };
 	
+	public static final int[][][][] SEC2_DEFAULT_TMMC = {CHILD_SEC2_DEFAULT_TMMC, YOUNG_SEC2_DEFAULT_TMMC, ADULT_SEC2_DEFAULT_TMMC, ELDER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_DEFAULT_TMMC};
+	public static final int[][][][] SEC11_DEFAULT_TMMC = {CHILD_SEC11_DEFAULT_TMMC, YOUNG_SEC11_DEFAULT_TMMC, ADULT_SEC11_DEFAULT_TMMC, ELDER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_DEFAULT_TMMC};
+	
 	/** Matriz modificada para los Humanos que viven afuera. */
 	public static final int TRAVELER_DEFAULT_TMMC[][][] = {
 			{ {  50,725, 75,150 }, {  50,725, 75,150 }, {  50,725, 75,150 }, {  50,725, 75,150 } },
@@ -131,6 +134,9 @@ public final class MarkovChains {
 	public static final int HIGHER_SEC2_JUNE_TMMC[][][] = mergeChainsDiff(HIGHER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_JUNE_DIFF);
 	public static final int HIGHER_SEC11_JUNE_TMMC[][][] = mergeChainsDiff(HIGHER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_JUNE_DIFF);
 	
+	public static final int[][][][] SEC2_JUNE_TMMC = {YOUNG_SEC2_JUNE_TMMC, YOUNG_SEC2_JUNE_TMMC, ADULT_SEC2_JUNE_TMMC, ADULT_SEC2_JUNE_TMMC, HIGHER_SEC2_JUNE_TMMC};
+	public static final int[][][][] SEC11_JUNE_TMMC = {YOUNG_SEC11_JUNE_TMMC, YOUNG_SEC11_JUNE_TMMC, ADULT_SEC11_JUNE_TMMC, ADULT_SEC11_JUNE_TMMC, HIGHER_SEC11_JUNE_TMMC};
+	
 	// Matrices de markov del mes de Julio para seccionales 2 y 11 de Paraná //
 	
 	public static final int YOUNG_SEC2_JULY_DIFF[][][] = {
@@ -174,6 +180,9 @@ public final class MarkovChains {
 	
 	public static final int HIGHER_SEC2_JULY_TMMC[][][] = mergeChainsDiff(HIGHER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_JULY_DIFF);
 	public static final int HIGHER_SEC11_JULY_TMMC[][][] = mergeChainsDiff(HIGHER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_JULY_DIFF);
+	
+	public static final int[][][][] SEC2_JULY_TMMC = {YOUNG_SEC2_JULY_TMMC, YOUNG_SEC2_JULY_TMMC, ADULT_SEC2_JULY_TMMC, ADULT_SEC2_JULY_TMMC, HIGHER_SEC2_JULY_TMMC};
+	public static final int[][][][] SEC11_JULY_TMMC = {YOUNG_SEC11_JULY_TMMC, YOUNG_SEC11_JULY_TMMC, ADULT_SEC11_JULY_TMMC, ADULT_SEC11_JULY_TMMC, HIGHER_SEC11_JULY_TMMC};
 	
 	// Matrices de markov del mes de Agosto para seccionales 2 y 11 de Paraná //
 	
@@ -219,6 +228,9 @@ public final class MarkovChains {
 	public static final int HIGHER_SEC2_AUGUST_TMMC[][][] = mergeChainsDiff(HIGHER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_AUGUST_DIFF);
 	public static final int HIGHER_SEC11_AUGUST_TMMC[][][] = mergeChainsDiff(HIGHER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_AUGUST_DIFF);
 	
+	public static final int[][][][] SEC2_AUGUST_TMMC = {YOUNG_SEC2_AUGUST_TMMC, YOUNG_SEC2_AUGUST_TMMC, ADULT_SEC2_AUGUST_TMMC, ADULT_SEC2_AUGUST_TMMC, HIGHER_SEC2_AUGUST_TMMC};
+	public static final int[][][][] SEC11_AUGUST_TMMC = {YOUNG_SEC11_AUGUST_TMMC, YOUNG_SEC11_AUGUST_TMMC, ADULT_SEC11_AUGUST_TMMC, ADULT_SEC11_AUGUST_TMMC, HIGHER_SEC11_AUGUST_TMMC};
+	
 	// Matrices de markov del mes de Septiembre para seccionales 2 y 11 de Paraná //
 	
 	public static final int YOUNG_SEC2_SEPTEMBER_DIFF[][][] = {
@@ -262,6 +274,9 @@ public final class MarkovChains {
 	
 	public static final int HIGHER_SEC2_SEPTEMBER_TMMC[][][] = mergeChainsDiff(HIGHER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_SEPTEMBER_DIFF);
 	public static final int HIGHER_SEC11_SEPTEMBER_TMMC[][][] = mergeChainsDiff(HIGHER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_SEPTEMBER_DIFF);
+	
+	public static final int[][][][] SEC2_SEPTEMBER_TMMC = {YOUNG_SEC2_SEPTEMBER_TMMC, YOUNG_SEC2_SEPTEMBER_TMMC, ADULT_SEC2_SEPTEMBER_TMMC, ADULT_SEC2_SEPTEMBER_TMMC, HIGHER_SEC2_SEPTEMBER_TMMC};
+	public static final int[][][][] SEC11_SEPTEMBER_TMMC = {YOUNG_SEC11_SEPTEMBER_TMMC, YOUNG_SEC11_SEPTEMBER_TMMC, ADULT_SEC11_SEPTEMBER_TMMC, ADULT_SEC11_SEPTEMBER_TMMC, HIGHER_SEC11_SEPTEMBER_TMMC};
 	
 	// FIN DECLARACIONES MATRICES DE MARKOV //
 

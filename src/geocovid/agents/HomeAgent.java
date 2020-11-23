@@ -3,7 +3,7 @@ package geocovid.agents;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Coordinate;
 
 import geocovid.DataSet;
 
@@ -11,8 +11,8 @@ public class HomeAgent extends BuildingAgent {
 	private List<HumanAgent> occupants = new ArrayList<HumanAgent>();
 	private double lastQuarentineST = -DataSet.PREVENTIVE_QUARANTINE_TIME;
 	
-	public HomeAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea) {
-		super(geo, id, blockid, type, area, coveredArea);
+	public HomeAgent(int sectoralType, int sectoralIndex, Coordinate coord, long id) {
+		super(sectoralType, sectoralIndex, coord, id, "home", DataSet.HOME_BUILDING_AREA[sectoralType], DataSet.HOME_BUILDING_COVERED_AREA[sectoralType]);
 	}
 	
 	public HomeAgent(BuildingAgent ba) {

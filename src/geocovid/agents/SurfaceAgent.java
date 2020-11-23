@@ -20,11 +20,22 @@ public class SurfaceAgent {
 		return contaminated;
 	}
 	
+	/**
+	 * Descontaminar superficie
+	 */
+	public void cleanUpSurface() {
+		contaminated = false;
+	}
+	
 	public void updateLifespan() {
 		creationTime = (int) RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 		contaminated = true;
 	}
 	
+	/**
+	 * Calcula la carga viral de la superficie con respecto al tiempo de vida y temperatura.
+	 * @return tasa de infeccion
+	 */
 	public int getInfectionRate() {
 		int currentTime = (int) RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 		if (currentTime != lastUpdateTime) {

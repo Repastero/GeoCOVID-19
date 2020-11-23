@@ -5,9 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Coordinate;
 
 import geocovid.DataSet;
 import geocovid.InfectionReport;
@@ -15,9 +13,10 @@ import repast.simphony.random.RandomHelper;
 
 public class BuildingAgent {
 	// Atributos del GIS
-	private Geometry geometry;
+	private int sectoralType;
+	private int sectoralIndex;
+	private Coordinate coordinate;
 	private long id;
-	private long blockId;
 	private String type;
 	private int area;
 	private int coveredArea;
@@ -41,10 +40,11 @@ public class BuildingAgent {
 	private Map<Integer, HumanAgent> humansMap = new HashMap<>(); // Mapa <Id Humano, HumanAgent>
 	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>(); // Mapa <Id Superficie, SurfaceAgent>
 	//
-	public BuildingAgent(Geometry geo, long id, long blockId, String type, int area, int coveredArea) {
-		this.geometry = geo;
+	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea) {
+		this.sectoralType = secType;
+		this.sectoralIndex = secIndex;
+		this.coordinate = coord;
 		this.id = id;
-		this.blockId = blockId;
 		this.type = type;
 		this.area = area;
 		this.coveredArea = coveredArea;
@@ -53,11 +53,13 @@ public class BuildingAgent {
 		setBuildingShape();
 	}
 	
-	public BuildingAgent(Geometry geo, long id, long blockId, String type, int area, int coveredArea, double areaModifier) {
+	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea, double areaModifier) {
+		//System.out.println(type + "," + area + "," + coveredArea);
 		// Constructor Workplace
-		this.geometry = geo;
+		this.sectoralType = secType;
+		this.sectoralIndex = secIndex;
+		this.coordinate = coord;
 		this.id = id;
-		this.blockId = blockId;
 		this.type = type;
 		this.area = area;
 		this.coveredArea = coveredArea;
@@ -69,9 +71,9 @@ public class BuildingAgent {
 	
 	public BuildingAgent(BuildingAgent ba) {
 		// Constructor para crear copia de ba
-		this.geometry = ba.geometry;
+		this.sectoralType = ba.sectoralType;
+		this.coordinate = ba.coordinate;
 		this.id = ba.id;
-		this.blockId = ba.blockId;
 		this.type = ba.type;
 		this.area = ba.area;
 		this.coveredArea = ba.coveredArea;
@@ -151,62 +153,33 @@ public class BuildingAgent {
 	private void setBuildingShape() {
 		// Se multiplica el area por la cantidad de Humanos por m2
 		final int humansCap = realArea * DataSet.HUMANS_PER_SQUARE_METER;
-		if (geometry instanceof Point) {
-			// Si es solo un punto, tomar la superficie como un cuadrado
-			// Busca el numero de X mas alto que sea factor de realArea
-			for (int i = 1; i * i <= humansCap; i++) {
-	            if (humansCap % i == 0) {
-	            	size[0] = i;
-	    	        size[1] = humansCap / i;
-	            }
-			}
-			
-			// Si Y es mas del doble que X, uso calculo viejo
-			if (size[0] < size[1] >> 1) {
-				size[1] = (int)Math.sqrt(humansCap);
-				size[0] = size[1] + 1;
-			}
+		
+		// Si es solo un punto, tomar la superficie como un cuadrado
+		// Busca el numero de X mas alto que sea factor de realArea
+		for (int i = 1; i * i <= humansCap; i++) {
+            if (humansCap % i == 0) {
+            	size[0] = i;
+    	        size[1] = humansCap / i;
+            }
 		}
-		else {
-			/* Para simplificar las cosas convierto las geometrias Polygon a Point
-			 * se tendria que probar si hay diferencia usando la forma real del building
-			 * tambien habria que cambiar la geometria de construcciones Horizontales
-			 */
-			
-			// Si es una forma, tomar medida mas chica como el ancho
-			Envelope env = geometry.getEnvelopeInternal();
-			int width = (int)(env.getWidth() * DataSet.DEGREE_PRECISION); 	// grados cartesianos a metros
-			int height = (int)(env.getHeight() * DataSet.DEGREE_PRECISION);	// grados cartesianos a metros
-			
-			// Tomar medida mas chica como el frente de la propiedad
-			size[0] = (width >= height) ? height : width;
-			// El largo de la propiedad varia segun la sup cubierta
-			size[1] = (int)(humansCap / size[0]);
-			
-			// Si el largo queda en cero o un valor muy chico, creo un cuadrado
-			if ((size[1] == 0) || (size[0] / size[1] >= 10)) {
-				size[1] = (int)Math.sqrt(humansCap);
-				size[0] = size[1] + 1;
-			}
-			// Si el area queda muy chica, sumo 1 metro mas de largo y resto 1 de ancho
-			else if ((size[0] * size[1]) < (humansCap - size[1])) {
-				--size[0];
-				++size[1];
-			}
+		
+		// Si Y es mas del doble que X, uso calculo viejo
+		if (size[0] < size[1] >> 1) {
+			size[1] = (int)Math.sqrt(humansCap);
+			size[0] = size[1] + 1;
 		}
+		
 		capacity = size[0]*size[1];
 	}
 	
 	/**
-	 * Asigna un lugar en la grilla para el nuevo ingreso
+	 * Asigna un lugar en la grilla para el nuevo ingreso, si hay capacidad
 	 * @param human HumanAgent
 	 * @return {x, y} o null
 	 */
 	public int[] insertHuman(HumanAgent human) {
-		// TODO ver si usar fuerza bruta nomas, buscar un punto o armar array con posiciones libres
-		if (humansMap.size() >= capacity) { // TODO ver esto no es tan preciso, si startingRow > 0, tendria que discriminar trabajadores 
+		if (humansMap.size() >= capacity) { 
 			//-System.out.println("Building full - ID: "+getId()+" type: "+getType());
-			// TODO ver que hacer con el humano si no hay lugar
 			return null;
 		}
 		
@@ -273,7 +246,7 @@ public class BuildingAgent {
 		}
 		//
 		if (!humansMap.remove(posId, human))
-			System.err.println("Humano no encontrado en Building "+getId()+" - Hid: "+human.getAgentID());
+			System.err.println("Humano no encontrado en Building "+getId()+" - Type: "+ type +" - Hid: "+human.getAgentID());
 	}
 	
 	/**
@@ -420,7 +393,6 @@ public class BuildingAgent {
 	private void spreadVirus(HumanAgent spHuman, int[] spPos) {
 		HumanAgent prey;
 		// Recorre las posiciones de la grilla al rededor del infectado, buscando nuevos huespedes
-		// TODO ver si hay diferencia en rendimiento reccoriendo "humans" y midiendo la distancia
 		int posX, posY;
 		for (int i = 0; i < xShiftsInf.length; i++) {
 			posX = spPos[0] + xShiftsInf[i];
@@ -447,7 +419,6 @@ public class BuildingAgent {
 	 * @see DataSet#INFECTION_RATE
 	 */
 	private void findNearbySpreaders(HumanAgent human, int[] pos, List<HumanAgent> spreaders) {
-		// TODO ver que es mas rapido -> calcular distancia con infectados o buscar en grid
 		int[] spPos = new int[2];
 		int xShift, yShift;
 		for (HumanAgent spreader : spreaders) {
@@ -521,58 +492,54 @@ public class BuildingAgent {
 		return coveredArea;
 	}
 	
-	public Geometry getGeometry() {
-		return geometry;
+	public int getSectoralType() {
+		return sectoralType;
 	}
-
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
+	
+	public int getSectoralIndex() {
+		return sectoralIndex;
 	}
-
+	
+	public Coordinate getCoordinate() {
+		return coordinate;
+	}
+	
 	public long getId() {
 		return id;
 	}
-
+	
 	public void setId(long id) {
 		this.id = id;
 	}
-
-	public long getBlockId() {
-		return blockId;
-	}
-
-	public void setBlockId(int blockId) {
-		this.blockId = blockId;
-	}
-
+	
 	public String getType() {
 		return type;
 	}
-
+	
 	public void setType(String type) {
 		this.type = type;
 	}
-
+	
 	public double getArea() {
 		return area;
 	}
-
+	
 	public void setArea(int area) {
 		this.area = area;
 	}
-
+	
 	public double getCoveredArea() {
 		return coveredArea;
 	}
-
+	
 	public void setCoveredArea(int coveredArea) {
 		this.coveredArea = coveredArea;
 	}
-
+	
 	public int getRealArea() {
 		return realArea;
 	}
-
+	
 	public int getHumansAmount() {
 		return humansMap.size();
 	}

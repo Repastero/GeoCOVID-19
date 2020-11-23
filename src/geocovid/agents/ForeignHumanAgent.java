@@ -1,7 +1,7 @@
 package geocovid.agents;
 
-import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext;
 import static repast.simphony.essentials.RepastEssentials.AddAgentToContext;
+import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext;
 
 import repast.simphony.engine.schedule.ScheduleParameters;
 
@@ -9,8 +9,8 @@ public class ForeignHumanAgent extends HumanAgent {
 	
 	private boolean inContext = true;
 
-	public ForeignHumanAgent(int ageGroup, BuildingAgent home, BuildingAgent job, int[] posJob) {
-		super(ageGroup, home, job, posJob, true);
+	public ForeignHumanAgent(int secHome, int secHomeIndex, int ageGroup, BuildingAgent job, int[] posJob) {
+		super(secHome, secHomeIndex, ageGroup, null, job, posJob, true);
 	}
 	
 	@Override

@@ -1,31 +1,25 @@
 package geocovid.agents;
 
-import repast.simphony.random.RandomHelper;
-
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Coordinate;
 
 import geocovid.DataSet;
+import repast.simphony.random.RandomHelper;
 
 public class WorkplaceAgent extends BuildingAgent {
-	// Listado de Places a cielo abierto
-	public static final Set<String> OPEN_AIR_PLACES = Stream.of("gas_station","park","soccer_field","soccer_club","amphitheatre").collect(Collectors.toSet());
-	
 	private int[][] workPositions;
 	private int workPositionsCount;
 	private String workplaceType;
+	private int activityType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
 	private int defaultCapacity;
 	private boolean closed = false;
 	
-	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workType, int workersPlace, int workersArea) {
-		super(geo, id, blockid, type, area, coveredArea, DataSet.WORKPLACE_AVAILABLE_AREA);
+	public WorkplaceAgent(int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
+		super(sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA);
 		
 		this.workplaceType = workType;
+		this.activityType = activityType;
 		if (workersPlace > 0)
 			this.vacancies = workersPlace;
 		else if (workersArea > 0)
@@ -43,11 +37,14 @@ public class WorkplaceAgent extends BuildingAgent {
 			cap = (int) (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * sqMetersPerHuman));
 			if (isOutdoor()) // si es al aire libre, la capacidad se dobla
 				cap <<= 1;
+			if (activityType == 2) // si es un lugar de ocio, se incrementa la capacidad
+				cap *= DataSet.ENTERTAINMENT_CAP_LIMIT_MOD;
 			if (cap <= workPositionsCount) {
 				cap = workPositionsCount + 1; // permitir al menos un cliente
 			}
 		}
-		setCapacity(cap);
+		if (cap <= defaultCapacity)
+			setCapacity(cap);
 	}
 	
 	/**
@@ -59,6 +56,10 @@ public class WorkplaceAgent extends BuildingAgent {
 		workPositions = new int[vacancies][2];
 		workPositionsCount = workPositions.length;
 		int distance = DataSet.SPACE_BETWEEN_WORKERS;
+		/* Prueba sin cuarentena
+		if (workplaceType.contains("primary_school") || workplaceType.contains("secondary_school"))
+			distance -= 2;
+		*/
 		int col = 0;
 		int row = 0;
 		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
@@ -97,8 +98,9 @@ public class WorkplaceAgent extends BuildingAgent {
 			setStartingRow(row);
 		}
 		defaultCapacity = getCapacity();
-		// Se setea un limite, por si la simulacion ya comienza con las medidas de distanciaiento
-		limitCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
+		
+		// Por defecto la capacidad maxima es de 1 humano por metro cuadrado
+		setCapacity(defaultCapacity / DataSet.HUMANS_PER_SQUARE_METER);
 	}
 	
 	/**

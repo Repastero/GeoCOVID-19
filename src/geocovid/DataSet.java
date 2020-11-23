@@ -1,77 +1,89 @@
 package geocovid;
 
 public final class DataSet {
-	/** Indice secciona: 0 = Secciona 2 | 1 = Seccional 11 */
-	public static final int SECTORAL = 0;
-	
 	/** Limite de chance de contagio al realizar una actividad fuera del contexto (a menor limite, mayor chance) */
-	public static final int[] OOC_CONTAGION = {100000, 100000};
+	public static final int OOC_CONTAGION = 100000;
 	
-	public static final String[] SHP_FILE_PARCELS	= {"./data/sec2.shp",		"./data/sec11.shp"};
-	public static final String[] SHP_FILE_PLACES	= {"./data/sec2-places.shp","./data/sec11-places.shp"};
-	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/sec2+11-places-markov.csv";
+	public static final String SHP_FILE_PARCELS	= "./data/parana-joined.shp";
+	public static final String SHP_FILE_PLACES	= "./data/places.shp";
+	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/parana-places-markov.csv";
 	
-	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 14383 para sec2 y 16885 para sec11 */
-	public static final int[] LOCAL_HUMANS				= {6883, 11885};	// Cantidad de Humanos locales (no salen a trabajar)
-	public static final int[] LOCAL_TRAVELER_HUMANS		= {7500,  5000};	// Cantidad de Humanos que trabajan afuera
-	public static final int[] FOREIGN_TRAVELER_HUMANS	= {6000,  1000};	// Cantidad de Humanos que viven afuera
+	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 262250 (fuente Abelardo) */
+	public static final int LOCAL_HUMANS			= 242250;	// Cantidad de Humanos locales (no salen a trabajar)
+	public static final int LOCAL_TRAVELER_HUMANS	= 20000;	// Cantidad de Humanos que trabajan afuera
+	public static final int FOREIGN_TRAVELER_HUMANS	= 0;		// Cantidad de Humanos que viven afuera
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 3, 1, 2, 1, 4, 2,  5};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,52,59,66,80,91,94,101};	// Dia 0 = 12 de Junio
+	/** Tipo de seccional segun indice: 0 tipo 2 | 1 tipo 11 */
+	public static final int[] SECTORALS_TYPES = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};	// SEC2 - 47.39% poblacion | SEC11 - 52.61% poblacion
+	/** Porcentaje de la poblacion que tiene domicilio (vota) en cada seccional */
+	public static final double[] SECTORALS_POPULATION = { // Fuente escrutinio 2015
+			6.02, 4.98, 3.73, 5.72, 4.94, 1.95, 1.26, 11.74, 2.89, 
+			3.15, 6.82, 9.65, 10.57, 1.27, 8.44, 6.61, 8.16, 2.10 };
+	public static final int SECTORALS_COUNT = SECTORALS_POPULATION.length;
+	
+	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, 3, 4, 5, 6,  7,  8};	// Numero de fase en orden de cambio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,52,66,81,91,94,101,139};	// Dia 0 = 12 de Junio (dia 164)
 	/* Dia de inicio de cada fase
 	 * 12 junio
 	 * 20 julio
 	 *  3 agosto
-	 * 10 agosto
 	 * 17 agosto
 	 * 31 agosto
 	 * 11 septiembre
 	 * 14 septiembre
 	 * 21 septiembre
+	 * 29 octubre
 	 */
 	
-	/** cantidad maxima de humanos por m2 (minimo 1) */
+	/** Cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
-	/** cantidad media de humanos por hogar (minimo 1) */
-	public static final double[] HOUSE_INHABITANTS_MEAN= {3.5, 5.5};
-	/** espacios entre puestos de trabajo/estudio (minimo 1) */
+	/** Cantidad media de humanos por hogar (minimo 1) */
+	public static final double[] HOUSE_INHABITANTS_MEAN	= {3.5, 5.5};
+	/** Espacios entre puestos de trabajo/estudio (minimo 1) */
 	public static final int SPACE_BETWEEN_WORKERS	= 4;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
 	
-	/** porcentaje del area construida ocupable en casas (minimo .1) */
-	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
-	/** porcentaje del area construida ocupable en places (minimo .1) */
+	/** Porcentaje del area construida ocupable en casas (minimo .1) */
+	public static final double BUILDING_AVAILABLE_AREA	= 0.5;
+	/** Porcentaje del area construida ocupable en places (minimo .1) */
 	public static final double WORKPLACE_AVAILABLE_AREA	= 0.75;
 	
-	/** limite de aforo en Places por defecto (valor minimo variable segun HUMANS_PER_SQUARE_METER) */ 
-	public static final double DEFAULT_PLACES_CAP_LIMIT = 4d;	// metros cuadrados de superficie util, por persona
+	/** Area en m2 para hogares */
+	public static final int[] HOME_BUILDING_AREA		= {125, 150};
+	/** Area construida en m2 para hogares */
+	public static final int[] HOME_BUILDING_COVERED_AREA= {100, 120};
 	
-	/** % de contagio al estar en contacto con un infectado */
+	/** Limite de aforo en Places por defecto durante cuarentena (valor minimo variable segun HUMANS_PER_SQUARE_METER) */ 
+	public static final double DEFAULT_PLACES_CAP_LIMIT		= 4d;	// metros cuadrados de superficie util, por persona
+	/** Multiplicador del limit de aforo en Places de ocio */
+	public static final double ENTERTAINMENT_CAP_LIMIT_MOD	= 4d;
+	
+	/** Chance de contagio al estar en contacto con un infectado */
 	public static final int	INFECTION_RATE				= 26;	// sobre 100
-	/** radio que puede contagiar un infectado */
+	/** Radio que puede contagiar un infectado */
 	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
-	/** tiempo de contacto que debe tener un infectado para contagiar */
+	/** Tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks
 	
-	/** % de reduccion de INFECTION_RATE al estar en aislamiento */
+	/** Porcentaje restado de INFECTION_RATE al estar en aislamiento */
 	public static final int	ISOLATION_INFECTION_RATE_REDUCTION	= 80;	// sobre 100 (0 para desactivar)
 	
-	/** % de reduccion de INFECTION_RATE al usar barbijo */
+	/** Porcentaje restado de INFECTION_RATE al usar barbijo */
 	private static int maskInfRateReduction;	// sobre 100 - 30 segun bibliografia (0 para desactivar)
 	/** Si al aire libre se usa tapaboca */
 	private static boolean wearMaskOutdoor;
 	/** Si entre empleados usan tapaboca */
 	private static boolean wearMaskWorkspace;
 	
-	/** % de la poblacion que respeta el distanciamiento social */
+	/** Porcentaje de la poblacion que respeta el distanciamiento social */
 	private static int socialDistPercentage;	// sobre 100 (0 para desactivar)
 	/** Si al aire libre se respeta el distanciamiento social */
 	private static boolean socialDistOutdoor;
 	/** Si entre empleados respetan el distanciamiento social */
 	private static boolean socialDistWorkspace;
 	
-	/** tiempo antes del periodo sintomatico durante cual puede producir contacto estrecho (si closeContactsEnabled) */
+	/** Tiempo antes del periodo sintomatico durante cual puede producir contacto estrecho (si closeContactsEnabled) */
 	public static final int	CLOSE_CONTACT_INFECTIOUS_TIME	= 24;	// en ticks (2 dias)
-	/** tiempo de cuarentena preventivo al ser contacto estrecho o convivir con sintomatico (si prevQuarantineEnabled) */
+	/** Tiempo de cuarentena preventivo al ser contacto estrecho o convivir con sintomatico (si prevQuarantineEnabled) */
 	public static final int	PREVENTIVE_QUARANTINE_TIME		= 168;	// en ticks (14 dias)
 	
 	/** Si está habilitada la "pre infeccion" de contactos estrechos y cuarentena preventiva de los mismos */
@@ -90,19 +102,19 @@ public final class DataSet {
 	public static final int	INDOORS_MIN_TEMPERATURE		= 20;	// temperatura media minima anual en interiores
 	public static final int	INDOORS_MAX_TEMPERATURE		= 30;	// temperatura media maxima anual en interiores
 	
-	/** duracion de periodo de incubacion */
+	/** Duracion de periodo de incubacion */
 	public static final int EXPOSED_PERIOD_MEAN			= 60;	// 5 dias
 	public static final int EXPOSED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
-	/** duracion de periodo infectado sintomatico/asintomatico en ticks para todos */
+	/** Duracion de periodo infectado sintomatico/asintomatico en ticks para todos */
 	public static final int	INFECTED_PERIOD_MEAN_AG		= 60;	// 5 dias
 	public static final int INFECTED_PERIOD_DEVIATION	= 12;	// 1 dia desvio standard
 	
-	/** duracion de aislamiento de un infectado sintomatico o asintomatico conciente */
+	/** Duracion de aislamiento de un infectado sintomatico o asintomatico conciente */
 	public static final int	QUARANTINED_PERIOD_MEAN_AG	= 120;	// 10 dias
 	public static final int QUARANTINED_PERIOD_DEVIATION= 24;	// 2 dia desvio standard
 	
-	/** duracion en ICU luego de terminar periodo de infectado */
+	/** Duracion en ICU luego de terminar periodo de infectado */
 	public static final int EXTENDED_ICU_PERIOD			= 48;	// 4 dia mas desde infeccioso
 	
 	/** % de casos asintomaticos con respecto a los sintomatcos */
@@ -120,15 +132,15 @@ public final class DataSet {
 	public static final double[] HUMANS_PER_AGE_GROUP			= {14.4d, 17.92d, 22.88d, 31.1d, 13.7d}; // Abelardo Parana
 	
 	public static final double[][] LOCAL_HUMANS_PER_AGE_GROUP	= {	// Humanos con hogar dentro y trabajo/estudio fuera - Inventado
-			{20d, 20d, 30d, 30d, 0d},	// Seccional 2
-			{15d, 15d, 35d, 35d, 0d}	// Seccional 11
+			{ 5d, 35d, 30d, 30d, 0d},	// Seccional 2
+			{ 5d, 25d, 35d, 35d, 0d}	// Seccional 11
 	};
 	public static final double[][] FOREIGN_HUMANS_PER_AGE_GROUP	= {	// Humanos con hogar fuera y trabajo/estudio dentro - Inventado
-			{10d, 20d, 35d, 35d, 0d},	// Seccional 2
-			{ 5d, 10d, 40d, 45d, 0d}	// Seccional 11
+			{10d, 30d, 30d, 30d, 0d},	// Seccional 2
+			{10d, 20d, 35d, 35d, 0d}	// Seccional 11
 	};
 	
-	//En la Seccional 02 más del 40% trabaja y en la 11 ronda el 20%	-> 170% y 90% entre franjas 2,3,4
+	// En la Seccional 02 más del 40% trabaja y en la 11 ronda el 20%	-> 170% y 90% entre franjas 2,3,4
 	/** % de estudiantes, trabajadores e inactivos (ama de casa/jubilado/pensionado/otros) segun grupo etario */
 	public static final double[][][] OCCUPATION_PER_AGE_GROUP	= { // Datos del "El mapa del trabajo argentino 2019" - CEPE
 			// Seccional 2
@@ -145,30 +157,26 @@ public final class DataSet {
 			{   0d,   0d, 100d}}	// 65+
 	};
 	
-	public static final int[] WORKING_FROM_HOME		= {5, 7};	// 02: menos del 5% | 11: menos del 7%
-	public static final int[] WORKING_OUTDOORS		= {5, 30};	// 02: S/D. Porcentaje ínfimo. | 11: 30%.
+	public static final int[] WORKING_FROM_HOME	= {5, 7};	// 02: menos del 5% | 11: menos del 7%
+	public static final int[] WORKING_OUTDOORS	= {5, 30};	// 02: S/D. Porcentaje ínfimo. | 11: 30%.
 	
-	/** distancia para que se considere contacto personal */
-	public static final int	PERSONAL_DISTANCE				= 3;	// Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
-	/** para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
+	/** Distancia para que se considere contacto personal */
+	public static final int	PERSONAL_DISTANCE				= 4; // Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
+	/** Para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
 	public static final boolean COUNT_UNIQUE_INTERACTIONS	= false;
 	
-	/** para que en la grafica de porcentaje de tiempo en actividades, cuente el tiempo de estudio/trabajo como casa (si se queda) */
+	/** Para que en la grafica de porcentaje de tiempo en actividades, cuente el tiempo de estudio/trabajo como casa (si se queda) */
 	public static final boolean COUNT_WORK_FROM_HOME_AS_HOME = true;
 	
-	/** grado de precision frente a longitud */
-	public static final double DEGREE_PRECISION				= 11.132d / 0.0001d; // Fuente https://en.wikipedia.org/wiki/Decimal_degrees
-	/** radio en grados en los que se desplazan los humanos para ir a lugares de ocio u otros (no aplica a adultos) */
-	public static final double[] TRAVEL_RADIUS_PER_AGE_GROUP= {1000d / DEGREE_PRECISION, 1500d / DEGREE_PRECISION, -1d, -1d, 1000d / DEGREE_PRECISION}; // metros div metros por grado (longitud)
 	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
 	
 	/** % sobre 100 de que use el transporte publico al salir de seccional */
-	public static final int	PUBLIC_TRANSPORT_CHANCE		= 3;
-	/** Cantidad de unidades de transporte publico */
-	public static final int	PUBLIC_TRANSPORT_UNITS		= 2;
+	public static final int	PUBLIC_TRANSPORT_CHANCE	= 4;
+	/** Cantidad de unidades de transporte publico por seccional */
+	public static final int	PUBLIC_TRANSPORT_UNITS	= 2;
 	/** Cantidad de asientos en cada unidad de transorte publico */
-	public static final int	PUBLIC_TRANSPORT_SEATS		= 20;
+	public static final int	PUBLIC_TRANSPORT_SEATS	= 20;
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
