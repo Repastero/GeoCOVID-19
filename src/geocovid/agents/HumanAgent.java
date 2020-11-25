@@ -438,7 +438,7 @@ public class HumanAgent {
             	currentBuilding.removeHuman(this, currentPosition);
             	currentBuilding = null;
             }
-            else if (!exposed) {
+            else if (!exposed && InfectionReport.outbreakStarted) {
             	// Si estuvo afuera, tiene una chance de volver infectado
             	// TODO tendria que tener en cuenta si ya inicio la pandemia
             	int infectChance = (int) (schedule.getTickCount() - relocationTime);

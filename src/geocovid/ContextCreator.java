@@ -193,7 +193,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	public void infectLocalRandos(int amount) {
 		if (amount == 0)
 			return;
-		
+		InfectionReport.outbreakStarted = true; // a partir de ahora hay riesgo de infeccion
 		int infected = 0;
 		Set<Integer> indexes = new HashSet<Integer>(amount, 1f);
 		int i;

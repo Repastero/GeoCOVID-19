@@ -7,6 +7,9 @@ import repast.simphony.engine.schedule.ScheduledMethod;
  * El objetivo de esta clase es puramente informativo y mas que nada para llevar la cuenta de los Humanos infectados que no siempre estan en el Contexto.
  */
 public class InfectionReport {
+	/** Para indicar que se infectaron los iniciales */
+	public static boolean outbreakStarted;
+	//
 	private static int simulationMinDay;
 	private static int deathLimit;
 	//
@@ -36,6 +39,7 @@ public class InfectionReport {
 	private static int totalDailyActTicks;
 	
 	public InfectionReport(int minDay, int maxDeaths) {
+		outbreakStarted = false;
 		simulationMinDay = minDay;
 		deathLimit = maxDeaths;
 		
