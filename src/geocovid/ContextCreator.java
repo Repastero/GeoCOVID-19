@@ -334,7 +334,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("july", MarkovChains.SEC2_JULY_TMMC, MarkovChains.SEC11_JULY_TMMC);
 			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(90);//75
+			setSocialDistancing(95);//75
 			DataSet.setMaskEffectivity(0.3);
 			break;
 		case 3: // 3 agosto
@@ -349,12 +349,15 @@ public class ContextCreator implements ContextBuilder<Object> {
 			setTMMCs("august", MarkovChains.SEC2_AUGUST_TMMC, MarkovChains.SEC11_AUGUST_TMMC);
 			enablePublicTransport(true); // finaliza el paro de choferes
 			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(90);
+			setSocialDistancing(80);
 			DataSet.setMaskEffectivity(0.3);
 			break;
 		case 5: // 31 agosto
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
 			BuildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
+			BuildingManager.limitActivitiesCapacity(4d);
+			setSocialDistancing(85);
+			DataSet.setMaskEffectivity(0.3);
 			break;
 		case 6: // 11 septiembre
 			// Nuevas medidas (contacto estrecho)
@@ -362,11 +365,14 @@ public class ContextCreator implements ContextBuilder<Object> {
 			DataSet.enablePrevQuarantine();
 			//
 			BuildingManager.limitActivitiesCapacity(2d);
-			setSocialDistancing(65);
-			DataSet.setMaskEffectivity(0.2);
+			setSocialDistancing(80);
+			DataSet.setMaskEffectivity(0.3);
 			break;
 		case 7: // 14 septiembre
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
+			BuildingManager.limitActivitiesCapacity(4d);
+			setSocialDistancing(70);
+			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 8: // 21 septiembre
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
@@ -377,6 +383,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 			break;
 		case 9: // 29 octubre
 			BuildingManager.openPlaces(new String[] {"casino", "nursery_school"});
+			BuildingManager.limitActivitiesCapacity(4d);
+			setSocialDistancing(60);
+			DataSet.setMaskEffectivity(0.2);
 			break;
 		default:
 			break;

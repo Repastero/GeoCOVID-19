@@ -58,7 +58,7 @@ public final class DataSet {
 	/** Valor por cual se multiplica beta para obtener la chance de contagio al realizar una actividad fuera del contexto */
 	public static final int OOC_CONTAGION_VALUE = 3850;	// aumentar para incrementar el contagio fuera del contexto
 	/** Chance de contagio maxima, a 0 grados de temperatura exteriores */
-	public static final int	INFECTION_PEAK_RATE = 34;	// aumentar para incrementar beta en general
+	public static final int	INFECTION_PEAK_RATE = 40;	// aumentar para incrementar beta en general-beta basal = 26
 	
 	/** Modificador de chance de contagio en lugares al aire libre */
 	public static final double INFECTION_RATE_OUTSIDE_MOD = 0.5d; // 0.5 = 50% de adentro | 1 = sin modificar
@@ -100,7 +100,7 @@ public final class DataSet {
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
-	public static final int	CS_MIN_INFECTION_RATE		= 10;	// sobre 100
+	public static final int	CS_MIN_INFECTION_RATE		= 1;	// sobre 100
 	
 	// Informacion de temperatura para calcular la duracion del virus en superficie contaminada
 	public static final int	OUTDOORS_MIN_TEMPERATURE	= 10;	// temperatura media minima anual en exteriores

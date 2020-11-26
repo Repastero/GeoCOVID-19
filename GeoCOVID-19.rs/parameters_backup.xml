@@ -37,13 +37,19 @@
 									
 		/>
 				<parameter name="diasSimulacion" displayName="Dias maximo de simulacion" type="int" 
-						defaultValue="142" 
+						defaultValue="160" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
 				<parameter name="diasMinimoSimulacion" displayName="Dias minimo de simulacion" type="int" 
-						defaultValue="142" 
+						defaultValue="160" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="anoInicioSimulacion" displayName="Ano de inicio simulacion" type="int" 
+						defaultValue="2020" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
@@ -55,7 +61,7 @@
 									
 		/>
 				<parameter name="cantidadInfectados" displayName="Numero de infectados iniciales" type="int" 
-						defaultValue="1" 
+						defaultValue="5" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
