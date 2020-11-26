@@ -10,6 +10,7 @@ import cern.jet.random.Normal;
 import geocovid.BuildingManager;
 import geocovid.DataSet;
 import geocovid.InfectionReport;
+import geocovid.Temperature;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
@@ -440,9 +441,8 @@ public class HumanAgent {
             }
             else if (!exposed && InfectionReport.outbreakStarted) {
             	// Si estuvo afuera, tiene una chance de volver infectado
-            	// TODO tendria que tener en cuenta si ya inicio la pandemia
             	int infectChance = (int) (schedule.getTickCount() - relocationTime);
-        		if (RandomHelper.nextIntFromTo(1, DataSet.OOC_CONTAGION) <= infectChance) {
+        		if (RandomHelper.nextIntFromTo(1, Temperature.getOOCContagionChance()) <= infectChance) {
         			setExposed();
         		}
             }

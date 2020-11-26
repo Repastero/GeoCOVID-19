@@ -322,56 +322,60 @@ public class ContextCreator implements ContextBuilder<Object> {
 					"restaurant", "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
 			setTMMCs("june", MarkovChains.SEC2_JUNE_TMMC, MarkovChains.SEC11_JUNE_TMMC);
 			BuildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
-			enablePublicTransport(true); // TODO ver cuando hubo transporte
+			enablePublicTransport(true);
 			setSocialDistancing(95);//80
-			DataSet.setMaskEffectivity(30);
+			DataSet.setMaskEffectivity(0.3);
 			break;
-		case 1: // 20 julio
+		case 1: //  1 julio
+			enablePublicTransport(false); // comienza el paro de choferes
+			break;
+		case 2: // 20 julio
 			// Reapertura progresiva (Fase 4)
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("july", MarkovChains.SEC2_JULY_TMMC, MarkovChains.SEC11_JULY_TMMC);
 			BuildingManager.limitActivitiesCapacity(4d);
 			setSocialDistancing(90);//75
-			DataSet.setMaskEffectivity(30);
+			DataSet.setMaskEffectivity(0.3);
 			break;
-		case 2: // 3 agosto
+		case 3: // 3 agosto
 			// Mini veranito
 			setTMMCs("august", MarkovChains.SEC2_AUGUST_TMMC, MarkovChains.SEC11_AUGUST_TMMC);
 			BuildingManager.limitActivitiesCapacity(3d);
 			setSocialDistancing(70);
-			DataSet.setMaskEffectivity(30);
+			DataSet.setMaskEffectivity(0.3);
 			break;
-		case 3: // 17 agosto
+		case 4: // 17 agosto
 			// Nueva normalidad (Fase 5)
 			setTMMCs("august", MarkovChains.SEC2_AUGUST_TMMC, MarkovChains.SEC11_AUGUST_TMMC);
+			enablePublicTransport(true); // finaliza el paro de choferes
 			BuildingManager.limitActivitiesCapacity(4d);
 			setSocialDistancing(90);
-			DataSet.setMaskEffectivity(30);
+			DataSet.setMaskEffectivity(0.3);
 			break;
-		case 4: // 31 agosto
+		case 5: // 31 agosto
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
 			BuildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
 			break;
-		case 5: // 11 septiembre
+		case 6: // 11 septiembre
 			// Nuevas medidas (contacto estrecho)
 			DataSet.enableCloseContacts();
 			DataSet.enablePrevQuarantine();
 			//
 			BuildingManager.limitActivitiesCapacity(2d);
 			setSocialDistancing(65);
-			DataSet.setMaskEffectivity(20);
+			DataSet.setMaskEffectivity(0.2);
 			break;
-		case 6: // 14 septiembre
+		case 7: // 14 septiembre
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			break;
-		case 7: // 21 septiembre
+		case 8: // 21 septiembre
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
 			setTMMCs("september", MarkovChains.SEC2_SEPTEMBER_TMMC, MarkovChains.SEC11_SEPTEMBER_TMMC);
 			BuildingManager.limitActivitiesCapacity(4d);
 			setSocialDistancing(60);
-			DataSet.setMaskEffectivity(20);
+			DataSet.setMaskEffectivity(0.2);
 			break;
-		case 8: // 29 octubre
+		case 9: // 29 octubre
 			BuildingManager.openPlaces(new String[] {"casino", "nursery_school"});
 			break;
 		default:

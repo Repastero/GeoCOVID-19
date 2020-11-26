@@ -22,6 +22,12 @@ public class Temperature {
 	private static double idCurrentTemp;
 	private static double idTempStep;
 	private static final double[] temperature = new double[365];
+	/** Beta diario para cada tipo de seccional */
+	private static double[] infectionRate = new double[2];
+	/** Beta diario para espacios al aire libre */
+	private static double infectionRateOutside;
+	/** Valor de contagio diario estando fuera del contexto */
+	private static int oocContagionChance;
 	
 	/**
 	 * Lee de archivo csv los datos de temperatura de exteriores del ano actual.<p>
@@ -37,22 +43,39 @@ public class Temperature {
 		odCurrentTemp = temperature[dayOfTheYear];
 		//
 		idTempStep = (DataSet.INDOORS_MAX_TEMPERATURE - DataSet.INDOORS_MIN_TEMPERATURE) / 182d;
+		
 		// Setea la temperatura del dia inicial
 		idCurrentTemp = DataSet.INDOORS_MIN_TEMPERATURE + (Math.abs(DOTY - 182) * idTempStep);
+		// Setear las chances de infeccion del dia inicial
+		updateInfectionChances();
 	}
 	
 	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
-	public static void setDailyTemperature() {
+	public static void updateDailyTemperature() {
 		odCurrentTemp = temperature[++dayOfTheYear];
 		if (dayOfTheYear < 182) // Primeros 6 meses
 			idCurrentTemp -= idTempStep;
 		else // Segundos 6 meses
 			idCurrentTemp += idTempStep;
-		// Ultimo dia del ano, lee los datos del año siguiente
+		// Ultimo dia del ano, lee los datos del ano siguiente
 		if (dayOfTheYear == 364) {
 			dayOfTheYear = 0;
 			loadWeatherData(++currentYear);
 		}
+		// Setear las chances de infeccion del dia actual
+		updateInfectionChances();
+	}
+	
+	/**
+	 * Calcula el beta base, segun temperatura exterior del dia, y con el valor obtenido calcula:<p>
+	 * beta en seccional 11, en espacios abiertos y chance de contagio fuera del contexto. 
+	 */
+	private static void updateInfectionChances() {
+		infectionRate[0] = (1 - (odCurrentTemp / 50d)) * DataSet.INFECTION_PEAK_RATE; // 50 grados temperatura maxima - Formula Matias
+		//infectionRate[0] = (-13 * odCurrentTemp + 650d) / 20; // Formula Emanuel
+		infectionRate[1] = infectionRate[0] * DataSet.INFECTION_RATE_SEC11_MOD;
+		infectionRateOutside = infectionRate[0] * DataSet.INFECTION_RATE_OUTSIDE_MOD;
+		oocContagionChance = (int) (200000 - (DataSet.OOC_CONTAGION_VALUE * infectionRate[0]));
 	}
 	
 	private static void readCSV(String file, int index, int dayFrom, int dayTo) {
@@ -97,10 +120,26 @@ public class Temperature {
 		readCSV(weatherFile, 0, 0, 365);
 	}
 	
+	public static double getInfectionRate(boolean outdoor) {
+		if (outdoor)
+			return infectionRateOutside;
+		return infectionRate[0];
+	}
+	
+	public static double getInfectionRate(boolean outdoor, int sectoralType) {
+		if (outdoor)
+			return infectionRateOutside;
+		return infectionRate[sectoralType];
+	}
+	
 	public static double getTemperature(boolean outdoor) {
 		if (outdoor)
 			return odCurrentTemp;
 		else
 			return idCurrentTemp;
+	}
+	
+	public static int getOOCContagionChance() {
+		return oocContagionChance;
 	}
 }

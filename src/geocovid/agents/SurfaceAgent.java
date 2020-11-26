@@ -45,7 +45,7 @@ public class SurfaceAgent {
 			hours += ((currentTime / 12) - (creationTime / 12)) * 12;
 			//
 			double beta = Math.exp(-(4.9d) + (Temperature.getTemperature(outdoor) / 10d));
-			infectionRate = (int) (Math.exp((-beta) * hours) * DataSet.CS_INFECTION_RATE);
+			infectionRate = (int) (Math.exp((-beta) * hours) * Temperature.getInfectionRate(outdoor));
 			if (infectionRate < DataSet.CS_MIN_INFECTION_RATE) {
 				infectionRate = 0;
 				contaminated = false;

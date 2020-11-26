@@ -9,6 +9,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 import geocovid.DataSet;
 import geocovid.InfectionReport;
+import geocovid.Temperature;
 import repast.simphony.random.RandomHelper;
 
 public class BuildingAgent {
@@ -334,7 +335,7 @@ public class BuildingAgent {
 	 * @return <b>true</b> si hubo contagio
 	 */
 	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
-		int infectionRate = DataSet.INFECTION_RATE;
+		double infectionRate = Temperature.getInfectionRate(outdoor, sectoralType);
 		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
 			// Si es un lugar de trabajo se chequea si respetan distanciamiento y usan cubreboca
 			if (workingPlace) {
@@ -360,22 +361,21 @@ public class BuildingAgent {
 						return false;
 					}
 				}
-				else if (DataSet.getMaskEffectivity() != 0) {
+				else if (DataSet.getMaskEffectivity() > 0) {
 					// Si es un lugar cerrado o se usa cubreboca en exteriores
 					if ((!outdoor) || DataSet.wearMaskOutdoor()) {
 						// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
 						if (!(spreader.atWork() && prey.atWork()) || DataSet.wearMaskWorkspace()) {
-							infectionRate -= (infectionRate * DataSet.getMaskEffectivity()) / 100;
+							infectionRate *= 1 - DataSet.getMaskEffectivity();
 						}
 					}
 				}
 			}
 			else if (spreader.quarantined) {
 				// Si esta aislado, se supone tiene todas las precauciones para no contagiar
-				infectionRate -= (infectionRate * DataSet.ISOLATION_INFECTION_RATE_REDUCTION) / 100;
+				infectionRate *= 1 - DataSet.ISOLATION_INFECTION_RATE_REDUCTION;
 			}
-			
-			if (RandomHelper.nextIntFromTo(1, 100) <= infectionRate) {
+			if (RandomHelper.nextDoubleFromTo(0d, 100d) <= infectionRate) {
 				prey.setExposed();
 				return true;
 			}
@@ -386,9 +386,7 @@ public class BuildingAgent {
 	/**
 	 * Esparce el virus a los humanos susceptibles con los que tuvo contacto cercano y prolongado.
 	 * @param spHuman HumanAgent contagioso
-	 * @param spPos posicion en grilla de spHuman 
-	 * @see DataSet#INFECTION_EXPOSURE_TIME
-	 * @see DataSet#INFECTION_RATE
+	 * @param spPos posicion en grilla de spHuman
 	 */
 	private void spreadVirus(HumanAgent spHuman, int[] spPos) {
 		HumanAgent prey;
@@ -415,8 +413,6 @@ public class BuildingAgent {
 	 * @param human HumanAgent susceptible
 	 * @param pos posicion en grilla de human
 	 * @param spreaders lista de HumanAgent contagiosos
-	 * @see DataSet#INFECTION_EXPOSURE_TIME
-	 * @see DataSet#INFECTION_RATE
 	 */
 	private void findNearbySpreaders(HumanAgent human, int[] pos, List<HumanAgent> spreaders) {
 		int[] spPos = new int[2];

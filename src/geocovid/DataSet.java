@@ -1,9 +1,6 @@
 package geocovid;
 
 public final class DataSet {
-	/** Limite de chance de contagio al realizar una actividad fuera del contexto (a menor limite, mayor chance) */
-	public static final int OOC_CONTAGION = 100000;
-	
 	public static final String SHP_FILE_PARCELS	= "./data/parana-joined.shp";
 	public static final String SHP_FILE_PLACES	= "./data/places.shp";
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/parana-places-markov.csv";
@@ -21,10 +18,11 @@ public final class DataSet {
 			3.15, 6.82, 9.65, 10.57, 1.27, 8.44, 6.61, 8.16, 2.10 };
 	public static final int SECTORALS_COUNT = SECTORALS_POPULATION.length;
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, 3, 4, 5, 6,  7,  8};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,38,52,66,81,91,94,101,139};	// Dia 0 = 12 de Junio (dia 164)
+	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, 3, 4, 5, 6, 7,  8,  9};	// Numero de fase en orden de cambio
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,19,38,52,66,81,91,94,101,139};	// Dia 0 = 12 de Junio (dia 164)
 	/* Dia de inicio de cada fase
 	 * 12 junio
+	 *  1 julio
 	 * 20 julio
 	 *  3 agosto
 	 * 17 agosto
@@ -57,18 +55,26 @@ public final class DataSet {
 	/** Multiplicador del limit de aforo en Places de ocio */
 	public static final double ENTERTAINMENT_CAP_LIMIT_MOD	= 4d;
 	
-	/** Chance de contagio al estar en contacto con un infectado */
-	public static final int	INFECTION_RATE				= 26;	// sobre 100
+	/** Valor por cual se multiplica beta para obtener la chance de contagio al realizar una actividad fuera del contexto */
+	public static final int OOC_CONTAGION_VALUE = 3850;	// aumentar para incrementar el contagio fuera del contexto
+	/** Chance de contagio maxima, a 0 grados de temperatura exteriores */
+	public static final int	INFECTION_PEAK_RATE = 34;	// aumentar para incrementar beta en general
+	
+	/** Modificador de chance de contagio en lugares al aire libre */
+	public static final double INFECTION_RATE_OUTSIDE_MOD = 0.5d; // 0.5 = 50% de adentro | 1 = sin modificar
+	/** Modificador de chance de contagio en parcelas tipo seccional 11 */
+	public static final double INFECTION_RATE_SEC11_MOD	  = 0.9d; // 0.9 = 90% del valor comun | 1 = sin modificar
+	
 	/** Radio que puede contagiar un infectado */
 	public static final int	INFECTION_RADIUS			= 4;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** Tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.2d;	// ticks
 	
-	/** Porcentaje restado de INFECTION_RATE al estar en aislamiento */
-	public static final int	ISOLATION_INFECTION_RATE_REDUCTION	= 80;	// sobre 100 (0 para desactivar)
+	/** Fraccion de reduccion de beta al estar en aislamiento */
+	public static final double	ISOLATION_INFECTION_RATE_REDUCTION	= 0.80d;	// fraccion de uno (0 para desactivar)
 	
-	/** Porcentaje restado de INFECTION_RATE al usar barbijo */
-	private static int maskInfRateReduction;	// sobre 100 - 30 segun bibliografia (0 para desactivar)
+	/** Fraccion de reduccion de beta al usar barbijo */
+	private static double maskInfRateReduction;	// 30% segun bibliografia
 	/** Si al aire libre se usa tapaboca */
 	private static boolean wearMaskOutdoor;
 	/** Si entre empleados usan tapaboca */
@@ -194,10 +200,10 @@ public final class DataSet {
 	}
 	
 	/**
-	 * @param minusRate porcentaje de reduccion de infeccion (0...100)
+	 * @param minusRate fraccion de reduccion de infeccion (0...1)
 	 */
-	public static void setMaskEffectivity(int minusRate) {
-		maskInfRateReduction = minusRate;
+	public static void setMaskEffectivity(double minusFrac) {
+		maskInfRateReduction = minusFrac;
 	}
 	
 	/**
@@ -230,8 +236,8 @@ public final class DataSet {
 		socialDistWorkspace = enableWorkplace;
 	}
 	
-	/** @return <b>0...100</b> porcentaje de reduccion de infeccion */
-	public static int getMaskEffectivity()		{ return maskInfRateReduction; }
+	/** @return <b>0...1</b> fraccion de reduccion de infeccion */
+	public static double getMaskEffectivity()	{ return maskInfRateReduction; }
 	/** @return <b>true</b> si se utiliza cubrebocas en espacios abiertos */
 	public static boolean wearMaskOutdoor()		{ return wearMaskOutdoor; }
 	/** @return <b>true</b> si trabajadores/estudiantes utilizan cubrebocas en su trabajo/estudio */
