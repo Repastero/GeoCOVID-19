@@ -219,7 +219,8 @@ public class BuildingAgent {
 			return;
 		int posId = getPosId(pos);
 		// Busca contactos cercanos
-		sociallyInteract(human, pos);
+		if (DataSet.COUNT_INTERACTIONS)
+			sociallyInteract(human, pos);
 		// Si es susceptible se busca si pudo contagiarse
 		if (!human.wasExposed()) {
 			// Primero busca fuentes de contagio directo

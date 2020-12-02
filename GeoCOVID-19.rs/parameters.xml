@@ -18,14 +18,8 @@
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
-				<parameter name="diaInicioCuarentena" displayName="Dias hasta iniciar cuarentena" type="int" 
-						defaultValue="0" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
 				<parameter name="diasPrimerFinde" displayName="Dias hasta comenzar fin de semana" type="int" 
-						defaultValue="1" 
+						defaultValue="3" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
@@ -37,25 +31,25 @@
 									
 		/>
 				<parameter name="diaEntradaCaso" displayName="Dia de entrada de infectados" type="int" 
-						defaultValue="18" 
+						defaultValue="0" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
 				<parameter name="diasSimulacion" displayName="Dias maximo de simulacion" type="int" 
-						defaultValue="166" 
+						defaultValue="153" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
 				<parameter name="diasMinimoSimulacion" displayName="Dias minimo de simulacion" type="int" 
-						defaultValue="166" 
+						defaultValue="153" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
 				<parameter name="diaInicioSimulacion" displayName="Dia del ano inicio simulacion" type="int" 
-						defaultValue="164" 
+						defaultValue="183" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									

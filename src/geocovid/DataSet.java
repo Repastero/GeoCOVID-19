@@ -11,15 +11,15 @@ public final class DataSet {
 	public static final int FOREIGN_TRAVELER_HUMANS	= 0;		// Cantidad de Humanos que viven afuera
 	
 	/** Tipo de seccional segun indice: 0 tipo 2 | 1 tipo 11 */
-	public static final int[] SECTORALS_TYPES = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};	// SEC2 - 47.39% poblacion | SEC11 - 52.61% poblacion
+	public static final int[] SECTORALS_TYPES = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}; // SEC2 - 47.39% poblacion | SEC11 - 52.61% poblacion
 	/** Porcentaje de la poblacion que tiene domicilio (vota) en cada seccional */
 	public static final double[] SECTORALS_POPULATION = { // Fuente escrutinio 2015
 			6.02, 4.98, 3.73, 5.72, 4.94, 1.95, 1.26, 11.74, 2.89, 
 			3.15, 6.82, 9.65, 10.57, 1.27, 8.44, 6.61, 8.16, 2.10 };
 	public static final int SECTORALS_COUNT = SECTORALS_POPULATION.length;
 	
-	public static final int[] LOCKDOWN_PHASES		= {0, 1, 2, 3, 4, 5, 6, 7,  8,  9};	// Numero de fase en orden de cambio
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {0,19,38,52,66,81,91,94,101,139};	// Dia 0 = 12 de Junio (dia 164)
+	/** Dia del corrente ano donde ocurre cambio de fase<p> @see <a href="https://espanol.epochconverter.com/dias/2020">Numeros de dias 2020</a> */
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {164,183,202,216,230,245,255,258,265,283,303,311}; // Dia 0 = 12 de Junio (dia 164)
 	/* Dia de inicio de cada fase
 	 * 12 junio
 	 *  1 julio
@@ -30,8 +30,11 @@ public final class DataSet {
 	 * 11 septiembre
 	 * 14 septiembre
 	 * 21 septiembre
+	 *  9 octubre
 	 * 29 octubre
+	 *  6 noviembre
 	 */
+	
 	
 	/** Cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
@@ -46,19 +49,17 @@ public final class DataSet {
 	public static final double WORKPLACE_AVAILABLE_AREA	= 0.75;
 	
 	/** Area en m2 para hogares */
-	public static final int[] HOME_BUILDING_AREA		= {125, 150};
+	public static final int[] HOME_BUILDING_AREA = {125, 150};
 	/** Area construida en m2 para hogares */
-	public static final int[] HOME_BUILDING_COVERED_AREA= {100, 120};
+	public static final int[] HOME_BUILDING_COVERED_AREA = {100, 120};
 	
 	/** Limite de aforo en Places por defecto durante cuarentena (valor minimo variable segun HUMANS_PER_SQUARE_METER) */ 
 	public static final double DEFAULT_PLACES_CAP_LIMIT		= 4d;	// metros cuadrados de superficie util, por persona
 	/** Multiplicador del limit de aforo en Places de ocio */
-	public static final double ENTERTAINMENT_CAP_LIMIT_MOD	= 4d;
+	public static final double ENTERTAINMENT_CAP_LIMIT_MOD	= 2d;
 	
 	/** Valor por cual se multiplica beta para obtener la chance de contagio al realizar una actividad fuera del contexto */
 	public static final int OOC_CONTAGION_VALUE = 3850;	// aumentar para incrementar el contagio fuera del contexto
-	/** Chance de contagio maxima, a 0 grados de temperatura exteriores */
-	public static final int	INFECTION_PEAK_RATE = 40;	// aumentar para incrementar beta en general-beta basal = 26
 	
 	/** Modificador de chance de contagio en lugares al aire libre */
 	public static final double INFECTION_RATE_OUTSIDE_MOD = 0.5d; // 0.5 = 50% de adentro | 1 = sin modificar
@@ -168,6 +169,8 @@ public final class DataSet {
 	
 	/** Distancia para que se considere contacto personal */
 	public static final int	PERSONAL_DISTANCE				= 4; // Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
+	/** Habilitar que se cuenten los contactos personales */
+	public static final boolean COUNT_INTERACTIONS			= true; // En false se reduce el tiempo de simulacion 25% aprox.
 	/** Para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
 	public static final boolean COUNT_UNIQUE_INTERACTIONS	= false;
 	

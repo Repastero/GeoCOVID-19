@@ -278,6 +278,53 @@ public final class MarkovChains {
 	public static final int[][][][] SEC2_SEPTEMBER_TMMC = {YOUNG_SEC2_SEPTEMBER_TMMC, YOUNG_SEC2_SEPTEMBER_TMMC, ADULT_SEC2_SEPTEMBER_TMMC, ADULT_SEC2_SEPTEMBER_TMMC, HIGHER_SEC2_SEPTEMBER_TMMC};
 	public static final int[][][][] SEC11_SEPTEMBER_TMMC = {YOUNG_SEC11_SEPTEMBER_TMMC, YOUNG_SEC11_SEPTEMBER_TMMC, ADULT_SEC11_SEPTEMBER_TMMC, ADULT_SEC11_SEPTEMBER_TMMC, HIGHER_SEC11_SEPTEMBER_TMMC};
 	
+	// Matrices de markov del mes de Octubre para seccionales 2 y 11 de Paraná //
+	
+	public static final int YOUNG_SEC2_OCTOBER_DIFF[][][] = {
+			{ {  50,-50,  0,  0 }, {  50,-50,  0,  0 }, { 50,-50,  0,0 }, { 50,-50,  0,  0 } },
+			{ {   0,  0,  0,  0 }, {   0,  0,  0,  0 }, {  0,  0,  0,0 }, {  0,  0,  0,  0 } },
+			{ {   0,  0,  0,  0 }, {  50,-50,  0,  0 }, { 50,  0,-50,0 }, { 50,-25,-25,  0 } },
+			{ { 100,-40,-50,-10 }, { 100,-40,-50,-10 }, { 25,  0,-25,0 }, { 25,  0,  0,-25 } } };
+	public static final int YOUNG_SEC11_OCTOBER_DIFF[][][] = {
+			{ {  25,-50,  25,0 }, {  25,-50,  25,0 }, { 25,-50, 25,0 }, { 25,-50, 25,  0 } },
+			{ {   0,  0,   0,0 }, {   0,  0,   0,0 }, {  0,  0,  0,0 }, {  0,  0,  0,  0 } },
+			{ {  25,-25,   0,0 }, {  25,-25,   0,0 }, {  0,  0,  0,0 }, {  0,  0,  0,  0 } },
+			{ { 125,-25,-100,0 }, { 125,-25,-100,0 }, { 50,  0,-50,0 }, { 50,  0,-25,-25 } } };
+
+	public static final int ADULT_SEC2_OCTOBER_DIFF[][][] = {
+			{ { 25,-25,  0,0 }, {  25,-25,  0,  0 }, {  25,-25,   0,0 }, { 25,-25,  0,  0 } },
+			{ {  0,  0,  0,0 }, {   0,  0,  0,  0 }, {   0,  0,   0,0 }, {  0,  0,  0,  0 } },
+			{ {  0,  0,  0,0 }, {  25,-25,  0,  0 }, {  25,-25,   0,0 }, { 25,-25,  0,  0 } },
+			{ { 50,-25,-25,0 }, { 125,-25,-75,-25 }, { 125,-25,-100,0 }, { 50,  0,-25,-25 } } };
+	public static final int ADULT_SEC11_OCTOBER_DIFF[][][] = {
+			{ {  25,-25,  0,  0 }, {  25,-25,  0,0 }, {  25,-25,   0,0 }, { 25,-25,  0,  0 } },
+			{ {   0,  0,  0,  0 }, {   0,  0,  0,0 }, {   0,  0,   0,0 }, {  0,  0,  0,  0 } },
+			{ {   0,-25, 25,  0 }, {   0,-25, 25,0 }, {   0,-25,  25,0 }, {  0,-25, 25,  0 } },
+			{ { 100,  0,-50,-50 }, { 100,-25,-75,0 }, { 100,  0,-100,0 }, { 75,  0,-50,-25 } } };
+
+	public static final int HIGHER_SEC2_OCTOBER_DIFF[][][] = {
+			{ { 10,0,-10,0 }, { 10,0,-10,  0 }, { 10,0,-10,  0 }, { 10,0,-10,  0 } },
+			{ {  0,0,  0,0 }, {  0,0,  0,  0 }, {  0,0,  0,  0 }, {  0,0,  0,  0 } },
+			{ { 10,0,-10,0 }, { 75,0,-50,-25 }, { 50,0,  0,-50 }, { 50,0,  0,-50 } },
+			{ {  0,0,  0,0 }, {  0,0,  0,  0 }, {  0,0,  0,  0 }, {  0,0,  0,  0 } } };
+	public static final int HIGHER_SEC11_OCTOBER_DIFF[][][] = {
+			{ { 15,0,-10,-5 }, { 15,0,-10, -5 }, { 15,0,-10,-5 }, { 15,0,-10,-5 } },
+			{ {  0,0,  0, 0 }, {  0,0,  0,  0 }, {  0,0,  0, 0 }, {  0,0,  0, 0 } },
+			{ { 25,0,-25, 0 }, { 50,0,-35,-15 }, {  0,0,  0, 0 }, {  0,0,  0, 0 } },
+			{ { 10,0, -5,-5 }, { 10,0, -5, -5 }, { 10,0, -5,-5 }, { 10,0, -5,-5 } } };
+	
+	public static final int YOUNG_SEC2_OCTOBER_TMMC[][][] = mergeChainsDiff(YOUNG_SEC2_DEFAULT_TMMC, YOUNG_SEC2_OCTOBER_DIFF);
+	public static final int YOUNG_SEC11_OCTOBER_TMMC[][][] = mergeChainsDiff(YOUNG_SEC11_DEFAULT_TMMC, YOUNG_SEC11_OCTOBER_DIFF);
+	
+	public static final int ADULT_SEC2_OCTOBER_TMMC[][][] = mergeChainsDiff(ADULT_SEC2_DEFAULT_TMMC, ADULT_SEC2_OCTOBER_DIFF);
+	public static final int ADULT_SEC11_OCTOBER_TMMC[][][] = mergeChainsDiff(ADULT_SEC11_DEFAULT_TMMC, ADULT_SEC11_OCTOBER_DIFF);
+	
+	public static final int HIGHER_SEC2_OCTOBER_TMMC[][][] = mergeChainsDiff(HIGHER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_OCTOBER_DIFF);
+	public static final int HIGHER_SEC11_OCTOBER_TMMC[][][] = mergeChainsDiff(HIGHER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_OCTOBER_DIFF);
+	
+	public static final int[][][][] SEC2_OCTOBER_TMMC = {YOUNG_SEC2_OCTOBER_TMMC, YOUNG_SEC2_OCTOBER_TMMC, ADULT_SEC2_OCTOBER_TMMC, ADULT_SEC2_OCTOBER_TMMC, HIGHER_SEC2_OCTOBER_TMMC};
+	public static final int[][][][] SEC11_OCTOBER_TMMC = {YOUNG_SEC11_OCTOBER_TMMC, YOUNG_SEC11_OCTOBER_TMMC, ADULT_SEC11_OCTOBER_TMMC, ADULT_SEC11_OCTOBER_TMMC, HIGHER_SEC11_OCTOBER_TMMC};
+	
 	// FIN DECLARACIONES MATRICES DE MARKOV //
 
 	/**

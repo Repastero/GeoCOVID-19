@@ -54,7 +54,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	private Set<Integer> socialDistIndexes;
 	
-	private Map<Long, String> placesType = new HashMap<>();
 	private Map<String, PlaceProperty> placesProperty = new HashMap<>();
 	
 	private ISchedule schedule;
@@ -68,7 +67,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private int deathLimit;
 	private int infectedAmount;
 	private int outbreakStartTick;
-	private int lockdownStartTick;
 	private int weekendStartTick;
 	
 	private long simulationStartTime;
@@ -98,7 +96,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		schedule.schedule(params, this, "startSimulation");
 		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
 		schedule.schedule(params, this, "printSimulationDuration");
-
+		
 		// Crear la proyeccion para almacenar los agentes GIS (EPSG:4326).
 		GeographyParameters<Object> geoParams = new GeographyParameters<Object>();
 		this.geography = GeographyFactoryFinder.createGeographyFactory(null).createGeography("Geography", context, geoParams);
@@ -110,11 +108,17 @@ public class ContextCreator implements ContextBuilder<Object> {
 		params = ScheduleParameters.createOneTime(outbreakStartTick, 0.9d);
 		schedule.schedule(params, this, "infectLocalRandos", infectedAmount);
 		
-		int[] phases = DataSet.LOCKDOWN_PHASES;
+		// Programa los cambios de fases, pasadas y futuras
+		int phaseDay;
 		int[] phasesStartDay = DataSet.LOCKDOWN_PHASES_DAYS;
-		for (int i = 0; i < phases.length; i++) {
-			params = ScheduleParameters.createOneTime(phasesStartDay[i] * 12, 0.9d);
-			schedule.schedule(params, this, "initiateLockdownPhase", phases[i]);
+		for (int i = 0; i < phasesStartDay.length; i++) {
+			phaseDay = phasesStartDay[i] - simulationStartDay;
+			if (phaseDay > 0)	// Fase futura
+				phaseDay *= 12;
+			else				// Fase pasada
+				phaseDay = 0;
+			params = ScheduleParameters.createOneTime(phaseDay, 0.9d);
+			schedule.schedule(params, this, "initiateLockdownPhase", i);
 		}
 		
 		// Reinicio estos valores por las dudas
@@ -132,6 +136,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		placesProperty = PlaceProperty.loadPlacesProperties();
 		loadParcelsShapefile();
 		loadPlacesShapefile();
+		placesProperty.clear();
 		BuildingManager.createActivitiesChances();
 		
 		DataSet.setDefaultValues();
@@ -168,6 +173,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	public void printSimulationDuration() {
+		// Por las dudas al finalizar borro la referencia de HumanAgents
+		contextHumans = null;
+		
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
 		
 		System.out.printf("Simulacion N°: %3d | Tiempo: %.2f minutos%n", simulationRun, (simTime / (double)(1000*60)));
@@ -323,8 +331,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 			setTMMCs("june", MarkovChains.SEC2_JUNE_TMMC, MarkovChains.SEC11_JUNE_TMMC);
 			BuildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
 			enablePublicTransport(true);
-			setSocialDistancing(95);//80
-			DataSet.setMaskEffectivity(0.3);
+			setSocialDistancing(80);
+			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 1: //  1 julio
 			enablePublicTransport(false); // comienza el paro de choferes
@@ -334,30 +342,29 @@ public class ContextCreator implements ContextBuilder<Object> {
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("july", MarkovChains.SEC2_JULY_TMMC, MarkovChains.SEC11_JULY_TMMC);
 			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(95);//75
-			DataSet.setMaskEffectivity(0.3);
+			setSocialDistancing(80);
+			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 3: // 3 agosto
 			// Mini veranito
 			setTMMCs("august", MarkovChains.SEC2_AUGUST_TMMC, MarkovChains.SEC11_AUGUST_TMMC);
 			BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(70);
-			DataSet.setMaskEffectivity(0.3);
+			setSocialDistancing(65);
+			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 4: // 17 agosto
 			// Nueva normalidad (Fase 5)
-			setTMMCs("august", MarkovChains.SEC2_AUGUST_TMMC, MarkovChains.SEC11_AUGUST_TMMC);
 			enablePublicTransport(true); // finaliza el paro de choferes
 			BuildingManager.limitActivitiesCapacity(4d);
 			setSocialDistancing(80);
-			DataSet.setMaskEffectivity(0.3);
+			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 5: // 31 agosto
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
 			BuildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
 			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(85);
-			DataSet.setMaskEffectivity(0.3);
+			setSocialDistancing(70);
+			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 6: // 11 septiembre
 			// Nuevas medidas (contacto estrecho)
@@ -365,27 +372,32 @@ public class ContextCreator implements ContextBuilder<Object> {
 			DataSet.enablePrevQuarantine();
 			//
 			BuildingManager.limitActivitiesCapacity(2d);
-			setSocialDistancing(80);
-			DataSet.setMaskEffectivity(0.3);
+			setSocialDistancing(60);
+			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 7: // 14 septiembre
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
-			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(70);
-			DataSet.setMaskEffectivity(0.25);
+			setTMMCs("september", MarkovChains.SEC2_SEPTEMBER_TMMC, MarkovChains.SEC11_SEPTEMBER_TMMC);
+			BuildingManager.limitActivitiesCapacity(3d);
+			setSocialDistancing(50);
+			DataSet.setMaskEffectivity(0.20);
 			break;
 		case 8: // 21 septiembre
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
-			setTMMCs("september", MarkovChains.SEC2_SEPTEMBER_TMMC, MarkovChains.SEC11_SEPTEMBER_TMMC);
-			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(60);
-			DataSet.setMaskEffectivity(0.2);
+			setSocialDistancing(40);
+			DataSet.setMaskEffectivity(0.15);
 			break;
-		case 9: // 29 octubre
+		case 9: // 9 octubre
+			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
+			break;
+		case 10: // 29 octubre
 			BuildingManager.openPlaces(new String[] {"casino", "nursery_school"});
-			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(60);
-			DataSet.setMaskEffectivity(0.2);
+			setSocialDistancing(30);
+			break;
+		case 11: // 6 noviembre
+			// Nueva alversoetapa
+			setTMMCs("default", MarkovChains.SEC2_DEFAULT_TMMC, MarkovChains.SEC11_DEFAULT_TMMC);
+			setSocialDistancing(20);
 			break;
 		default:
 			break;
@@ -416,10 +428,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		outbreakStartTick	= ((Integer) params.getValue("diaEntradaCaso")).intValue() * 12;
 		// Cantidad de infectados iniciales
 		infectedAmount		= ((Integer) params.getValue("cantidadInfectados")).intValue();
-		// Dias de delay desde que entran los infectados para iniciar cuarentena (0 = Ninguno)
-		lockdownStartTick	= ((Integer) params.getValue("diaInicioCuarentena")).intValue() * 12;
-		// Cuarentena comienza segun primer caso + inicio cuarentena
-		lockdownStartTick	+= outbreakStartTick;
 		// Cantidad de corridas para hacer en batch
 		simulationRun		= (Integer) params.getValue("corridas");
 	}
@@ -502,7 +510,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		workPlaces.clear();
 		schoolPlaces.clear();
 		universityPlaces.clear();
-		placesType.clear();
 		
 		PlaceProperty placeProp;
 		PlaceProperty placeSecProp;

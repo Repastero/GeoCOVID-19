@@ -71,11 +71,10 @@ public class Temperature {
 	 * beta en seccional 11, en espacios abiertos y chance de contagio fuera del contexto. 
 	 */
 	private static void updateInfectionChances() {
-		infectionRate[0] = (1 - (odCurrentTemp / 35d)) * DataSet.INFECTION_PEAK_RATE; // 50 grados temperatura maxima - Formula Matias
-		//infectionRate[0] = (-27 * odCurrentTemp + 910d) / 20; // Formula Emanuel
+		infectionRate[0] = (-13 * odCurrentTemp + 494d) / 13; // Formula Emanuel
 		infectionRate[1] = infectionRate[0] * DataSet.INFECTION_RATE_SEC11_MOD;
 		infectionRateOutside = infectionRate[0] * DataSet.INFECTION_RATE_OUTSIDE_MOD;
-		oocContagionChance = (int) (200000 - (DataSet.OOC_CONTAGION_VALUE * infectionRate[0]));
+		oocContagionChance = (int) (150000 - (DataSet.OOC_CONTAGION_VALUE * infectionRateOutside));
 	}
 	
 	private static void readCSV(String file, int index, int dayFrom, int dayTo) {
