@@ -358,6 +358,40 @@ public final class BuildingManager {
         return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
 	}
 	
+	private static void resizeBuildingsList(List<WorkplaceAgent> places, int maxSize) {
+		// TODO comentar
+		if (maxSize == -1) {
+			// Todos los resultados
+			return;
+		}
+		else {
+			int pSize = places.size();
+			while (pSize > maxSize) {
+				places.remove(RandomHelper.nextIntFromTo(0, --pSize));
+			}
+		}
+	}
+	
+	public static List<WorkplaceAgent> getActivityBuildings(int maxBuilding, String priType) {
+		// TODO comentar
+		List<WorkplaceAgent> places = new ArrayList<WorkplaceAgent>();
+		placesMap.get(priType).forEach(sect -> places.addAll(sect));
+		resizeBuildingsList(places, maxBuilding);
+		return places;
+	}
+	
+	public static List<WorkplaceAgent> getActivityBuildings(int maxBuilding, String priType, String secType) {
+		// TODO comentar
+		List<WorkplaceAgent> places = new ArrayList<WorkplaceAgent>();
+		placesMap.get(priType).forEach(sect -> sect.forEach(
+		work -> {
+			if (work.getType().equals(secType))
+				places.add(work);
+        }));
+		resizeBuildingsList(places, maxBuilding);
+		return places;
+	}
+	
 	/**
 	 * Crea un punto en las coordenadas del building donde se encuentra el infeccioso.
 	 * @param agentID

@@ -159,7 +159,7 @@ childrens_party_service,night_club,,,,0,70,,,,,
 nursery_school,nursery_school,1,400,70,0,50,0,0,0,0,0
 nursing_home,nursing_home,1,500,80,0,20,0,0,0,0,0
 retirement_home,nursing_home,,,,,,,,,,
-park,park,2,10000,0,2,0,30,20,15,10,10
+park,park,2,6000,0,2,0,30,20,15,10,10
 playground,park,,,,,,,,,,
 public_bath,park,,,,,,,,,,
 parking,parking,3,1000,20,2,0,0,5,20,25,15

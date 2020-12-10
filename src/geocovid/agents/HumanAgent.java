@@ -40,6 +40,11 @@ public class HumanAgent {
 	private boolean foreignTraveler = false;
 	private double relocationTime = -1d;
 	
+	private boolean activityQueued = false;
+	private int queuedDuration;
+	private BuildingAgent queuedBuilding;
+	private int queuedActIndex;
+	
 	protected static ISchedule schedule;
 	private static Normal actDist = RandomHelper.createNormal(2, 1);
 	private static int agentIDCounter = 0;
@@ -104,6 +109,10 @@ public class HumanAgent {
 	
 	public boolean atWork() {
 		return (currentActivity == 1);
+	}
+	
+	public boolean isIsolated() {
+		return quarantined;
 	}
 	
 	public int[] getCurrentPosition() {
@@ -357,6 +366,13 @@ public class HumanAgent {
 			quarantined = false;
 	}
 	
+	public void queueActivity(int actIndex, BuildingAgent building, int ticksDuration) {
+		queuedActIndex = actIndex;
+		queuedBuilding = building;
+		queuedDuration = ticksDuration;
+		activityQueued = true;
+	}
+	
 	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
 		BuildingAgent newBuilding;
     	int mean, ndValue;
@@ -408,8 +424,16 @@ public class HumanAgent {
     		removeInfectiousFromContext();
     		return;
     	}
+    	if (activityQueued) {
+    		if (queuedDuration-- == 0)
+    			activityQueued = false;
+    		// Schedule one shot
+    		ScheduleParameters params = ScheduleParameters.createOneTime(schedule.getTickCount() + 1, 0.6d); // cambia de posicion cada 1 tick
+    		schedule.schedule(params, this, "switchLocation");
+    		relocate(queuedBuilding, queuedActIndex);
+    		return;
+    	}
     	
-	    BuildingAgent newBuilding;
 	    boolean switchBuilding = false;
         final int p = ((int)schedule.getTickCount() % 12) / 3;	// 0 1 2 3
         int r = RandomHelper.nextIntFromTo(1, 1000);
@@ -432,47 +456,51 @@ public class HumanAgent {
         	switchBuilding = true;
         }
         
-        newBuilding = switchActivity(currentActivity, i);
+        BuildingAgent tempBuilding = switchActivity(currentActivity, i);
         if (switchBuilding) {
-        	// Si esta dentro de un inmueble
-            if (currentBuilding != null) {
-            	currentBuilding.removeHuman(this, currentPosition);
-            	currentBuilding = null;
-            }
-            else if (!exposed && InfectionReport.outbreakStarted) {
-            	// Si estuvo afuera, tiene una chance de volver infectado
-            	int infectChance = (int) (schedule.getTickCount() - relocationTime);
-        		if (RandomHelper.nextIntFromTo(1, Temperature.getOOCContagionChance()) <= infectChance) {
-        			setExposed();
-        		}
-            }
-            currentActivity = i;
-            
-        	// Si el nuevo lugar es un inmueble
-        	if (newBuilding != null) {
-        		// Si tiene un lugar de trabajo especifico
-        		if (atWork() && (workplacePosition != null)) {
-        			currentPosition = newBuilding.insertHuman(this, workplacePosition);
-        			if (currentPosition == null) { // Si queda fuera del trabajo
-        				newBuilding = homePlace; // Se queda en la casa...
-        				if (newBuilding != null) // si tiene
-        					currentPosition = newBuilding.insertHuman(this);
-        			}
-        		}
-        		else
-        			currentPosition = newBuilding.insertHuman(this);
-        		currentBuilding = newBuilding;
-
-        		if (isContagious() && currentPosition != null) {
-   					// Si en periodo de contagio y dentro del edificio, mover el marcador
-   					BuildingManager.moveInfectiousHuman(agentID, newBuilding.getCoordinate());
-    			}
-        	}
-        	else if (isContagious() && atWork()) {
-        		// Si va afuera a trabajar y es contagioso, oculto el marcador
-        		BuildingManager.hideInfectiousHuman(agentID);
-        	}
-        	relocationTime = schedule.getTickCount();
+        	relocate(tempBuilding, i);
         }
+    }
+    
+    private void relocate(BuildingAgent newBuilding, int newActivity) {
+    	// Si esta dentro de un inmueble
+        if (currentBuilding != null) {
+        	currentBuilding.removeHuman(this, currentPosition);
+        	currentBuilding = null;
+        }
+        else if (!exposed && InfectionReport.outbreakStarted) {
+        	// Si estuvo afuera, tiene una chance de volver infectado
+        	int infectChance = (int) (schedule.getTickCount() - relocationTime);
+    		if (RandomHelper.nextIntFromTo(1, Temperature.getOOCContagionChance()) <= infectChance) {
+    			setExposed();
+    		}
+        }
+        currentActivity = newActivity;
+        
+    	// Si el nuevo lugar es un inmueble
+    	if (newBuilding != null) {
+    		// Si tiene un lugar de trabajo especifico
+    		if (atWork() && (workplacePosition != null)) {
+    			currentPosition = newBuilding.insertHuman(this, workplacePosition);
+    			if (currentPosition == null) { // Si queda fuera del trabajo
+    				newBuilding = homePlace; // Se queda en la casa...
+    				if (newBuilding != null) // si tiene
+    					currentPosition = newBuilding.insertHuman(this);
+    			}
+    		}
+    		else
+    			currentPosition = newBuilding.insertHuman(this);
+    		currentBuilding = newBuilding;
+
+    		if (isContagious() && currentPosition != null) {
+				// Si en periodo de contagio y dentro del edificio, mover el marcador
+				BuildingManager.moveInfectiousHuman(agentID, newBuilding.getCoordinate());
+			}
+    	}
+    	else if (isContagious() && atWork()) {
+    		// Si va afuera a trabajar y es contagioso, oculto el marcador
+    		BuildingManager.hideInfectiousHuman(agentID);
+    	}
+    	relocationTime = schedule.getTickCount();
     }
 }

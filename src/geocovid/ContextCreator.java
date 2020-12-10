@@ -133,10 +133,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 		context.add(new InfectionReport(simulationMinDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
 		context.add(new Temperature(simulationStartYear, simulationStartDay)); // Para calcular temperatura diaria, para estela
 		
-		placesProperty = PlaceProperty.loadPlacesProperties();
+		if (placesProperty.isEmpty()) // Para no volver a leer si se reinicia simulacion
+			placesProperty = PlaceProperty.loadPlacesProperties();
 		loadParcelsShapefile();
 		loadPlacesShapefile();
-		placesProperty.clear();
 		BuildingManager.createActivitiesChances();
 		
 		DataSet.setDefaultValues();
@@ -149,6 +149,79 @@ public class ContextCreator implements ContextBuilder<Object> {
 		universityPlaces.clear();
 		
 		return context;
+	}
+	
+	/**
+	 * Programa actividad forzada en ciertos Humanos.
+	 * @param type tipo secundario
+	 * @param secondaryOnly si se ignora el tipo primario
+	 * @param maxPlaces cantidad de Places al azar (-1 para todos)
+	 * @param humansPerBuilding cantidad de Humanos por Place
+	 * @param ageGroupPerc porcentaje de Humanos por franja etaria
+	 * @param ticksDuration duracion de la actividad en ticks
+	 */
+	private void scheduleForcedActivity(String type, Boolean secondaryOnly, int maxPlaces, int humansPerBuilding, int[] ageGroupPerc, int ticksDuration) {
+		// TODO no se tienen en cuenta los cupos ni de humanos ni de places
+		PlaceProperty placeProp = placesProperty.get(type);
+		if (placeProp == null) {
+			System.err.println("Type de Place desconocido: " + type);
+			return;
+		}
+		
+		List<WorkplaceAgent> places;
+		if (secondaryOnly) {
+			// No toma el resto de places en el grupo primario
+			places = BuildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType(), placeProp.getGoogleMapsType());
+		}
+		else {
+			places = BuildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType());
+		}
+		
+		int[] agPerBuilding = new int[ageGroupPerc.length];
+		int[] agTotal = new int[ageGroupPerc.length];
+		int[] agTotalIndex = new int[ageGroupPerc.length];
+		int totalActiveHumans = 0;
+		for (int i = 0; i < ageGroupPerc.length; i++) {
+			int agc = (int) Math.ceil((humansPerBuilding * ageGroupPerc[i]) / 100);
+			agPerBuilding[i] = agc;
+			agTotal[i] = agc * places.size();
+			totalActiveHumans += agTotal[i];
+			agTotalIndex[i] = totalActiveHumans;
+		}
+		
+		int[] hIndexes = IntStream.range(0, localHumansCount + foreignHumansCount).toArray();
+		int indexesCount = localHumansCount + foreignHumansCount - 1;
+		int randomIndex;
+		
+		HumanAgent[] activeHumans = new HumanAgent[totalActiveHumans];
+		HumanAgent tempHuman;
+		int humansToFound = totalActiveHumans;
+		int tempHumanAG;
+		while (humansToFound > 0 && indexesCount >= 0) {
+			randomIndex = RandomHelper.nextIntFromTo(0, indexesCount);
+			tempHuman = contextHumans[hIndexes[randomIndex]];
+			hIndexes[randomIndex] = hIndexes[indexesCount--];
+			
+			if (!tempHuman.isIsolated()) {
+				tempHumanAG = tempHuman.getAgeGroup();
+				if (agTotal[tempHumanAG] > 0) {
+					activeHumans[--agTotalIndex[tempHumanAG]] = tempHuman;
+					--agTotal[tempHumanAG];
+					--humansToFound;
+				}
+			}
+		}
+		
+		int bIndex;
+		for (int i = 0; i < places.size(); i++) {
+			bIndex = 0;
+			for (int j = 0; j < agPerBuilding.length; j++) {
+				for (int k = agPerBuilding[j] * i; k < agPerBuilding[j] * (i+1); k++) {
+					activeHumans[bIndex + k].queueActivity(2, places.get(i), ticksDuration); // TODO tendria que cambiar el tipo, por ahora es ocio
+				}
+				bIndex += agPerBuilding[j] * places.size();
+			}
+		}
 	}
 	
 	/**
@@ -355,8 +428,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 4: // 17 agosto
 			// Nueva normalidad (Fase 5)
 			enablePublicTransport(true); // finaliza el paro de choferes
-			BuildingManager.limitActivitiesCapacity(3d);//4
-			setSocialDistancing(70);//80
+			BuildingManager.limitActivitiesCapacity(3d);
+			setSocialDistancing(70);
 			DataSet.setMaskEffectivity(0.25);
 			break;
 		case 5: // 31 agosto
@@ -379,31 +452,35 @@ public class ContextCreator implements ContextBuilder<Object> {
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("september", MarkovChains.SEC2_SEPTEMBER_TMMC, MarkovChains.SEC11_SEPTEMBER_TMMC);
 			BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(35);//40
+			setSocialDistancing(35);
 			DataSet.setMaskEffectivity(0.15);
 			break;
 		case 8: // 21 septiembre
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
 			BuildingManager.limitActivitiesCapacity(3d);//agregue
-			setSocialDistancing(30);//30
+			setSocialDistancing(30);
 			DataSet.setMaskEffectivity(0.15);
 			break;
 		case 9: // 9 octubre
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
-			BuildingManager.limitActivitiesCapacity(3.5d);//agregue
-			setSocialDistancing(33);//35
+			BuildingManager.limitActivitiesCapacity(3.5d);
+			setSocialDistancing(33);
 			DataSet.setMaskEffectivity(0.2);
 			break;
 		case 10: // 29 octubre
 			BuildingManager.openPlaces(new String[] {"casino", "nursery_school"});
-			BuildingManager.limitActivitiesCapacity(4d);//agregue
+			BuildingManager.limitActivitiesCapacity(4d);
 			setSocialDistancing(40);
 			break;
 		case 11: // 6 noviembre
 			// Nueva alversoetapa
-			BuildingManager.limitActivitiesCapacity(4d);//agregue
 			setTMMCs("default", MarkovChains.SEC2_DEFAULT_TMMC, MarkovChains.SEC11_DEFAULT_TMMC);
-			setSocialDistancing(42);//
+			BuildingManager.limitActivitiesCapacity(4d);
+			setSocialDistancing(42);
+			break;
+		case 12: // 24 diciembre
+		case 13: // 31 diciembre
+			scheduleForcedActivity("park", false, 50, 200, new int[] {0,100,0,0,0}, 4); // 4 ticks = 6 horas
 			break;
 		default:
 			break;
