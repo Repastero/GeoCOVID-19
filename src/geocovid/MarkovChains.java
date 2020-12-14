@@ -325,6 +325,55 @@ public final class MarkovChains {
 	public static final int[][][][] SEC2_OCTOBER_TMMC = {YOUNG_SEC2_OCTOBER_TMMC, YOUNG_SEC2_OCTOBER_TMMC, ADULT_SEC2_OCTOBER_TMMC, ADULT_SEC2_OCTOBER_TMMC, HIGHER_SEC2_OCTOBER_TMMC};
 	public static final int[][][][] SEC11_OCTOBER_TMMC = {YOUNG_SEC11_OCTOBER_TMMC, YOUNG_SEC11_OCTOBER_TMMC, ADULT_SEC11_OCTOBER_TMMC, ADULT_SEC11_OCTOBER_TMMC, HIGHER_SEC11_OCTOBER_TMMC};
 	
+////
+	
+	// Matrices de markov del mes de Octubre para seccionales 2 y 11 de Paraná //
+	
+	public static final int YOUNG_SEC2_HOLIDAYS_DIFF[][][] = {
+			{ { 225,-450,225, 0 }, { 225,-450,225, 0 }, { 225,-450,225,0 }, { 225,-450,225,0 } },
+			{ {   0, -25, 25, 0 }, {   0,  -5,  5, 0 }, {   0,  -5,  5,0 }, {   0,  -5,  5,0 } },
+			{ { 175,-325,125,25 }, { 200,-400,175,25 }, { 100,-150, 50,0 }, { 125,-225,100,0 } },
+			{ {   0, -50, 50, 0 }, {   0, -50, 50, 0 }, { -50,   0, 50,0 }, { -50,   0, 50,0 } } };
+	public static final int YOUNG_SEC11_HOLIDAYS_DIFF[][][] = {
+			{ { 200,-425,225,0 }, { 200,-425,225,0 }, { 200,-425,225,0 }, { 200,-425,225,0 } },
+			{ {   0, -25, 25,0 }, {   0,  -5,  0,5 }, {   0,  -5,  0,5 }, {   0,  -5,  0,5 } },
+			{ { 200,-325,125,0 }, { 250,-400,150,0 }, { 100,-125, 25,0 }, { 100,-200,100,0 } },
+			{ {   0, -50, 50,0 }, {   0, -50, 50,0 }, { -50,   0, 50,0 }, { -50,   0, 50,0 } } };
+
+	public static final int ADULT_SEC2_HOLIDAYS_DIFF[][][] = {
+			{ {  -10,0, 0,10 }, { -10,0,0,10 }, { -10,0,0,10 }, {  -10,0, 0,10 } },
+			{ {  -50,0, 0,50 }, { -50,0,0,50 }, { -50,0,0,50 }, {  -50,0, 0,50 } },
+			{ {  -75,0, 0,75 }, { -75,0,0,75 }, { -75,0,0,75 }, {  -75,0, 0,75 } },
+			{ { -100,0,50,50 }, {   0,0,0, 0 }, {   0,0,0, 0 }, { -100,0,50,50 } } };
+	public static final int ADULT_SEC11_HOLIDAYS_DIFF[][][] = {
+			{ {  -10,0, 0,10 }, { -10,0,0,10 }, { -10,0,0,10 }, {  -10,0, 0,10 } },
+			{ {  -50,0, 0,50 }, { -50,0,0,50 }, { -50,0,0,50 }, {  -50,0, 0,50 } },
+			{ {  -65,0, 0,65 }, { -65,0,0,65 }, { -65,0,0,65 }, {  -65,0, 0,65 } },
+			{ { -100,0,50,50 }, {   0,0,0, 0 }, {   0,0,0, 0 }, { -100,0,50,50 } } };
+
+	public static final int HIGHER_SEC2_HOLIDAYS_DIFF[][][] = {
+			{ { -25,0, 0, 25 }, { -25,0, 0,25 }, {-25,0,0,25 }, {-25,0,0,25 } },
+			{ {   0,0, 0,  0 }, {   0,0, 0, 0 }, {  0,0,0, 0 }, {  0,0,0, 0 } },
+			{ {-120,0,20,100 }, {-100,0,50,50 }, {  0,0,0, 0 }, {  0,0,0, 0 } },
+			{ {  -5,0, 5,  0 }, {  -5,0, 5, 0 }, { -5,0,5, 0 }, { -5,0,5, 0 } } };
+	public static final int HIGHER_SEC11_HOLIDAYS_DIFF[][][] = {
+			{ { -25,0, 0,25 }, { -25,0,0,25 }, { -25,0,0,25 }, { -25,0,0,25 } },
+			{ { -15,0,15, 0 }, {   0,0,0, 0 }, {   0,0,0, 0 }, {   0,0,0, 0 } },
+			{ { -75,0, 0,75 }, { -25,0,0,25 }, { -25,0,0,25 }, { -25,0,0,25 } },
+			{ {  -5,0, 5, 0 }, {  -5,0,5, 0 }, {  -5,0,5, 0 }, {  -5,0,5, 0 } } };
+	
+	public static final int YOUNG_SEC2_HOLIDAYS_TMMC[][][] = mergeChainsDiff(YOUNG_SEC2_DEFAULT_TMMC, YOUNG_SEC2_HOLIDAYS_DIFF);
+	public static final int YOUNG_SEC11_HOLIDAYS_TMMC[][][] = mergeChainsDiff(YOUNG_SEC11_DEFAULT_TMMC, YOUNG_SEC11_HOLIDAYS_DIFF);
+	
+	public static final int ADULT_SEC2_HOLIDAYS_TMMC[][][] = mergeChainsDiff(ADULT_SEC2_DEFAULT_TMMC, ADULT_SEC2_HOLIDAYS_DIFF);
+	public static final int ADULT_SEC11_HOLIDAYS_TMMC[][][] = mergeChainsDiff(ADULT_SEC11_DEFAULT_TMMC, ADULT_SEC11_HOLIDAYS_DIFF);
+	
+	public static final int HIGHER_SEC2_HOLIDAYS_TMMC[][][] = mergeChainsDiff(HIGHER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_HOLIDAYS_DIFF);
+	public static final int HIGHER_SEC11_HOLIDAYS_TMMC[][][] = mergeChainsDiff(HIGHER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_HOLIDAYS_DIFF);
+	
+	public static final int[][][][] SEC2_HOLIDAYS_TMMC = {YOUNG_SEC2_HOLIDAYS_TMMC, YOUNG_SEC2_HOLIDAYS_TMMC, ADULT_SEC2_HOLIDAYS_TMMC, ADULT_SEC2_HOLIDAYS_TMMC, HIGHER_SEC2_HOLIDAYS_TMMC};
+	public static final int[][][][] SEC11_HOLIDAYS_TMMC = {YOUNG_SEC11_HOLIDAYS_TMMC, YOUNG_SEC11_HOLIDAYS_TMMC, ADULT_SEC11_HOLIDAYS_TMMC, ADULT_SEC11_HOLIDAYS_TMMC, HIGHER_SEC11_HOLIDAYS_TMMC};
+	
 	// FIN DECLARACIONES MATRICES DE MARKOV //
 
 	/**

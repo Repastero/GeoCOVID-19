@@ -55,7 +55,6 @@ public class BuildingAgent {
 	}
 	
 	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea, double areaModifier) {
-		//System.out.println(type + "," + area + "," + coveredArea);
 		// Constructor Workplace
 		this.sectoralType = secType;
 		this.sectoralIndex = secIndex;
@@ -67,6 +66,28 @@ public class BuildingAgent {
 		this.workingPlace = true;
 		//
 		setRealArea(areaModifier);
+		setBuildingShape();
+	}
+	
+	public BuildingAgent(int secType, int secIndex, Coordinate coord, int realArea, boolean outdoor) {
+		// Constructor Evento
+		this.sectoralType = secType;
+		this.sectoralIndex = secIndex;
+		this.coordinate = coord;
+		this.id = 0xFFFFFFFF;
+		this.type = "event";
+		this.realArea = realArea;
+		this.outdoor = outdoor;
+		//
+		if (outdoor) {
+			this.area = realArea;
+			this.coveredArea = 0;
+		}
+		else {
+			this.area = 0;
+			this.coveredArea = realArea;
+		}
+		//
 		setBuildingShape();
 	}
 	

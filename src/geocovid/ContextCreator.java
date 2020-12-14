@@ -152,51 +152,27 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
-	 * Programa actividad forzada en ciertos Humanos.
-	 * @param type tipo secundario
-	 * @param secondaryOnly si se ignora el tipo primario
-	 * @param maxPlaces cantidad de Places al azar (-1 para todos)
-	 * @param humansPerBuilding cantidad de Humanos por Place
-	 * @param ageGroupPerc porcentaje de Humanos por franja etaria
-	 * @param ticksDuration duracion de la actividad en ticks
+	 * Arma un listado con Humanos seleccionados al azar, segun cupo de cada franja etaria y que no estan aislados.
+	 * @param events cantidad de eventos
+	 * @param humansByAG las cantidades de Humanos por franja etaria a seleccionar por evento
+	 * @return array de HumanAgent
 	 */
-	private void scheduleForcedActivity(String type, Boolean secondaryOnly, int maxPlaces, int humansPerBuilding, int[] ageGroupPerc, int ticksDuration) {
-		// TODO no se tienen en cuenta los cupos ni de humanos ni de places
-		PlaceProperty placeProp = placesProperty.get(type);
-		if (placeProp == null) {
-			System.err.println("Type de Place desconocido: " + type);
-			return;
-		}
-		
-		List<WorkplaceAgent> places;
-		if (secondaryOnly) {
-			// No toma el resto de places en el grupo primario
-			places = BuildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType(), placeProp.getGoogleMapsType());
-		}
-		else {
-			places = BuildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType());
-		}
-		
-		int[] agPerBuilding = new int[ageGroupPerc.length];
-		int[] agTotal = new int[ageGroupPerc.length];
-		int[] agTotalIndex = new int[ageGroupPerc.length];
+	private HumanAgent[] gatherHumansForEvent(int events, int[] humansByAG) {
+		int[] agTotal = new int[humansByAG.length];
+		int[] agTotalIndex = new int[humansByAG.length];
 		int totalActiveHumans = 0;
-		for (int i = 0; i < ageGroupPerc.length; i++) {
-			int agc = (int) Math.ceil((humansPerBuilding * ageGroupPerc[i]) / 100);
-			agPerBuilding[i] = agc;
-			agTotal[i] = agc * places.size();
+		for (int i = 0; i < humansByAG.length; i++) {
+			agTotal[i] = humansByAG[i] * events;
 			totalActiveHumans += agTotal[i];
 			agTotalIndex[i] = totalActiveHumans;
 		}
 		
 		int[] hIndexes = IntStream.range(0, localHumansCount + foreignHumansCount).toArray();
 		int indexesCount = localHumansCount + foreignHumansCount - 1;
-		int randomIndex;
-		
 		HumanAgent[] activeHumans = new HumanAgent[totalActiveHumans];
 		HumanAgent tempHuman;
 		int humansToFound = totalActiveHumans;
-		int tempHumanAG;
+		int tempHumanAG, randomIndex;
 		while (humansToFound > 0 && indexesCount >= 0) {
 			randomIndex = RandomHelper.nextIntFromTo(0, indexesCount);
 			tempHuman = contextHumans[hIndexes[randomIndex]];
@@ -211,17 +187,91 @@ public class ContextCreator implements ContextBuilder<Object> {
 				}
 			}
 		}
-		
+		return activeHumans;
+	}
+	
+	/**
+	 * Asigna Humanos a cada evento.
+	 * @param buildings lista de Building de eventos
+	 * @param humans array de HumanAgent
+	 * @param humansByAG las cantidades de Humanos por franja etaria por evento
+	 * @param duration en ticks
+	 */
+	private void distributeHumansInEvent(List<BuildingAgent> buildings, HumanAgent[] humans, int[] humansByAG, int duration) {
 		int bIndex;
-		for (int i = 0; i < places.size(); i++) {
+		for (int i = 0; i < buildings.size(); i++) {
 			bIndex = 0;
-			for (int j = 0; j < agPerBuilding.length; j++) {
-				for (int k = agPerBuilding[j] * i; k < agPerBuilding[j] * (i+1); k++) {
-					activeHumans[bIndex + k].queueActivity(2, places.get(i), ticksDuration); // TODO tendria que cambiar el tipo, por ahora es ocio
+			for (int j = 0; j < humansByAG.length; j++) {
+				for (int k = humansByAG[j] * i; k < humansByAG[j] * (i+1); k++) {
+					humans[bIndex + k].queueActivity(2, buildings.get(i), duration); // TODO tendria que cambiar el tipo, por ahora es ocio
 				}
-				bIndex += agPerBuilding[j] * places.size();
+				bIndex += humansByAG[j] * buildings.size();
 			}
 		}
+	}
+	
+	/**
+	 * Programa actividad forzada en Places para ciertos Humanos.
+	 * @param type tipo secundario de Place
+	 * @param secondaryOnly si se ignora el tipo primario
+	 * @param maxPlaces cantidad de Places al azar (-1 para todos)
+	 * @param humansPerPlace cantidad de Humanos por Place
+	 * @param ageGroupPerc porcentaje de Humanos por franja etaria
+	 * @param ticksDuration duracion de la actividad en ticks
+	 */
+	private void scheduleForcedActivity(String type, Boolean secondaryOnly, int maxPlaces, int humansPerPlace, int[] ageGroupPerc, int ticksDuration) {
+		// TODO no se tienen en cuenta los cupos ni de humanos ni de places
+		PlaceProperty placeProp = placesProperty.get(type);
+		if (placeProp == null) {
+			System.err.println("Type de Place desconocido: " + type);
+			return;
+		}
+		
+		List<BuildingAgent> places;
+		if (secondaryOnly) // No toma el resto de places en el grupo primario
+			places = BuildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType(), placeProp.getGoogleMapsType());
+		else
+			places = BuildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType());
+		
+		//
+		int[] agPerBuilding = new int[ageGroupPerc.length];
+		for (int i = 0; i < ageGroupPerc.length; i++) {
+			agPerBuilding[i] = (int) Math.ceil((humansPerPlace * ageGroupPerc[i]) / 100);
+		}
+		
+		HumanAgent[] activeHumans = gatherHumansForEvent(places.size(), agPerBuilding);
+		
+		distributeHumansInEvent(places, activeHumans, agPerBuilding, ticksDuration);
+	}
+	
+	/**
+	 * Programa evento forzado en Building ficticio para ciertos Humanos.
+	 * @param realArea valor neto de area donde sucede evento 
+	 * @param outdoor si el evento sucede al aire libre
+	 * @param events cantidad de eventos a crear
+	 * @param humansPerEvent cantidad de Humanos por evento
+	 * @param ageGroupPerc porcentaje de Humanos por franja etaria
+	 * @param ticksDuration duracion del evento en ticks
+	 */
+	private void scheduleForcedEvent(int realArea, boolean outdoor, int events, int humansPerEvent, int[] ageGroupPerc, int ticksDuration) {
+		// TODO no se tienen en cuenta los cupos de humanos
+		int[] agPerBuilding = new int[ageGroupPerc.length];
+		for (int i = 0; i < ageGroupPerc.length; i++) {
+			agPerBuilding[i] = (int) Math.ceil((humansPerEvent * ageGroupPerc[i]) / 100);
+		}
+		
+		HumanAgent[] activeHumans = gatherHumansForEvent(events, agPerBuilding);
+		
+		List<BuildingAgent> buildings = new ArrayList<BuildingAgent>();
+		Coordinate[] coords = BuildingManager.getSectoralsCentre();
+		int sectoralType, sectoralIndex;
+		for (int i = 0; i < events; i++) {
+			sectoralIndex = RandomHelper.nextIntFromTo(0, DataSet.SECTORALS_COUNT - 1);
+			sectoralType = DataSet.SECTORALS_TYPES[sectoralIndex];
+			buildings.add(new BuildingAgent(sectoralType, sectoralIndex, coords[sectoralIndex], realArea, outdoor));
+		}
+		
+		distributeHumansInEvent(buildings, activeHumans, agPerBuilding, ticksDuration);
 	}
 	
 	/**
@@ -346,7 +396,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
-	 * Asignar las matrices de markov que se utilizan los fines de semana.
+	 * Asignar las matrices de markov que se utilizan los fines de semana, para los primeros 4 grupos etarios.
 	 */
 	public void setHumansWeekendTMMC(boolean enabled) {
 		weekendTMMCEnabled = enabled;
@@ -457,7 +507,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			break;
 		case 8: // 21 septiembre
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
-			BuildingManager.limitActivitiesCapacity(3d);//agregue
+			BuildingManager.limitActivitiesCapacity(3d);
 			setSocialDistancing(30);
 			DataSet.setMaskEffectivity(0.15);
 			break;
@@ -475,12 +525,26 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 11: // 6 noviembre
 			// Nueva alversoetapa
 			setTMMCs("default", MarkovChains.SEC2_DEFAULT_TMMC, MarkovChains.SEC11_DEFAULT_TMMC);
-			BuildingManager.limitActivitiesCapacity(4d);
 			setSocialDistancing(42);
 			break;
-		case 12: // 24 diciembre
-		case 13: // 31 diciembre
-			scheduleForcedActivity("park", false, 50, 200, new int[] {0,100,0,0,0}, 4); // 4 ticks = 6 horas
+		case 12: // 9 diciembre
+			setTMMCs("holidays", MarkovChains.SEC2_HOLIDAYS_TMMC, MarkovChains.SEC11_HOLIDAYS_TMMC);
+			BuildingManager.limitOtherActivitiesCapacity(3d);
+			setSocialDistancing(30);
+			break;
+		case 13: // 24 diciembre
+			BuildingManager.limitOtherActivitiesCapacity(1d);
+			setTMMCs("default", MarkovChains.SEC2_DEFAULT_TMMC, MarkovChains.SEC11_DEFAULT_TMMC);
+			//scheduleForcedActivity("park", false, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			break;
+		case 14: // 31 diciembre
+			//scheduleForcedActivity("park", false, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			break;
+		case 15: // 1 enero
+			BuildingManager.limitActivitiesCapacity(4d);
+			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
 			break;
 		default:
 			break;

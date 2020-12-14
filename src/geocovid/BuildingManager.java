@@ -250,7 +250,7 @@ public final class BuildingManager {
 	}
 	
 	/**
-	 * Metros cuadrados por persona para limitar aforo en Places (en espacios cerrados).
+	 * Metros cuadrados por persona para limitar aforo en Places.
 	 * @param sqMeters
 	 */
 	public static void limitActivitiesCapacity(double sqMeters) {
@@ -259,6 +259,19 @@ public final class BuildingManager {
 		activitiesCapacityLimit = sqMeters;
 		for (List<List<WorkplaceAgent>> workplaces : placesMap.values()) {
 			workplaces.forEach(sect -> sect.forEach(work -> work.limitCapacity(sqMeters)));
+		}
+	}
+	
+	/**
+	 * Metros cuadrados por persona para limitar aforo en Places tipo Otros.
+	 * @param sqMeters
+	 */
+	public static void limitOtherActivitiesCapacity(double sqMeters) {
+		if (sqMeters == activitiesCapacityLimit)
+			return;
+		activitiesCapacityLimit = sqMeters;
+		for (String type : otherTypes) {
+			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.limitCapacity(sqMeters)));
 		}
 	}
 	
@@ -358,7 +371,7 @@ public final class BuildingManager {
         return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
 	}
 	
-	private static void resizeBuildingsList(List<WorkplaceAgent> places, int maxSize) {
+	private static void resizeBuildingsList(List<BuildingAgent> places, int maxSize) {
 		// TODO comentar
 		if (maxSize == -1) {
 			// Todos los resultados
@@ -372,17 +385,17 @@ public final class BuildingManager {
 		}
 	}
 	
-	public static List<WorkplaceAgent> getActivityBuildings(int maxBuilding, String priType) {
+	public static List<BuildingAgent> getActivityBuildings(int maxBuilding, String priType) {
 		// TODO comentar
-		List<WorkplaceAgent> places = new ArrayList<WorkplaceAgent>();
+		List<BuildingAgent> places = new ArrayList<BuildingAgent>();
 		placesMap.get(priType).forEach(sect -> places.addAll(sect));
 		resizeBuildingsList(places, maxBuilding);
 		return places;
 	}
 	
-	public static List<WorkplaceAgent> getActivityBuildings(int maxBuilding, String priType, String secType) {
+	public static List<BuildingAgent> getActivityBuildings(int maxBuilding, String priType, String secType) {
 		// TODO comentar
-		List<WorkplaceAgent> places = new ArrayList<WorkplaceAgent>();
+		List<BuildingAgent> places = new ArrayList<BuildingAgent>();
 		placesMap.get(priType).forEach(sect -> sect.forEach(
 		work -> {
 			if (work.getType().equals(secType))

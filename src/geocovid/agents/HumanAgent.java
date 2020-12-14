@@ -425,10 +425,12 @@ public class HumanAgent {
     		return;
     	}
     	if (activityQueued) {
-    		if (queuedDuration-- == 0)
-    			activityQueued = false;
+    		//-if (queuedDuration-- == 0)
+    		//-	activityQueued = false;
+    		activityQueued = false;
+    		
     		// Schedule one shot
-    		ScheduleParameters params = ScheduleParameters.createOneTime(schedule.getTickCount() + 1, 0.6d); // cambia de posicion cada 1 tick
+    		ScheduleParameters params = ScheduleParameters.createOneTime(schedule.getTickCount() + queuedDuration, 0.6d); // cambia de posicion cada 1 tick
     		schedule.schedule(params, this, "switchLocation");
     		relocate(queuedBuilding, queuedActIndex);
     		return;
