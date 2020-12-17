@@ -266,11 +266,24 @@ public final class BuildingManager {
 	 * Metros cuadrados por persona para limitar aforo en Places tipo Otros.
 	 * @param sqMeters
 	 */
-	public static void limitOtherActivitiesCapacity(double sqMeters) {
+	public static void limitOtherActCap(double sqMeters) {
 		if (sqMeters == activitiesCapacityLimit)
 			return;
 		activitiesCapacityLimit = sqMeters;
 		for (String type : otherTypes) {
+			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.limitCapacity(sqMeters)));
+		}
+	}
+	
+	/**
+	 * Metros cuadrados por persona para limitar aforo en Places tipo Ocio.
+	 * @param sqMeters
+	 */
+	public static void limitEntertainmentActCap(double sqMeters) {
+		if (sqMeters == activitiesCapacityLimit)
+			return;
+		activitiesCapacityLimit = sqMeters;
+		for (String type : entertainmentTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.limitCapacity(sqMeters)));
 		}
 	}
@@ -371,30 +384,43 @@ public final class BuildingManager {
         return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
 	}
 	
+	/**
+	 * Remueve elementos al azar de la lista hasta alcanzar la cantidad deseada.
+	 * @param places lista de Places
+	 * @param maxSize limite de Places
+	 */
 	private static void resizeBuildingsList(List<BuildingAgent> places, int maxSize) {
-		// TODO comentar
-		if (maxSize == -1) {
-			// Todos los resultados
+		if (maxSize == -1) // Todos los resultados
 			return;
-		}
 		else {
 			int pSize = places.size();
 			while (pSize > maxSize) {
-				places.remove(RandomHelper.nextIntFromTo(0, --pSize));
+				places.remove(RandomHelper.nextIntFromTo(0, --pSize)); // 0 a size-1
 			}
 		}
 	}
 	
+	/**
+	 * Crea una lista de todos los BuildingAgent con el mismo tipo primario de Place. 
+	 * @param maxBuilding cantidad maxima de resultados
+	 * @param priType tipo primario
+	 * @return lista de Places
+	 */
 	public static List<BuildingAgent> getActivityBuildings(int maxBuilding, String priType) {
-		// TODO comentar
 		List<BuildingAgent> places = new ArrayList<BuildingAgent>();
 		placesMap.get(priType).forEach(sect -> places.addAll(sect));
 		resizeBuildingsList(places, maxBuilding);
 		return places;
 	}
 	
+	/**
+	 * Crea una lista de todos los BuildingAgent con el mismo tipo secundario de Place.
+	 * @param maxBuilding cantidad maxima de resultados
+	 * @param priType tipo primario
+	 * @param secType tipo secundario
+	 * @return lista de Places
+	 */
 	public static List<BuildingAgent> getActivityBuildings(int maxBuilding, String priType, String secType) {
-		// TODO comentar
 		List<BuildingAgent> places = new ArrayList<BuildingAgent>();
 		placesMap.get(priType).forEach(sect -> sect.forEach(
 		work -> {

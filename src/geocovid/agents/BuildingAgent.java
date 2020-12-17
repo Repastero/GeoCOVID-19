@@ -445,7 +445,7 @@ public class BuildingAgent {
 			yShift = Math.abs(pos[1] - spPos[1]);
 			if (xShift < infCircleRadius && yShift < infCircleRadius) { // que X o Y individualmente no exedan el radio de contagio
 				if (xShift + yShift <= infCircleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
-					if (checkContagion(spreader, human))
+					if (checkContagion(spreader, human)) // si se contagia, deja de buscar trasmisores
 						break;
 				}
 			}
