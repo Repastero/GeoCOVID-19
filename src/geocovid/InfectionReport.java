@@ -33,47 +33,47 @@ public class InfectionReport {
 	//
 	private static int[] sumOfSocialInteractions;
 	private static int[] humansInteracting;
-	private static double[] averageSocialInteractions;
+	private static double[] avgSocialInteractions;
 	//
-	private static int[] dailyActivitiesTicks;
-	private static int totalDailyActTicks;
+	private static int[] dailyActivitiesTicks;	// Cuenta medios tick
+	private static int totalDailyActTicks;		// Cuenta medios tick
 	
 	public InfectionReport(int minDay, int maxDeaths) {
-		outbreakStarted = false;
-		simulationMinDay = minDay;
-		deathLimit = maxDeaths;
+		outbreakStarted	= false;
+		simulationMinDay= minDay;
+		deathLimit		= maxDeaths;
 		
-		daysCount = 0;
-		cumExposedAll = 0;
-		cumExposedToCSAll = 0;
-		insAsxInfectiousAll = 0;
-		insSymInfectiousAll = 0;
-		insHospitalizedAll = 0;
-		cumHospitalizedAll = 0;
-		cumRecoveredAll = 0;
-		cumDeathsAll = 0;
+		daysCount			= 0;
+		cumExposedAll		= 0;
+		cumExposedToCSAll	= 0;
+		insAsxInfectiousAll	= 0;
+		insSymInfectiousAll	= 0;
+		insHospitalizedAll	= 0;
+		cumHospitalizedAll	= 0;
+		cumRecoveredAll		= 0;
+		cumDeathsAll		= 0;
 		
-		cumExposed = new int[DataSet.AGE_GROUPS];
-		insAsxInfectious = new int[DataSet.AGE_GROUPS];
-		insSymInfectious = new int[DataSet.AGE_GROUPS];
-		insHospitalized = new int[DataSet.AGE_GROUPS];
-		cumHospitalized = new int[DataSet.AGE_GROUPS];
-		cumRecovered = new int[DataSet.AGE_GROUPS];
-		cumDeaths = new int[DataSet.AGE_GROUPS];
+		cumExposed		= new int[DataSet.AGE_GROUPS];
+		insAsxInfectious= new int[DataSet.AGE_GROUPS];
+		insSymInfectious= new int[DataSet.AGE_GROUPS];
+		insHospitalized	= new int[DataSet.AGE_GROUPS];
+		cumHospitalized	= new int[DataSet.AGE_GROUPS];
+		cumRecovered	= new int[DataSet.AGE_GROUPS];
+		cumDeaths		= new int[DataSet.AGE_GROUPS];
 		
-		sumOfSocialInteractions = new int[DataSet.AGE_GROUPS];
-		humansInteracting = new int[DataSet.AGE_GROUPS];
-		averageSocialInteractions = new double[DataSet.AGE_GROUPS];
+		sumOfSocialInteractions	= new int[DataSet.AGE_GROUPS];
+		humansInteracting		= new int[DataSet.AGE_GROUPS];
+		avgSocialInteractions	= new double[DataSet.AGE_GROUPS];
 		
-		dailyActivitiesTicks = new int[4];
-		totalDailyActTicks = 0;
+		dailyActivitiesTicks= new int[4];
+		totalDailyActTicks	= 0;
 	}
 	
 	@ScheduledMethod(start = 12d, interval = 12d, priority = 0.99d)
 	public void checkPandemicEnd() {
 		// Calcula las interacciones promedio y reinicia vectores
 		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
-			averageSocialInteractions[i] = sumOfSocialInteractions[i] / (double)humansInteracting[i];
+			avgSocialInteractions[i] = sumOfSocialInteractions[i] / (double)humansInteracting[i];
 			sumOfSocialInteractions[i] = 0;
 			humansInteracting[i] = 0;
 		}
@@ -97,9 +97,9 @@ public class InfectionReport {
 		}
 	}
 	
-	public static void addActivityTime(int actIndex, int ticks) {
-		dailyActivitiesTicks[actIndex] += ticks;
-		totalDailyActTicks += ticks;
+	public static void addActivityTime(int actIndex, int halfTicks) {
+		dailyActivitiesTicks[actIndex] += halfTicks;
+		totalDailyActTicks += halfTicks;
 	}
 	
 	public static void updateSocialInteractions(int agIndex, int interactions) {
@@ -218,11 +218,11 @@ public class InfectionReport {
 	public static int getHigherCumRecovered()		{ return cumRecovered[4]; }
 	public static int getHigherCumDeaths()			{ return cumDeaths[4]; }
 
-	public static double getChildAVGInteractions()	{ return averageSocialInteractions[0]; }
-	public static double getYoungAVGInteractions()	{ return averageSocialInteractions[1]; }
-	public static double getAdultAVGInteractions()	{ return averageSocialInteractions[2]; }
-	public static double getElderAVGInteractions()	{ return averageSocialInteractions[3]; }
-	public static double getHigherAVGInteractions()	{ return averageSocialInteractions[4]; }
+	public static double getChildAVGInteractions()	{ return avgSocialInteractions[0]; }
+	public static double getYoungAVGInteractions()	{ return avgSocialInteractions[1]; }
+	public static double getAdultAVGInteractions()	{ return avgSocialInteractions[2]; }
+	public static double getElderAVGInteractions()	{ return avgSocialInteractions[3]; }
+	public static double getHigherAVGInteractions()	{ return avgSocialInteractions[4]; }
 	
 	public static int getDailyHomeTime()	{ return (dailyActivitiesTicks[0] * 100) / totalDailyActTicks; }
 	public static int getDailyWorkTime()	{ return (dailyActivitiesTicks[1] * 100) / totalDailyActTicks; }

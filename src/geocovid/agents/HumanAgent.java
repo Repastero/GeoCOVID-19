@@ -39,6 +39,7 @@ public class HumanAgent {
 	private int ageGroup = 0;
 	private boolean foreignTraveler = false;
 	private double relocationTime = -1d;
+	protected int halfTicksDelay = 0;
 	
 	private boolean activityQueued = false;
 	private int queuedDuration;
@@ -131,6 +132,10 @@ public class HumanAgent {
 		return infectiousStartTime;
 	}
 	
+	public boolean isActivityQueued() {
+		return activityQueued;
+	}
+	
 	public void setPreInfectious(boolean value) {
 		// Si verdaderamente cambia de estado
 		if (value != preInfectious) {
@@ -176,15 +181,6 @@ public class HumanAgent {
 			InfectionReport.updateSocialInteractions(ageGroup, count);
 		}
 		socialInteractions.clear();
-	}
-	
-	/**
-	 * Los Humanos locales empiezan en sus casas por el primer medio tick
-	 */
-	public void setStartLocation() {
-		// Schedule one shot
-		ScheduleParameters params = ScheduleParameters.createOneTime(0d, 0.6d);
-		schedule.schedule(params, this, "switchLocation");
 	}
 	
 	public void removeInfectiousFromContext() {
@@ -375,50 +371,50 @@ public class HumanAgent {
 	
 	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
 		BuildingAgent newBuilding;
-    	int mean, ndValue;
-    	ndValue = actDist.nextInt();
-    	ndValue = (ndValue > 3) ? 3 : (ndValue < 1 ? 1: ndValue);
+    	int halfTick, ndValue;
         switch (activityIndex) {
 	    	case 0: // 0 Casa
 	    		newBuilding = homePlace;
-	    		mean = 5 * ndValue; // 0.5, 1, 1.5
+	        	ndValue = actDist.nextInt();
+	        	halfTick = (ndValue > 3) ? 3 : (ndValue < 1 ? 1: ndValue); // .5, 1, 1.5 ticks
 	    		break;
 	    	case 1: // 1 Trabajo / Estudio
 	    		newBuilding = workPlace;
-	    		mean = 30;
+	    		halfTick = 6; // 3 ticks
 	    		break;
 	    	case 2: // 2 Ocio
 	    		newBuilding = BuildingManager.findRandomPlace(sectoralType, sectoralIndex, 2, this, currentBuilding, ageGroup);
-	    		mean = 5 + (5 * ndValue); // 1, 1.5, 2
+	        	ndValue = actDist.nextInt();
+	        	halfTick = (ndValue > 3) ? 4 : (ndValue < 1 ? 2 : ndValue + 1); // 1, 1.5, 2 ticks
 	    		break;
 	    	default: // 3 Otros (supermercados, farmacias, etc)
 	    		newBuilding = BuildingManager.findRandomPlace(sectoralType, sectoralIndex, 3, this, currentBuilding, ageGroup);
-	    		mean = 5;
+	    		halfTick = 1; // .5 ticks
 	    		break;
         }
         
         // Incrementa el tiempo de la actividad realizada
         if (activityIndex != 1)
-        	InfectionReport.addActivityTime(activityIndex, mean);
+        	InfectionReport.addActivityTime(activityIndex, halfTick);
         else if (DataSet.COUNT_WORK_FROM_HOME_AS_HOME && newBuilding == homePlace) // Si estudia/trabaja desde el hogar
-        	InfectionReport.addActivityTime(0, mean);
+        	InfectionReport.addActivityTime(0, halfTick);
         else
-        	InfectionReport.addActivityTime(1, mean);
+        	InfectionReport.addActivityTime(1, halfTick);
         
-        // Calcular tiempo hasta que cambie nuevamente de posicion
-        double temp = schedule.getTickCount() + (mean * 0.1d);
-	    
-   	 	// Schedule one shot
-		ScheduleParameters params = ScheduleParameters.createOneTime(temp, 0.6d); // ScheduleParameters.FIRST_PRIORITY
-		schedule.schedule(params, this, "switchLocation");
-		
+        halfTicksDelay = halfTick;
 		return newBuilding;
 	}
 	
     /**
      * Cambia la posicion en la grilla segun TMMC (Timed mobility markov chains).
      */
+	@ScheduledMethod(start = 0d, interval = 0.5d, priority = 0.6d)
     public void switchLocation() {
+		// Resta medio tick
+    	if (--halfTicksDelay > 0) {
+    		return;
+    	}
+		
     	// No se mueve si esta internado
     	if (hospitalized) {
     		removeInfectiousFromContext();
@@ -428,10 +424,7 @@ public class HumanAgent {
     		//-if (queuedDuration-- == 0)
     		//-	activityQueued = false;
     		activityQueued = false;
-    		
-    		// Schedule one shot
-    		ScheduleParameters params = ScheduleParameters.createOneTime(schedule.getTickCount() + queuedDuration, 0.6d); // cambia de posicion cada 1 tick
-    		schedule.schedule(params, this, "switchLocation");
+    		halfTicksDelay = queuedDuration << 1; // de ticks a medios ticks
     		relocate(queuedBuilding, queuedActIndex);
     		return;
     	}

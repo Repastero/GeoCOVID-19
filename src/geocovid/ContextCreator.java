@@ -242,8 +242,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 			randomIndex = RandomHelper.nextIntFromTo(0, indexesCount);
 			tempHuman = contextHumans[hIndexes[randomIndex]];
 			hIndexes[randomIndex] = hIndexes[indexesCount--];
-			
-			if (!tempHuman.isIsolated()) {
+			// Chequea que no este aislado y no tenga una actividad programada
+			if (!tempHuman.isIsolated() && !tempHuman.isActivityQueued()) {
 				tempHumanAG = tempHuman.getAgeGroup();
 				if (agTotal[tempHumanAG] > 0) {
 					activeHumans[--agTotalIndex[tempHumanAG]] = tempHuman;
@@ -550,16 +550,24 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 13: // 24 diciembre
 			BuildingManager.limitOtherActCap(1d);
 			setTMMCs("default", MarkovChains.SEC2_DEFAULT_TMMC, MarkovChains.SEC11_DEFAULT_TMMC);
-			//scheduleForcedActivity("park", false, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			// Cenas familiares
+			scheduleForcedEvent(18, true,  7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
+			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
+			break;
+		case 14: // 25 diciembre
+			// Festejos entre jovenes (eventos)
 			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
 			break;
-		case 14: // 31 diciembre
-			//scheduleForcedActivity("park", false, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+		case 15: // 31 diciembre
+			// Cenas familiares
+			scheduleForcedEvent(18, true,  7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
+			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			break;
-		case 15: // 1 enero
+		case 16: // 1 enero
 			BuildingManager.limitActivitiesCapacity(3.5d);
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
+			// Festejos entre jovenes (eventos)
+			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
 			break;
 		default:
 			break;
@@ -857,7 +865,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		}
 		HumanAgent tempHuman = new HumanAgent(secType, secIndex, ageGroup, home, work, workPos, false);
 		context.add(tempHuman);
-		tempHuman.setStartLocation();
 		return tempHuman;
 	}
 	
@@ -879,7 +886,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		}
 		HumanAgent tempHuman = new ForeignHumanAgent(secType, secIndex, ageGroup, work, workPos);
 		context.add(tempHuman);
-		tempHuman.setStartLocation();
 		return tempHuman;
 	}
 
