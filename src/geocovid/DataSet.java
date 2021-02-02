@@ -1,7 +1,7 @@
 package geocovid;
 
 public final class DataSet {
-	public static final String SHP_FILE_PARCELS	= "./data/parana-joined.shp";
+	public static final String SHP_FILE_PARCELS	= "./data/parana.shp";
 	public static final String SHP_FILE_PLACES	= "./data/places.shp";
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/parana-places-markov.csv";
 	
@@ -11,11 +11,9 @@ public final class DataSet {
 	public static final int FOREIGN_TRAVELER_HUMANS	= 0;		// Cantidad de Humanos que viven afuera
 	
 	/** Tipo de seccional segun indice: 0 tipo 2 | 1 tipo 11 */
-	public static final int[] SECTORALS_TYPES = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}; // SEC2 - 47.39% poblacion | SEC11 - 52.61% poblacion
-	/** Porcentaje de la poblacion que tiene domicilio (vota) en cada seccional */
-	public static final double[] SECTORALS_POPULATION = { // Fuente escrutinio 2015
-			6.02, 4.98, 3.73, 5.72, 4.94, 1.95, 1.26, 11.74, 2.89, 
-			3.15, 6.82, 9.65, 10.57, 1.27, 8.44, 6.61, 8.16, 2.10 };
+	public static final int[] SECTORALS_TYPES = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}; // SEC2 - 50% poblacion | SEC11 - 50% poblacion
+	/** Porcentaje de la poblacion que tiene domicilio (vota) en cada seccional - Fuente escrutinio 2015 */
+	public static final double[] SECTORALS_POPULATION = { 6.6, 5.5, 3.8, 6.3, 5.1, 1.9, 1.0, 11.9, 2.2, 3.0, 6.1, 9.5, 10.5, 1.0, 8.3, 6.5, 8.6, 2.2 };
 	public static final int SECTORALS_COUNT = SECTORALS_POPULATION.length;
 	
 	/** Dia del corrente ano donde ocurre cambio de fase<p> @see <a href="https://espanol.epochconverter.com/dias/2020">Numeros de dias 2020</a> */
@@ -105,7 +103,7 @@ public final class DataSet {
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
-	public static final int	CS_MIN_INFECTION_RATE		= 1;	// sobre 100
+	public static final int	CS_MIN_INFECTION_RATE		= 5;	// sobre 100
 	
 	// Informacion de temperatura para calcular la duracion del virus en superficie contaminada
 	public static final int	OUTDOORS_MIN_TEMPERATURE	= 10;	// temperatura media minima anual en exteriores
@@ -132,15 +130,15 @@ public final class DataSet {
 	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 58d, 42d, 26d, 10d};	// sobre 100 
 	
 	/** Grupos etarios:<ul>
-	 * <li>5-15 anos
-	 * <li>16-25 anos
-	 * <li>26-40 anos
-	 * <li>41-64 anos
+	 * <li>5-14 anos
+	 * <li>15-24 anos
+	 * <li>25-39 anos
+	 * <li>40-64 anos
 	 * <li>65 o mas anos</ul>
 	 */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
 	public static final String[] AGE_GROUP_LABELS				= {"Niños", "Jovenes", "Adultos", "Mayores", "Muy Mayores"};
-	public static final double[] HUMANS_PER_AGE_GROUP			= {14.4d, 17.92d, 22.88d, 31.1d, 13.7d}; // Abelardo Parana
+	public static final double[] HUMANS_PER_AGE_GROUP			= {14.40d, 17.92d, 22.88d, 31.10d, 13.70d}; // Abelardo Parana
 	
 	public static final double[][] LOCAL_HUMANS_PER_AGE_GROUP	= {	// Humanos con hogar dentro y trabajo/estudio fuera - Inventado
 			{ 5d, 35d, 30d, 30d, 0d},	// Seccional 2
@@ -151,21 +149,21 @@ public final class DataSet {
 			{10d, 20d, 35d, 35d, 0d}	// Seccional 11
 	};
 	
-	// En la Seccional 02 más del 40% trabaja y en la 11 ronda el 20%	-> 170% y 90% entre franjas 2,3,4
 	/** % de estudiantes, trabajadores e inactivos (ama de casa/jubilado/pensionado/otros) segun grupo etario */
-	public static final double[][][] OCCUPATION_PER_AGE_GROUP	= { // Datos del "El mapa del trabajo argentino 2019" - CEPE
-			// Seccional 2
-			{{100d,   0d,   0d},	// 5-15
-			{  50d,  30d,  20d},	// 16-25
-			{  15d,  65d,  20d},	// 26-40
-			{   0d,  75d,  25d},	// 41-64
+	public static final double[][][] OCCUPATION_PER_AGE_GROUP	= { // Fuente "El mapa del trabajo argentino 2019" - CEPE | INDEC - EPH 2020
+			// Seccional 2 - 49.22% ocupados
+			{{100d,   0d,   0d},	// 5-14
+			{  62d,  25d,  13d},	// 15-24
+			{  14d,  76d,  10d},	// 25-39
+			{   0d,  88d,  12d},	// 40-64
 			{   0d,   0d, 100d}},	// 65+
-			// Seccional 11
-			{{100d,   0d,   0d},	// 5-15
-			{  40d,  10d,  50d},	// 16-25
-			{  10d,  35d,  55d},	// 26-40
-			{   0d,  45d,  55d},	// 41-64
+			// Seccional 11 - 38.54% ocupados
+			{{100d,   0d,   0d},	// 5-14
+			{  57d,  11d,  32d},	// 15-24
+			{  10d,  62d,  28d},	// 25-39
+			{   0d,  72d,  28d},	// 40-64
 			{   0d,   0d, 100d}}	// 65+
+			// 61% ocupados entre las 3 franjas activas
 	};
 	
 	public static final int[] WORKING_FROM_HOME	= {5, 7};	// 02: menos del 5% | 11: menos del 7%
@@ -185,7 +183,7 @@ public final class DataSet {
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
 	
 	/** % sobre 100 de que use el transporte publico al salir de seccional */
-	public static final int	PUBLIC_TRANSPORT_CHANCE	= 4;
+	public static final int	PUBLIC_TRANSPORT_CHANCE	= 8;
 	/** Cantidad de unidades de transporte publico por seccional */
 	public static final int	PUBLIC_TRANSPORT_UNITS	= 2;
 	/** Cantidad de asientos en cada unidad de transorte publico */

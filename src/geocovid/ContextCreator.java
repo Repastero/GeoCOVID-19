@@ -157,15 +157,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	private void setWeekendMovement() {
 		ScheduleParameters params;
-		int endWKND;
-		for (int i = weekendStartTick; i < simulationMaxTick; i += WEEKLY_TICKS) {
-			params = ScheduleParameters.createOneTime(i, ScheduleParameters.FIRST_PRIORITY);
-			schedule.schedule(params, this, "setHumansWeekendTMMC", true);
-			endWKND = (i + WEEKEND_TICKS > simulationMaxTick) ? simulationMaxTick : i + WEEKEND_TICKS;
-			params = ScheduleParameters.createOneTime(endWKND, ScheduleParameters.FIRST_PRIORITY);
-			schedule.schedule(params, this, "setHumansWeekendTMMC", false);
-			//System.out.println(i/12+" "+(endWKND-1)/12);
-		}
+		params = ScheduleParameters.createRepeating(weekendStartTick, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, this, "setHumansWeekendTMMC", true);
+		params = ScheduleParameters.createRepeating(weekendStartTick + WEEKEND_TICKS, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, this, "setHumansWeekendTMMC", false);
 	}
 	
 	public void startSimulation() {
@@ -463,7 +458,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 					// Trabajo/estudio
 					"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school", "university",
 					// Ocio
-					"movie_theater", "bar", "sports_complex",  "school", "bus_station", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
+					"movie_theater", "bar", "sports_complex",  "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
 					"restaurant", "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
 			setTMMCs("june", MarkovChains.SEC2_JUNE_TMMC, MarkovChains.SEC11_JUNE_TMMC);
 			BuildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
@@ -518,23 +513,24 @@ public class ContextCreator implements ContextBuilder<Object> {
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
 			break;
 		case 10: // 29 octubre
-			BuildingManager.openPlaces(new String[] {"casino", "nursery_school"});
+			BuildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
 			BuildingManager.limitActivitiesCapacity(4d);
 			break;
 		case 11: // 6 noviembre
 			// Nueva alversoetapa
-			setTMMCs("default", MarkovChains.SEC2_DEFAULT_TMMC, MarkovChains.SEC11_DEFAULT_TMMC);
+			setTMMCs("november", MarkovChains.SEC2_NOVEMBER_TMMC, MarkovChains.SEC11_NOVEMBER_TMMC);
 			BuildingManager.limitActivitiesCapacity(3.5d);
 			setSocialDistancing(30);
 			break;
 		case 12: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.SEC2_HOLIDAYS_TMMC, MarkovChains.SEC11_HOLIDAYS_TMMC);
+			BuildingManager.openPlaces(new String[] {"bus_station", "childrens_party_service", "night_club", "tourist_attraction", "campground"});
 			BuildingManager.limitOtherActCap(3d);
 			setSocialDistancing(25);
 			break;
 		case 13: // 24 diciembre
 			BuildingManager.limitOtherActCap(1d);
-			setTMMCs("default", MarkovChains.SEC2_DEFAULT_TMMC, MarkovChains.SEC11_DEFAULT_TMMC);
+			setTMMCs("november", MarkovChains.SEC2_NOVEMBER_TMMC, MarkovChains.SEC11_NOVEMBER_TMMC);
 			// Cenas familiares - 80% poblacion, mitad afuera y mitad adentro
 			scheduleForcedEvent(18, true,  7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
@@ -549,7 +545,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			break;
 		case 16: // 1 enero
-			BuildingManager.limitActivitiesCapacity(3.5d);
+			BuildingManager.limitActivitiesCapacity(3d);
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
 			// Festejos entre jovenes (eventos)
 			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
@@ -1009,7 +1005,7 @@ public class ContextCreator implements ContextBuilder<Object> {
         }
         
         if (i == 0) { // estudiante
-        	if (ageGroup == 0 || (ageGroup == 1 && (occupation[i] - r < occupation[i]*.4d))) { // 40% es primario
+        	if (ageGroup == 0 || (ageGroup == 1 && (occupation[i] - r < occupation[i]*.45d))) { // 45% es primario/secundario
         		workplace = findWorkingPlace(schoolPlaces);
             	if (workplace == null) {
             		workplace = home;

@@ -325,9 +325,12 @@ public final class MarkovChains {
 	public static final int[][][][] SEC2_OCTOBER_TMMC = {YOUNG_SEC2_OCTOBER_TMMC, YOUNG_SEC2_OCTOBER_TMMC, ADULT_SEC2_OCTOBER_TMMC, ADULT_SEC2_OCTOBER_TMMC, HIGHER_SEC2_OCTOBER_TMMC};
 	public static final int[][][][] SEC11_OCTOBER_TMMC = {YOUNG_SEC11_OCTOBER_TMMC, YOUNG_SEC11_OCTOBER_TMMC, ADULT_SEC11_OCTOBER_TMMC, ADULT_SEC11_OCTOBER_TMMC, HIGHER_SEC11_OCTOBER_TMMC};
 	
-////
+	// Matrices de markov del mes de Novimebre para seccionales 2 y 11 de Paraná //
 	
-	// Matrices de markov del mes de Octubre para seccionales 2 y 11 de Paraná //
+	public static final int[][][][] SEC2_NOVEMBER_TMMC = {CHILD_SEC2_DEFAULT_TMMC, YOUNG_SEC2_DEFAULT_TMMC, ADULT_SEC2_DEFAULT_TMMC, ELDER_SEC2_DEFAULT_TMMC, HIGHER_SEC2_OCTOBER_TMMC};
+	public static final int[][][][] SEC11_NOVEMBER_TMMC = {CHILD_SEC11_DEFAULT_TMMC, YOUNG_SEC11_DEFAULT_TMMC, ADULT_SEC11_DEFAULT_TMMC, ELDER_SEC11_DEFAULT_TMMC, HIGHER_SEC11_OCTOBER_TMMC};
+	
+	// Matrices de markov durante las fiestas para seccionales 2 y 11 de Paraná //
 	
 	public static final int YOUNG_SEC2_HOLIDAYS_DIFF[][][] = {
 			{ { 225,-450,225, 0 }, { 225,-450,225, 0 }, { 225,-450,225,0 }, { 225,-450,225,0 } },
