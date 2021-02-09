@@ -5,9 +5,9 @@ public final class DataSet {
 	public static final String SHP_FILE_PLACES	= "./data/places.shp";
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/parana-places-markov.csv";
 	
-	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 262250 (fuente Abelardo) */
-	public static final int LOCAL_HUMANS			= 242250;	// Cantidad de Humanos locales (no salen a trabajar)
-	public static final int LOCAL_TRAVELER_HUMANS	= 20000;	// Cantidad de Humanos que trabajan afuera
+	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 263990 (fuente Abelardo) */
+	public static final int LOCAL_HUMANS		= 237000;	// Cantidad de Humanos locales (no salen a trabajar)
+	public static final int LOCAL_TRAVELER_HUMANS	= 26990;	// Cantidad de Humanos que trabajan afuera
 	public static final int FOREIGN_TRAVELER_HUMANS	= 0;		// Cantidad de Humanos que viven afuera
 	
 	/** Tipo de seccional segun indice: 0 tipo 2 | 1 tipo 11 */
@@ -100,9 +100,9 @@ public final class DataSet {
 	/** Tiempo de cuarentena preventivo al ser contacto estrecho o convivir con sintomatico (si prevQuarantineEnabled) */
 	public static final int	PREVENTIVE_QUARANTINE_TIME		= 168;	// en ticks (14 dias)
 	
-	/** Si est· habilitada la "pre infeccion" de contactos estrechos y cuarentena preventiva de los mismos */
+	/** Si est√° habilitada la "pre infeccion" de contactos estrechos y cuarentena preventiva de los mismos */
 	private static boolean closeContactsEnabled;
-	/** Si est· habilitada la cuarentena preventiva para las personas que conviven con un sintomatico */
+	/** Si est√° habilitada la cuarentena preventiva para las personas que conviven con un sintomatico */
 	private static boolean prevQuarantineEnabled;
 	
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
@@ -142,7 +142,7 @@ public final class DataSet {
 	 * <li>65 o mas anos</ul>
 	 */
 	public static final int AGE_GROUPS = 5; //cantidad de franjas etarias
-	public static final String[] AGE_GROUP_LABELS				= {"NiÒos", "Jovenes", "Adultos", "Mayores", "Muy Mayores"};
+	public static final String[] AGE_GROUP_LABELS				= {"Ni√±os", "Jovenes", "Adultos", "Mayores", "Muy Mayores"};
 	public static final double[] HUMANS_PER_AGE_GROUP			= {14.40d, 17.92d, 22.88d, 31.10d, 13.70d}; // Abelardo Parana
 	
 	public static final double[][] LOCAL_HUMANS_PER_AGE_GROUP	= {	// Humanos con hogar dentro y trabajo/estudio fuera - Inventado
@@ -172,7 +172,7 @@ public final class DataSet {
 	};
 	
 	public static final int[] WORKING_FROM_HOME	= {5, 7};	// 02: menos del 5% | 11: menos del 7%
-	public static final int[] WORKING_OUTDOORS	= {5, 30};	// 02: S/D. Porcentaje Ìnfimo. | 11: 30%.
+	public static final int[] WORKING_OUTDOORS	= {5, 30};	// 02: S/D. Porcentaje √≠nfimo. | 11: 30%.
 	
 	/** Distancia para que se considere contacto personal */
 	public static final int	PERSONAL_DISTANCE				= 4; // Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
