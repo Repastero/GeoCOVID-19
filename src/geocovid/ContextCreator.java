@@ -474,12 +474,13 @@ public class ContextCreator implements ContextBuilder<Object> {
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("july", MarkovChains.SEC2_JULY_TMMC, MarkovChains.SEC11_JULY_TMMC);
 			BuildingManager.limitActivitiesCapacity(4d);
+			setSocialDistancing(90);
 			break;
 		case 3: // 3 agosto - 216
 			// Mini veranito
 			setTMMCs("august", MarkovChains.SEC2_AUGUST_TMMC, MarkovChains.SEC11_AUGUST_TMMC);
-			BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(65);
+			BuildingManager.limitActivitiesCapacity(3.5d);//3
+			setSocialDistancing(80);//65
 			break;
 		case 4: // 17 agosto - 230
 			// Nueva normalidad (Fase 5)
@@ -488,6 +489,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			break;
 		case 5: // 31 agosto - 245
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
+			setSocialDistancing(60);
 			BuildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
 			break;
 		case 6: // 11 septiembre - 255
@@ -495,61 +497,103 @@ public class ContextCreator implements ContextBuilder<Object> {
 			DataSet.enableCloseContacts();
 			DataSet.enablePrevQuarantine();
 			//
-			BuildingManager.limitActivitiesCapacity(2.5d);
-			setSocialDistancing(50);
+			BuildingManager.limitActivitiesCapacity(2.5d);//2.5
+			setSocialDistancing(50);//50
 			break;
 		case 7: // 14 septiembre - 258
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("september", MarkovChains.SEC2_SEPTEMBER_TMMC, MarkovChains.SEC11_SEPTEMBER_TMMC);
 			BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(35);
-			DataSet.setMaskEffectivity(0.15);
+			setSocialDistancing(40);//35
+			DataSet.setMaskEffectivity(0.2);//0.15
 			break;
 		case 8: // 21 septiembre - 265
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
 			BuildingManager.limitActivitiesCapacity(3.5d);
+			setSocialDistancing(45);
 			break;
-		case 9: // 9 octubre - 283
+		case 9: // 1 octubre - 274
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
+			BuildingManager.limitActivitiesCapacity(4d);//3.5
+			setSocialDistancing(40);
 			break;
-		case 10: // 29 octubre - 303
+		case 10: // 15 octubre - 288
+			//setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
+			BuildingManager.limitActivitiesCapacity(3.5d);//3.5
+			setSocialDistancing(35);
+			break;	
+		case 11: // 29 octubre - 303
 			BuildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
-			BuildingManager.limitActivitiesCapacity(4d);
+			BuildingManager.limitActivitiesCapacity(3d);//4
+			setSocialDistancing(30);
 			break;
-		case 11: // 6 noviembre - 311
+		case 12: // 6 noviembre - 311
 			// Nueva alversoetapa
 			setTMMCs("november", MarkovChains.SEC2_NOVEMBER_TMMC, MarkovChains.SEC11_NOVEMBER_TMMC);
 			BuildingManager.limitActivitiesCapacity(3.5d);
-			setSocialDistancing(30);
+			setSocialDistancing(40);
 			break;
-		case 12: // 9 diciembre - 344
+		case 13: // 9 diciembre - 344
 			setTMMCs("holidays", MarkovChains.SEC2_HOLIDAYS_TMMC, MarkovChains.SEC11_HOLIDAYS_TMMC);
 			BuildingManager.openPlaces(new String[] {"bus_station", "childrens_party_service", "night_club", "tourist_attraction", "campground"});
-			BuildingManager.limitOtherActCap(3d);
-			setSocialDistancing(25);
+			BuildingManager.limitOtherActCap(3.5d);
+			setSocialDistancing(40);//25
 			break;
-		case 13: // 24 diciembre - 359
+		case 14: // 24 diciembre - 359
 			BuildingManager.limitOtherActCap(1d);
+			setSocialDistancing(20);//25
 			setTMMCs("november", MarkovChains.SEC2_NOVEMBER_TMMC, MarkovChains.SEC11_NOVEMBER_TMMC);
 			// Cenas familiares - 80% poblacion, mitad afuera y mitad adentro
 			scheduleForcedEvent(18, true,  7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			break;
-		case 14: // 25 diciembre - 360
+		case 15: // 25 diciembre - 360
 			// Festejos entre jovenes (eventos)
 			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
 			break;
-		case 15: // 31 diciembre - 366
+		case 16: // 31 diciembre - 366
 			// Cenas familiares - 80% poblacion, mitad afuera y mitad adentro
 			scheduleForcedEvent(18, true,  7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			break;
-		case 16: // 1 enero - 367
+		case 17: // 1 enero - 367
+			DataSet.setMaskEffectivity(0.2);
+			setSocialDistancing(45);//
 			BuildingManager.limitActivitiesCapacity(3d);
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
 			// Festejos entre jovenes (eventos)
 			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
 			break;
+		case 18: // 9 enero
+			//BuildingManager.limitActivitiesCapacity(3d);
+			DataSet.setMaskEffectivity(0.15);
+			setSocialDistancing(20);//
+			// Festejos entre jovenes (eventos)
+			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			break;
+		case 19: // 16 enero
+			//BuildingManager.limitActivitiesCapacity(3d);
+			setSocialDistancing(40);//
+			// Festejos entre jovenes (eventos)
+			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			break;
+		case 20: // 23 enero
+			//BuildingManager.limitActivitiesCapacity(3d);
+			setSocialDistancing(45);//
+			// Festejos entre jovenes (eventos)
+			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			break;
+		case 21: // 30 enero
+			//BuildingManager.limitActivitiesCapacity(3d);
+			DataSet.setMaskEffectivity(0.2);
+			setSocialDistancing(50);//
+			// Festejos entre jovenes (eventos)
+			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			break;	
 		default:
 			break;
 		}

@@ -17,7 +17,7 @@ public final class DataSet {
 	public static final int SECTORALS_COUNT = SECTORALS_POPULATION.length;
 	
 	/** Dia del corrente ano donde ocurre cambio de fase<p> @see <a href="https://espanol.epochconverter.com/dias/2020">Numeros de dias 2020</a> */
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {164,183,202,216,230,245,255,258,265,283,303,311,344,359,360,366,367}; // Dia 0 = 12 de Junio (dia 164)
+	public static final int[] LOCKDOWN_PHASES_DAYS	= {164,183,202,216,230,245,255,258,265,274,288,303,311,344,359,360,366,367,375,382,389,396}; // Dia 0 = 12 de Junio (dia 164)
 	/* Dia de inicio de cada fase
 	 * 12 junio
 	 *  1 julio
@@ -28,7 +28,8 @@ public final class DataSet {
 	 * 11 septiembre
 	 * 14 septiembre
 	 * 21 septiembre
-	 *  9 octubre
+	 *  1 octubre
+	 *  10 octubre
 	 * 29 octubre
 	 *  6 noviembre
 	 *  9 diciembre
@@ -36,6 +37,10 @@ public final class DataSet {
 	 * 25 diciembre
 	 * 31 diciembre
 	 *  1 enero
+	 *  9 enero
+	 *  16 enero
+	 *  23 enero
+	 *  30 enero
 	 */
 	
 	/** Cantidad maxima de humanos por m2 (minimo 1) */
