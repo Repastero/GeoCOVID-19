@@ -5,9 +5,9 @@ public final class DataSet {
 	public static final String SHP_FILE_PLACES	= "./data/places.shp";
 	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/parana-places-markov.csv";
 	
-	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 263990 (fuente Abelardo) */
-	public static final int LOCAL_HUMANS		= 237000;	// Cantidad de Humanos locales (no salen a trabajar)
-	public static final int LOCAL_TRAVELER_HUMANS	= 26990;	// Cantidad de Humanos que trabajan afuera
+	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 256800 (272650 sin restar menores de 5 anos - fuente Abelardo) */
+	public static final int LOCAL_HUMANS		= 236000;	// Cantidad de Humanos locales (no salen a trabajar)
+	public static final int LOCAL_TRAVELER_HUMANS	= 20800;	// Cantidad de Humanos que trabajan afuera
 	public static final int FOREIGN_TRAVELER_HUMANS	= 0;		// Cantidad de Humanos que viven afuera
 	
 	/** Tipo de seccional segun indice: 0 tipo 2 | 1 tipo 11 */
