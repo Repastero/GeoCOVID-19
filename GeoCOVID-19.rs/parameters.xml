@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <parameters>
-					<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
+				<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
 						defaultValue="__NULL__"
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
@@ -14,18 +14,6 @@
 		/>
 				<parameter name="corridas" displayName="Cantidad de simulaciones que se quieren realizar" type="int" 
 						defaultValue="100" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="diasPrimerFinde" displayName="Dias hasta comenzar fin de semana" type="int" 
-						defaultValue="3" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="anoInicioSimulacion" displayName="Ano de inicio simulacion" type="int" 
-						defaultValue="2020" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
@@ -48,8 +36,8 @@
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
-				<parameter name="diaInicioSimulacion" displayName="Dia del ano inicio simulacion" type="int" 
-						defaultValue="183" 
+				<parameter name="diaInicioSimulacion" displayName="Dia inicio simulacion (desde 1/1/20)" type="int" 
+						defaultValue="182" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
@@ -60,6 +48,10 @@
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
-		</parameters>
-
-
+				<parameter name="nombreMunicipio" displayName="Nombre de municipio (en minusculas y sin espacios)" type="java.lang.String" 
+						defaultValue="parana" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$StringStringConverter"
+						values="parana gualeguay diamante nogoya victoria sansalvador "
+		/>
+</parameters>

@@ -16,7 +16,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	private boolean closed = false;
 	
 	public WorkplaceAgent(int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
-		super(sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA);
+		super(sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
 		
 		this.workplaceType = workType;
 		this.activityType = activityType;
@@ -112,6 +112,10 @@ public class WorkplaceAgent extends BuildingAgent {
 		int[] pos = workPositions[randomIndex];
 		workPositions[randomIndex] = workPositions[--workPositionsCount];
 		return pos;
+	}
+	
+	public int getVacancy() {
+		return vacancies;
 	}
 	
 	public boolean vacancyAvailable() {

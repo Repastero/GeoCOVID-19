@@ -7,9 +7,14 @@ import repast.simphony.engine.schedule.ScheduleParameters;
 public class ForeignHumanAgent extends HumanAgent {
 	
 	private boolean inContext = true;
-
+	
 	public ForeignHumanAgent(int secHome, int secHomeIndex, int ageGroup, BuildingAgent job, int[] posJob) {
-		super(secHome, secHomeIndex, ageGroup, null, job, posJob, true);
+		super(secHome, secHomeIndex, ageGroup, null, job, posJob, true, false);
+	}
+	
+	public ForeignHumanAgent(int secHomeIndex) {
+		// Constructor turista - Tipo seccional 2, grupo etario 2
+		super(0, secHomeIndex, 2, null, null, null, true, true);
 	}
 	
 	public void addToContext() {
@@ -37,6 +42,13 @@ public class ForeignHumanAgent extends HumanAgent {
         // Schedule one shot
 		ScheduleParameters params = ScheduleParameters.createOneTime(newDayTick, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, this, "addToContext");
+	}
+	
+	@Override
+	public void setInfectious(boolean asyntomatic, boolean initial) {
+		if (asyntomatic) // para que no sume como nuevo expuesto
+			exposed = true;
+		super.setInfectious(asyntomatic, initial);
 	}
 	
 	@Override

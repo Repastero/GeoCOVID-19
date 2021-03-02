@@ -2,12 +2,13 @@ package geocovid.agents;
 
 import geocovid.DataSet;
 import geocovid.InfectionReport;
+import geocovid.Town;
 import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 
 public class PublicTransportAgent {
-	private SurfaceAgent seats[][][] = new SurfaceAgent[DataSet.SECTORALS_COUNT][DataSet.PUBLIC_TRANSPORT_UNITS][DataSet.PUBLIC_TRANSPORT_SEATS];
+	private SurfaceAgent seats[][][] = new SurfaceAgent[Town.sectoralsCount][DataSet.PUBLIC_TRANSPORT_UNITS][DataSet.PUBLIC_TRANSPORT_SEATS];
 	
 	public void jumpAboard(HumanAgent human, int sectoral) {
 		int unit = RandomHelper.nextIntFromTo(0, DataSet.PUBLIC_TRANSPORT_UNITS-1);

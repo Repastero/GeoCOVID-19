@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
 import repast.simphony.engine.environment.RunEnvironment;
+import repast.simphony.engine.schedule.ISchedulableAction;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.parameter.Parameters;
@@ -43,47 +45,58 @@ import repast.simphony.space.gis.Geography;
 import repast.simphony.space.gis.GeographyParameters;
 
 public class ContextCreator implements ContextBuilder<Object> {
-	private List<List<HomeAgent>> homePlaces = new ArrayList<List<HomeAgent>>(DataSet.SECTORALS_COUNT);
-	private List<WorkplaceAgent>workPlaces = new ArrayList<WorkplaceAgent>();
-	private List<WorkplaceAgent>schoolPlaces = new ArrayList<WorkplaceAgent>();
-	private List<WorkplaceAgent>universityPlaces = new ArrayList<WorkplaceAgent>();
+	private List<List<HomeAgent>> homePlaces;	// Lista de hogares en cada seccional
+	private List<WorkplaceAgent>workPlaces = new ArrayList<WorkplaceAgent>();		// Lista de lugares de trabajo
+	private List<WorkplaceAgent>schoolPlaces = new ArrayList<WorkplaceAgent>();		// Lista de lugares de estudio primario/secundario
+	private List<WorkplaceAgent>universityPlaces = new ArrayList<WorkplaceAgent>();	// Lista de lugares de estudio terciario/universitario
 	
-	private HumanAgent[] contextHumans;
-	private int localHumansCount;
-	private int foreignHumansCount;
+	private HumanAgent[] contextHumans;	// Array de HumanAgent parte del contexto
+	private int localHumansCount;		// Cantidad de humanos que viven en contexto
+	private int foreignHumansCount;		// Cantidad de humanos que viven fuera del contexto
+	private int[] localHumansIndex;		// Indice en contextHumans de caga grupo etario (local)
 	
-	private Set<Integer> socialDistIndexes;
+	private ForeignHumanAgent[] touristHumans;	// Array de HumanAgent temporales/turistas
+	private int[] lodgingPlacesSI;				// Seccionales donde existen lugares de hospedaje
+	private ISchedulableAction touristSeasonAction;
+	private ISchedulableAction youngAdultsPartyAction;
 	
-	private Map<String, PlaceProperty> placesProperty = new HashMap<>();
+	private Set<Integer> socialDistIndexes;		// Lista con ids de humanos que respetan distanciamiento
+	
+	private Map<String, PlaceProperty> placesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place 
 	
 	private ISchedule schedule;
 	private Context<Object> context;
 	private Geography<Object> geography;
 	
+	// Parametros de simulacion
 	private int simulationStartYear;
 	private int simulationStartDay;
 	private int simulationMaxTick;
 	private int simulationMinDay;
 	private int deathLimit;
 	private int infectedAmount;
+	private int simulationRun;
 	private int outbreakStartTick;
 	private int weekendStartTick;
+	private String townName;
 	
-	private long simulationStartTime;
+	private long simulationStartTime;	// Tiempo inicio de simulacion
+	private long maxParcelId;	// Para no repetir ids, al crear casas ficticias
 	
-	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
-	private int unemployedCount; // Contador de empleos faltantes
-	private int unschooledCount; // Contador de bancos faltantes en escuelas
+	private int[][] employedCount;	// Cupo de trabajadores
+	private int[][] schooledCount;	// Cupo de estudiantes pri/sec
+	private int[][] collegiateCount;// Cupo de estudiantes ter/uni
+	private int unemployedCount;	// Contador de empleos faltantes
+	private int unschooledCount;	// Contador de bancos faltantes en escuelas
 	private int noncollegiateCount; // Contador de bancos faltantes en universidades
 	
-	/** Ver <b>corridas</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	private int simulationRun = 50;
+	private String currentMonth = null;	// Para distinguir entre cambios de markovs
+	private boolean publicTransportEnabled = false;	// Flag colectivo
+	private boolean weekendTMMCEnabled = false;	// Flag fin de seamana
+	static final int WEEKLY_TICKS = 12*7;	// Ticks que representan el tiempo de una semana
+	static final int WEEKEND_TICKS = 12*2;	// Ticks que representan el tiempo que dura el fin de semana
 	
-	private boolean publicTransportEnabled = false;
-	private String currentMonth = null;
-	private boolean weekendTMMCEnabled = false;
-	static final int WEEKLY_TICKS = 12*7; // ticks que representan el tiempo de una semana
-	static final int WEEKEND_TICKS = 12*2; // ticks que representan el tiempo que dura el fin de semana
+	static final boolean DEBUG_MSG = false;	// Flag para imprimir valores de inicializacion
 	
 	public ContextCreator() {
 		printJarVersion(this.getClass());
@@ -108,9 +121,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 		params = ScheduleParameters.createOneTime(outbreakStartTick, 0.9d);
 		schedule.schedule(params, this, "infectLocalRandos", infectedAmount);
 		
+		Town.setTown(townName);
 		// Programa los cambios de fases, pasadas y futuras
 		int phaseDay;
-		int[] phasesStartDay = DataSet.LOCKDOWN_PHASES_DAYS;
+		int[] phasesStartDay = Town.lockdownPhasesDays;
 		for (int i = 0; i < phasesStartDay.length; i++) {
 			phaseDay = phasesStartDay[i] - simulationStartDay;
 			if (phaseDay > 0)	// Fase futura
@@ -118,7 +132,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			else				// Fase pasada
 				phaseDay = 0;
 			params = ScheduleParameters.createOneTime(phaseDay, 0.9d);
-			schedule.schedule(params, this, "initiateLockdownPhase", i);
+			schedule.schedule(params, this, "initiateLockdownPhase", phasesStartDay[i]);
 		}
 		
 		// Reinicio estos valores por las dudas
@@ -135,6 +149,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		if (placesProperty.isEmpty()) // Para no volver a leer si se reinicia simulacion
 			placesProperty = PlaceProperty.loadPlacesProperties();
+		homePlaces = new ArrayList<List<HomeAgent>>(Town.sectoralsCount);
 		loadParcelsShapefile();
 		loadPlacesShapefile();
 		BuildingManager.createActivitiesChances();
@@ -173,7 +188,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
 		
-		System.out.printf("Simulacion N°: %3d | Tiempo: %.2f minutos%n", simulationRun, (simTime / (double)(1000*60)));
+		System.out.printf("Simulacion NÂ°: %3d | Tiempo: %.2f minutos%n", simulationRun, (simTime / (double)(1000*60)));
 		System.out.printf("Dias epidemia: %3d%n", (int) (schedule.getTickCount() - outbreakStartTick) / 12);
 		
 		System.out.printf("Susceptibles: %5d | Infectados: %d | Infectados por estela: %d%n",
@@ -201,7 +216,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 		Set<Integer> indexes = new HashSet<Integer>(amount, 1f);
 		int i;
 		do {
-			i = RandomHelper.nextIntFromTo(foreignHumansCount, localHumansCount + foreignHumansCount - 1);
+			// Saltea primer y ultima franja etaria
+			i = RandomHelper.nextIntFromTo(localHumansIndex[0], localHumansIndex[localHumansIndex.length - 2] - 1);
 			// Chequea si no es repetido
 			if (indexes.add(i)) {
 				contextHumans[i].setInfectious(true, true); // Asintomatico
@@ -210,71 +226,127 @@ public class ContextCreator implements ContextBuilder<Object> {
 		} while (infected != amount);
 	}
 	
+	/**
+	 * Setear temporada turistica, para simular el ingreso de turistas
+	 * @param duration dias totales de turismo
+	 * @param interval dias de intervalo entre grupo de turistas
+	 * @param touristAmount cantidad por grupo de turistas
+	 * @param infectedAmount cantidad de infectados asintomaticos por grupo de turistas
+	 */
+	@SuppressWarnings("unused")
+	private void setTouristSeason(int duration, int interval, int touristAmount, int infectedAmount) {
+		// Si es la primer simulacion
+		if (lodgingPlacesSI == null) { // vector con indices de seccionales de Places tipo lodging
+			// Recorrer los lugares de alojamiento y guardar los indices de seccional
+			List<WorkplaceAgent> lodgingPlaces = BuildingManager.getWorkplaces("lodging");
+			if (lodgingPlaces == null) {
+				System.err.println("No existen Places de alojamiento (lodging)");
+				return;
+			}
+			lodgingPlacesSI = new int[lodgingPlaces.size()];
+			for (int i = 0; i < lodgingPlacesSI.length; i++)
+				lodgingPlacesSI[i] = lodgingPlaces.get(i).getSectoralIndex();
+		}
+		
+		// Por las dudas limpiar turistas
+		touristHumans = null;
+		// Programar las acciones de recambio de turistas y de fin de temporada turistica
+		ScheduleParameters params;
+		params = ScheduleParameters.createRepeating(schedule.getTickCount(), (interval * 12), ScheduleParameters.FIRST_PRIORITY);
+		touristSeasonAction = schedule.schedule(params, this, "newTouristGroup", touristAmount, infectedAmount);
+		params = ScheduleParameters.createOneTime(schedule.getTickCount() + (duration * 12) - 0.1d, ScheduleParameters.LAST_PRIORITY);
+		schedule.schedule(params, this, "endTouristSeason");
+	}
+	
+	public void newTouristGroup(int tourist, int infected) {
+		// Si ya existe el vector de turistas, sacar del contexto el grupo anterior
+		if (touristHumans != null) {
+			for (ForeignHumanAgent human : touristHumans)
+				human.removeInfectiousFromContext();
+		}
+		// Si no existe el vector de turistas, crear segun tamano del grupo 
+		else
+			touristHumans = new ForeignHumanAgent[tourist];
+		
+		int secIndex;
+		ForeignHumanAgent tempHuman;
+		// Crear Humanos turista, agregarlos al contexto y al vector 
+		for (int i = 0; i < tourist; i++) {
+			// Seleccionar al azar una seccional de la lista de lugares de alojamiento
+			secIndex = lodgingPlacesSI[RandomHelper.nextIntFromTo(0, lodgingPlacesSI.length-1)];
+			tempHuman = new ForeignHumanAgent(secIndex);
+			if (i < infected)
+				tempHuman.setInfectious(true, false); // Asintomatico
+			context.add(tempHuman);
+			touristHumans[i] = tempHuman;
+		}
+	}
+	
+	public void endTouristSeason() {
+		// Eliminar la accion programada que renueva el grupo de turistas y sacar del contexto el ultimo grupo
+		schedule.removeAction(touristSeasonAction);
+		if (touristHumans != null) {
+			for (HumanAgent tourist : touristHumans)
+				tourist.removeInfectiousFromContext();
+		}
+		// Por las dudas limpiar turistas
+		touristHumans = null;
+	}
 
 	/**
 	 * Arma un listado con Humanos seleccionados al azar, segun cupo de cada franja etaria y que no estan aislados.
 	 * @param events cantidad de eventos
+	 * @param humansPerEvent cantidad de Humanos por evento
 	 * @param humansByAG las cantidades de Humanos por franja etaria a seleccionar por evento
 	 * @return array de HumanAgent
 	 */
-	private HumanAgent[] gatherHumansForEvent(int events, int[] humansByAG) {
-		int[] agTotal = new int[humansByAG.length];
-		int[] agTotalIndex = new int[humansByAG.length];
-		int totalActiveHumans = 0;
-		for (int i = 0; i < humansByAG.length; i++) {
-			agTotal[i] = humansByAG[i] * events;
-			totalActiveHumans += agTotal[i];
-			agTotalIndex[i] = totalActiveHumans;
-		}
-		
-		int[] hIndexes = IntStream.range(0, localHumansCount + foreignHumansCount).toArray();
-		int indexesCount = localHumansCount + foreignHumansCount - 1;
-		HumanAgent[] activeHumans = new HumanAgent[totalActiveHumans];
+	private HumanAgent[][] gatherHumansForEvent(int events, int humansPerEvent, int[] humansByAG) {
+		HumanAgent[][] participants = new HumanAgent[events][humansPerEvent];
+		//
 		HumanAgent tempHuman;
-		int humansToFound = totalActiveHumans;
-		int tempHumanAG, randomIndex;
-		while (humansToFound > 0 && indexesCount >= 0) {
-			randomIndex = RandomHelper.nextIntFromTo(0, indexesCount);
-			tempHuman = contextHumans[hIndexes[randomIndex]];
-			hIndexes[randomIndex] = hIndexes[indexesCount--];
-			// Chequea que no este aislado y no tenga una actividad programada
-			if (!tempHuman.isIsolated() && !tempHuman.isActivityQueued()) {
-				tempHumanAG = tempHuman.getAgeGroup();
-				if (agTotal[tempHumanAG] > 0) {
-					activeHumans[--agTotalIndex[tempHumanAG]] = tempHuman;
-					--agTotal[tempHumanAG];
-					--humansToFound;
+		int rndIndex, rndFrom, rndTo;
+		int partIndex = 0;
+		for (int i = 0; i < humansByAG.length; i++) { // Franjas
+			// Busca desde el indice del grupo etario anterior, al siguiente 
+			rndFrom = (i == 0) ? 0 : localHumansIndex[i - 1];
+			rndTo = localHumansIndex[i] - 1;
+			// Si tiene que seleccionar mas de los disponibles
+			if (humansByAG[i] > (rndTo - rndFrom + 1)) {
+				System.err.println("Cantidad de Humanos insuficiente en franja etaria: " + i);
+				break;
+			}
+			for (int j = 0; j < humansByAG[i]; j++) { // Participantes
+				for (int k = 0; k < events; k++) { // Eventos
+					rndIndex = RandomHelper.nextIntFromTo(rndFrom, rndTo);
+					tempHuman = contextHumans[rndIndex];
+					// Chequea que no este aislado y no tenga una actividad programada
+					if (!tempHuman.isIsolated() && !tempHuman.isActivityQueued()) {
+						participants[k][partIndex] = tempHuman;
+					}
 				}
+				++partIndex;
 			}
 		}
-		return activeHumans;
+		//
+		return participants;
 	}
 	
 	/**
 	 * Asigna Humanos a cada evento.
 	 * @param buildings lista de Building de eventos
-	 * @param humans array de HumanAgent
-	 * @param humansByAG las cantidades de Humanos por franja etaria por evento
+	 * @param humans array de HumanAgents agrupados por evento
 	 * @param duration en ticks
 	 */
-	private void distributeHumansInEvent(List<BuildingAgent> buildings, HumanAgent[] humans, int[] humansByAG, int duration) {
+	private void distributeHumansInEvent(List<BuildingAgent> buildings, HumanAgent[][] humans, int duration) {
 		BuildingAgent tempBuilding;
 		HumanAgent tempHuman;
-		int bIndex; // indice segun orden de Buildings
 		for (int i = 0; i < buildings.size(); i++) {
-			bIndex = 0;
 			tempBuilding = buildings.get(i);
-			for (int j = 0; j < humansByAG.length; j++) {
-				for (int k = humansByAG[j] * i; k < humansByAG[j] * (i+1); k++) {
-					tempHuman = humans[bIndex + k];
-					if (tempHuman != null)
-						humans[bIndex + k].queueActivity(2, tempBuilding, duration); // TODO tendria que cambiar el tipo, por ahora es ocio
-					else {
-						System.err.println("Cantidad de Humanos insuficiente para cantidad de eventos: " + buildings.size());
-						return;
-					}
+			for (int j = 0; j < humans[i].length; j++) {
+				tempHuman = humans[i][j];
+				if (tempHuman != null) {
+					humans[i][j].queueActivity(2, tempBuilding, duration); // TODO tendria que cambiar el tipo, por ahora es ocio
 				}
-				bIndex += humansByAG[j] * buildings.size();
 			}
 		}
 	}
@@ -307,15 +379,15 @@ public class ContextCreator implements ContextBuilder<Object> {
 			return;
 		}
 		
-		//
 		int[] agPerBuilding = new int[ageGroupPerc.length];
+		int adjHumPerPlace = 0; // Cantidad ajustada de Humanos por Place
 		for (int i = 0; i < ageGroupPerc.length; i++) {
-			agPerBuilding[i] = (int) Math.ceil((humansPerPlace * ageGroupPerc[i]) / 100);
+			agPerBuilding[i] = Math.round((humansPerPlace * ageGroupPerc[i]) / 100);
+			adjHumPerPlace += agPerBuilding[i];
 		}
 		
-		HumanAgent[] activeHumans = gatherHumansForEvent(places.size(), agPerBuilding);
-		
-		distributeHumansInEvent(places, activeHumans, agPerBuilding, ticksDuration);
+		HumanAgent[][] activeHumans = gatherHumansForEvent(places.size(), adjHumPerPlace, agPerBuilding);
+		distributeHumansInEvent(places, activeHumans, ticksDuration);
 	}
 	
 	/**
@@ -329,22 +401,77 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	private void scheduleForcedEvent(int realArea, boolean outdoor, int events, int humansPerEvent, int[] ageGroupPerc, int ticksDuration) {
 		int[] agPerBuilding = new int[ageGroupPerc.length];
+		int adjHumPerPlace = 0; // Cantidad ajustada de Humanos por Place
 		for (int i = 0; i < ageGroupPerc.length; i++) {
-			agPerBuilding[i] = (int) Math.ceil((humansPerEvent * ageGroupPerc[i]) / 100);
+			agPerBuilding[i] = Math.round((humansPerEvent * ageGroupPerc[i]) / 100);
+			adjHumPerPlace += agPerBuilding[i];
 		}
 		
-		HumanAgent[] activeHumans = gatherHumansForEvent(events, agPerBuilding);
+		HumanAgent[][] activeHumans = gatherHumansForEvent(events, adjHumPerPlace, agPerBuilding);
 		
 		List<BuildingAgent> buildings = new ArrayList<BuildingAgent>();
 		Coordinate[] coords = BuildingManager.getSectoralsCentre();
 		int sectoralType, sectoralIndex;
 		for (int i = 0; i < events; i++) {
-			sectoralIndex = RandomHelper.nextIntFromTo(0, DataSet.SECTORALS_COUNT - 1);
-			sectoralType = DataSet.SECTORALS_TYPES[sectoralIndex];
+			sectoralIndex = RandomHelper.nextIntFromTo(0, Town.sectoralsCount - 1);
+			sectoralType = Town.sectoralsTypes[sectoralIndex];
 			buildings.add(new BuildingAgent(sectoralType, sectoralIndex, coords[sectoralIndex], realArea, outdoor));
 		}
 		
-		distributeHumansInEvent(buildings, activeHumans, agPerBuilding, ticksDuration);
+		distributeHumansInEvent(buildings, activeHumans, ticksDuration);
+	}
+	
+	/**
+	 * Programa fiestas entre jovenes adultos segun los parametros dados.
+	 * @param humansTotal cantidad total de humanos en fiestas 
+	 * @param sqPerHuman cuadrados por humano
+	 * @param outdoor si las fiestas son al aire libre
+	 * @param indoor si las fiestas son en lugares cerrados
+	 */
+	public void scheduleYoungAdultsParty(int humansTotal, double sqPerHuman, boolean outdoor, boolean indoor) {
+		// Segun la cantidad de participantes, calcula: la cantidad de fiestas, participantes en cada una y area neta 
+	    int humansPerParty = ((int) Math.sqrt(humansTotal) + 1) << 1; // humanos por fiesta
+	    int parties = humansTotal / humansPerParty; // cantidad de fiestas
+	    int area = (int) ((humansPerParty / DataSet.HUMANS_PER_SQUARE_METER) * sqPerHuman); // metros del area
+	    // Programa el evento
+	    if (outdoor && indoor) { // mitad y mitad
+	    	scheduleForcedEvent(area, true, parties - (parties >> 1), humansPerParty, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+	    	scheduleForcedEvent(area, false, parties >> 1			, humansPerParty, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+	    }
+	    else { // afuera o adentro
+	    	scheduleForcedEvent(area, outdoor, parties, humansPerParty, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+	    }
+	}
+	
+	/**
+	 * Programa por tiempo indeterminado la creacion de fiestas entre jovenes adultos segun los parametros dados.
+	 * @param interval dias entre eventos
+	 * @param humansTotal cantidad total de humanos en fiestas 
+	 * @param sqPerHuman cuadrados por humano
+	 * @param outdoor si las fiestas son al aire libre
+	 * @param indoor si las fiestas son en lugares cerrados
+	 */
+	private void startRepeatingYoungAdultsParty(int interval, int humansTotal, double sqPerHuman, boolean outdoor, boolean indoor) {
+		ScheduleParameters params;
+		params = ScheduleParameters.createRepeating(schedule.getTickCount(), (interval * 12), ScheduleParameters.FIRST_PRIORITY);
+		youngAdultsPartyAction = schedule.schedule(params, this, "scheduleYoungAdultsParty", humansTotal, sqPerHuman, outdoor, indoor);
+	}
+	
+	/**
+	 * Detiene la creacion programada de fiestas entre jovenes adultos.
+	 */
+	@SuppressWarnings("unused")
+	private void stopRepeatingYoungAdultsParty() {
+		if (!removeYAPartyAction()) {
+			ScheduleParameters params;
+			params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1d);
+			schedule.schedule(params, this, "removeYAPartyAction");
+		}
+	}
+	
+	public boolean removeYAPartyAction() {
+		// Eliminar la accion programada que crea fiestas para jovenes adultos
+		return schedule.removeAction(youngAdultsPartyAction);
 	}
 	
 	/**
@@ -388,19 +515,21 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
-	 * Habilitar o deshabilita la opcion de usar transporte publico. 
+	 * Si lo permite la ciudad, habilitar o deshabilitar la opcion de usar transporte publico. 
 	 */
 	private void enablePublicTransport(boolean enabled) {
-		if (enabled && !publicTransportEnabled) {
-			publicTransportEnabled = true;
-			PublicTransportAgent pt = new PublicTransportAgent();
-			context.add(pt);
-			BuildingManager.setPublicTransport(pt);
-		}
-		else if (!enabled && publicTransportEnabled) {
-			publicTransportEnabled = false;
-			context.remove(BuildingManager.getPublicTransport());
-			BuildingManager.setPublicTransport(null);
+		if (Town.publicTransportAllowed) {
+			if (enabled && !publicTransportEnabled) {
+				publicTransportEnabled = true;
+				PublicTransportAgent pt = new PublicTransportAgent();
+				context.add(pt);
+				BuildingManager.setPublicTransport(pt);
+			}
+			else if (!enabled && publicTransportEnabled) {
+				publicTransportEnabled = false;
+				context.remove(BuildingManager.getPublicTransport());
+				BuildingManager.setPublicTransport(null);
+			}
 		}
 	}
 	
@@ -445,6 +574,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	public void initiateLockdownPhase(int phase) {
 		boolean lockdownOverWKD = false;
+		int tmp;
 		// Chequea si se cambio de fase durante el fin de semana y no es la primer fase
 		if (weekendTMMCEnabled && schedule.getTickCount() > 0d) {
 			lockdownOverWKD = true;
@@ -452,7 +582,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		}
 		//
 		switch (phase) {
-		case 0: // 12 junio - 164
+		case 163: // 12 junio
 			// Reapertura progresiva (Fase 4)
 			BuildingManager.closePlaces(new String[] {
 					// Trabajo/estudio
@@ -463,139 +593,102 @@ public class ContextCreator implements ContextBuilder<Object> {
 			setTMMCs("june", MarkovChains.SEC2_JUNE_TMMC, MarkovChains.SEC11_JUNE_TMMC);
 			BuildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
 			enablePublicTransport(true);
-			setSocialDistancing(80);
+			setSocialDistancing(90);
 			DataSet.setMaskEffectivity(0.25);
 			break;
-		case 1: //  1 julio - 183
+		case 182: //  1 julio - solo Parana
 			enablePublicTransport(false); // comienza el paro de choferes
 			break;
-		case 2: // 20 julio - 202
+		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("july", MarkovChains.SEC2_JULY_TMMC, MarkovChains.SEC11_JULY_TMMC);
-			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(90);
 			break;
-		case 3: // 3 agosto - 216
+		case 215: // 3 agosto
 			// Mini veranito
 			setTMMCs("august", MarkovChains.SEC2_AUGUST_TMMC, MarkovChains.SEC11_AUGUST_TMMC);
-			BuildingManager.limitActivitiesCapacity(3.5d);//3
-			setSocialDistancing(80);//65
+			BuildingManager.limitActivitiesCapacity(3.5d);
+			setSocialDistancing(80);
 			break;
-		case 4: // 17 agosto - 230
+		case 229: // 17 agosto
 			// Nueva normalidad (Fase 5)
 			enablePublicTransport(true); // finaliza el paro de choferes
 			setSocialDistancing(70);
 			break;
-		case 5: // 31 agosto - 245
+		case 244: // 31 agosto - solo Parana
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
 			setSocialDistancing(60);
 			BuildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
 			break;
-		case 6: // 11 septiembre - 255
+		case 254: // 11 septiembre
 			// Nuevas medidas (contacto estrecho)
 			DataSet.enableCloseContacts();
 			DataSet.enablePrevQuarantine();
 			//
-			BuildingManager.limitActivitiesCapacity(2.5d);//2.5
-			setSocialDistancing(50);//50
+			BuildingManager.limitActivitiesCapacity(3.5d);
+			setSocialDistancing(50);
 			break;
-		case 7: // 14 septiembre - 258
+		case 257: // 14 septiembre
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("september", MarkovChains.SEC2_SEPTEMBER_TMMC, MarkovChains.SEC11_SEPTEMBER_TMMC);
-			BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(40);//35
-			DataSet.setMaskEffectivity(0.2);//0.15
 			break;
-		case 8: // 21 septiembre - 265
+			
+		case 264: // 21 septiembre
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
-			BuildingManager.limitActivitiesCapacity(3.5d);
+			BuildingManager.limitActivitiesCapacity(4d);
 			setSocialDistancing(45);
 			break;
-		case 9: // 1 octubre - 274
+		case 273: // 1 octubre
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
-			BuildingManager.limitActivitiesCapacity(4d);//3.5
 			setSocialDistancing(40);
 			break;
-		case 10: // 15 octubre - 288
-			//setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
-			BuildingManager.limitActivitiesCapacity(3.5d);//3.5
-			setSocialDistancing(35);
-			break;	
-		case 11: // 29 octubre - 303
+		case 302: // 29 octubre
 			BuildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
-			BuildingManager.limitActivitiesCapacity(3d);//4
+			BuildingManager.limitActivitiesCapacity(3.5d);
 			setSocialDistancing(30);
 			break;
-		case 12: // 6 noviembre - 311
+		case 310: // 6 noviembre
 			// Nueva alversoetapa
 			setTMMCs("november", MarkovChains.SEC2_NOVEMBER_TMMC, MarkovChains.SEC11_NOVEMBER_TMMC);
-			BuildingManager.limitActivitiesCapacity(3.5d);
-			setSocialDistancing(40);
 			break;
-		case 13: // 9 diciembre - 344
+		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.SEC2_HOLIDAYS_TMMC, MarkovChains.SEC11_HOLIDAYS_TMMC);
 			BuildingManager.openPlaces(new String[] {"bus_station", "childrens_party_service", "night_club", "tourist_attraction", "campground"});
-			BuildingManager.limitOtherActCap(3.5d);
-			setSocialDistancing(40);//25
 			break;
-		case 14: // 24 diciembre - 359
+			
+		case 358: // 24 diciembre
 			BuildingManager.limitOtherActCap(1d);
-			setSocialDistancing(20);//25
+			setSocialDistancing(20);
 			setTMMCs("november", MarkovChains.SEC2_NOVEMBER_TMMC, MarkovChains.SEC11_NOVEMBER_TMMC);
-			// Cenas familiares - 80% poblacion, mitad afuera y mitad adentro
-			scheduleForcedEvent(18, true,  7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
-			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
+		case 365: // 31 diciembre
+			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
+			tmp = (int) Math.round(Town.getLocalPopulation() / 15 * 0.8d);
+			scheduleForcedEvent(18, true,  tmp - (tmp >> 1),15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
+			scheduleForcedEvent(18, false, tmp >> 1,		15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			break;
-		case 15: // 25 diciembre - 360
-			// Festejos entre jovenes (eventos)
-			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			break;
-		case 16: // 31 diciembre - 366
-			// Cenas familiares - 80% poblacion, mitad afuera y mitad adentro
-			scheduleForcedEvent(18, true,  7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
-			scheduleForcedEvent(18, false, 7000, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
-			break;
-		case 17: // 1 enero - 367
+			
+		case 366: // 1 enero
 			DataSet.setMaskEffectivity(0.2);
-			setSocialDistancing(45);//
-			BuildingManager.limitActivitiesCapacity(3d);
+			BuildingManager.limitActivitiesCapacity(2.5d); //3d
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
-			// Festejos entre jovenes (eventos)
-			scheduleForcedEvent(60, true, 50, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			// Periodo turistico todo el mes de Enero
+			//setTouristSeason(30, 3, 2000, 10); // 30 dias, 3 dias recambio, 2000 turistas por grupo, 10 infecciosos por grupo
+		case 359: // 25 diciembre
+			// Festejos entre jovenes - 4% de la poblacion a 1.2 cuadrados por persona, al aire libre
+			tmp = (int) Math.round(Town.getLocalPopulation() * 0.04d);
+			scheduleYoungAdultsParty(tmp, 1.2d, true, false);
 			break;
-		case 18: // 9 enero
-			//BuildingManager.limitActivitiesCapacity(3d);
-			DataSet.setMaskEffectivity(0.15);
-			setSocialDistancing(20);//
-			// Festejos entre jovenes (eventos)
-			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+			
+		case 374: // 9 enero
+			// Festejos entre jovenes - 0.8% de la poblacion a 1.2 cuadrados por persona, mitad afuera y mitad adentro
+			tmp = (int) Math.round(Town.getLocalPopulation() * 0.008d);
+			startRepeatingYoungAdultsParty(7, tmp, 1.2d, true, true);
 			break;
-		case 19: // 16 enero
-			//BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(40);//
-			// Festejos entre jovenes (eventos)
-			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
+		case 388: // 23 enero
+			BuildingManager.limitActivitiesCapacity(3.5d);
 			break;
-		case 20: // 23 enero
-			//BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(45);//
-			// Festejos entre jovenes (eventos)
-			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			break;
-		case 21: // 30 enero
-			//BuildingManager.limitActivitiesCapacity(3d);
-			DataSet.setMaskEffectivity(0.2);
-			setSocialDistancing(50);//
-			// Festejos entre jovenes (eventos)
-			scheduleForcedEvent(60, true, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			scheduleForcedEvent(60, false, 5, 200, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-			break;	
 		default:
-			break;
+			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
 		}
 		// Si corresponde, suma la matriz de fin de semana a las nuevas matrices
 		if (lockdownOverWKD)
@@ -608,15 +701,16 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private void setBachParameters() {
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		// Ano simulacion, para calcular temperatura (2020 - 2022)
-		simulationStartYear	= ((Integer) params.getValue("anoInicioSimulacion")).intValue();
-		// Dia calendario, para calcular temperatura (0 - 364)
+		simulationStartYear	= 2020;
+		// Dia de inicio, desde la fecha 01/01/2020
 		simulationStartDay	= ((Integer) params.getValue("diaInicioSimulacion")).intValue();
 		// Dias maximo de simulacion - por mas que "diaMinimoSimulacion" sea mayor (0 = Infinito)
 		simulationMaxTick	= ((Integer) params.getValue("diasSimulacion")).intValue() * 12;
 		// Dias minimo de simulacion - por mas que supere "cantidadMuertosLimite" (0 ...)
 		simulationMinDay	= ((Integer) params.getValue("diasMinimoSimulacion")).intValue();
-		// Dias hasta primer sabado (0 ...)
-		weekendStartTick	= ((Integer) params.getValue("diasPrimerFinde")).intValue() * 12;
+		// Dias hasta primer sabado
+		int daysFromSat = (4 + simulationStartDay) % 7; // el 4to dia de 2020 es sabado
+		weekendStartTick = (daysFromSat == 0) ? 0 : (7 - daysFromSat) * 12;
 		// Cantidad de muertos que debe superar para finalizar simulacion - ver "diaMinimoSimulacion" (0 = Infinito)
 		deathLimit			= ((Integer) params.getValue("cantidadMuertosLimite")).intValue();
 		// Dia de entrada de infectados
@@ -625,12 +719,14 @@ public class ContextCreator implements ContextBuilder<Object> {
 		infectedAmount		= ((Integer) params.getValue("cantidadInfectados")).intValue();
 		// Cantidad de corridas para hacer en batch
 		simulationRun		= (Integer) params.getValue("corridas");
+		// Nombre del municipio a simular
+		townName			= (String) params.getString("nombreMunicipio");
 	}
 
 	private void loadParcelsShapefile() {
-		List<SimpleFeature> features = loadFeaturesFromShapefile(DataSet.SHP_FILE_PARCELS);
+		List<SimpleFeature> features = loadFeaturesFromShapefile(Town.getParcelsFilepath());
 		homePlaces.clear();
-		for (int i = 0; i < DataSet.SECTORALS_COUNT; i++) {
+		for (int i = 0; i < Town.sectoralsCount; i++) {
 			homePlaces.add(new ArrayList<HomeAgent>());
 		}
 		maxParcelId = 0;
@@ -641,10 +737,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 		BuildingManager.initManager(context, geography);
 
 		double tempX, tempY;
-		double maxX[] = new double[DataSet.SECTORALS_COUNT];
-		double minX[] = new double[DataSet.SECTORALS_COUNT];
-		double maxY[] = new double[DataSet.SECTORALS_COUNT];
-		double minY[] = new double[DataSet.SECTORALS_COUNT];
+		double maxX[] = new double[Town.sectoralsCount];
+		double minX[] = new double[Town.sectoralsCount];
+		double maxY[] = new double[Town.sectoralsCount];
+		double minY[] = new double[Town.sectoralsCount];
 		Arrays.fill(maxX, -180d);
 		Arrays.fill(minX, 180d);
 		Arrays.fill(maxY, -90d);
@@ -689,7 +785,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 			if (id > maxParcelId)
 				maxParcelId = id;
 			
-			sectoralType = DataSet.SECTORALS_TYPES[sectoral - 1];
+			sectoralType = Town.sectoralsTypes[sectoral - 1];
 			tempBuilding = new HomeAgent(sectoralType, sectoral - 1, geom.getCoordinate(), id);
 			homePlaces.get(sectoral - 1).add(tempBuilding);
 			context.add(tempBuilding);
@@ -701,7 +797,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	private void loadPlacesShapefile() {
-		List<SimpleFeature> features = loadFeaturesFromShapefile(DataSet.SHP_FILE_PLACES);
+		List<SimpleFeature> features = loadFeaturesFromShapefile(Town.getPlacesFilepath());
 		workPlaces.clear();
 		schoolPlaces.clear();
 		universityPlaces.clear();
@@ -717,6 +813,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		double minDistance, tempDistance = 0d;
 		int sectoralType, sectoralIndex = 0;
 		int buildingArea;
+		
+		int schoolVacancies = 0, universityVacancies = 0, workVacancies = 0;
+		
 		//Name,type,ratings,latitude,longitude,place_id
 		for (SimpleFeature feature : features) {
 			Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -760,7 +859,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 						sectoralIndex = i;
 					}
 				}
-				sectoralType = DataSet.SECTORALS_TYPES[sectoralIndex];
+				sectoralType = Town.sectoralsTypes[sectoralIndex];
 				
 				// Crear Agente con los atributos el Place
 				WorkplaceAgent tempWorkspace = new WorkplaceAgent(sectoralType, sectoralIndex, coord, ++maxParcelId, type, placeProp.getActivityType(),
@@ -768,17 +867,24 @@ public class ContextCreator implements ContextBuilder<Object> {
 				
 				// Agrupar el Place con el resto del mismo type
 				if (placeProp.getActivityType() == 1) { // trabajo / estudio
-					if (type.contains("primary_school") || type.contains("secondary_school") || type.contains("technical_school"))
+					if (type.contains("primary_school") || type.contains("secondary_school") || type.contains("technical_school")) {
 						schoolPlaces.add(tempWorkspace);
-					else if (type.contains("university"))
+						schoolVacancies += tempWorkspace.getVacancy();
+					}
+					else if (type.contains("university")) {
 						universityPlaces.add(tempWorkspace);
-					else
+						universityVacancies += tempWorkspace.getVacancy();
+					}
+					else {
 						workPlaces.add(tempWorkspace);
+						workVacancies += tempWorkspace.getVacancy();
+					}
 					// Si es lugar sin atencion al publico, se agrega a la lista de lugares de trabajo/estudio
 					BuildingManager.addWorkplace(type, tempWorkspace);
 				}
 				else { // ocio, otros
 					workPlaces.add(tempWorkspace);
+					workVacancies += tempWorkspace.getVacancy();
 					// Si es lugar con atencion al publico, se agrega a la lista de actividades
 					BuildingManager.addPlace(sectoralIndex, tempWorkspace, placeProp);
 				}
@@ -792,6 +898,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 			}
 		}
 		features.clear();
+		
+		if (DEBUG_MSG) {
+			System.out.println("CUPO ESTUDIANTES PRI/SEC: " + schoolVacancies);
+			System.out.println("CUPO ESTUDIANTES TER/UNI: " + universityVacancies);
+			System.out.println("CUPO TRABAJADORES: " + workVacancies);
+		}
 	}
 	
 	/**
@@ -855,18 +967,16 @@ public class ContextCreator implements ContextBuilder<Object> {
 	}
 	
 	/**
-	 * Selecciona hogares al azar y los elimina.
+	 * Selecciona los ultimos hogares y los elimina.
 	 * @param secIndex
 	 * @param extraHomes
 	 */
 	private void deleteExtraHomes(int secIndex, int extraHomes) {
 		HomeAgent tempHome;
 		int indexesCount = homePlaces.get(secIndex).size()-1;
-		int randomIndex;
 		for (int i = 0; i <= extraHomes; i++) {
 			if (indexesCount >= 0) {
-				randomIndex = RandomHelper.nextIntFromTo(0, indexesCount);
-				tempHome = homePlaces.get(secIndex).remove(randomIndex);
+				tempHome = homePlaces.get(secIndex).remove(indexesCount);
 				context.remove(tempHome);
 				--indexesCount;
 			}
@@ -888,7 +998,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		if (work instanceof WorkplaceAgent) {
 			workPos = ((WorkplaceAgent)work).getWorkPosition();
 		}
-		HumanAgent tempHuman = new HumanAgent(secType, secIndex, ageGroup, home, work, workPos, false);
+		HumanAgent tempHuman = new HumanAgent(secType, secIndex, ageGroup, home, work, workPos);
 		context.add(tempHuman);
 		return tempHuman;
 	}
@@ -922,58 +1032,58 @@ public class ContextCreator implements ContextBuilder<Object> {
 		setDefaultTMMC();
 		BuildingAgent.initInfAndPDRadius(); // Crea posiciones de infeccion en grilla
 		
-		int[][] locals = new int[DataSet.SECTORALS_COUNT][DataSet.AGE_GROUPS];
-		int[][] localTravelers = new int[DataSet.SECTORALS_COUNT][DataSet.AGE_GROUPS];
-		localHumansCount = 0;
+		int[][] locals = new int[Town.sectoralsCount][DataSet.AGE_GROUPS];
+		int[][] localTravelers = new int[Town.sectoralsCount][DataSet.AGE_GROUPS];
 		
+		localHumansCount = 0;
+		localHumansIndex = new int[DataSet.AGE_GROUPS];
 		int localCount;
 		int localTravelersCount;
 		int sectoralType;
 		int i, j, k;
-		for (i = 0; i < DataSet.SECTORALS_COUNT; i++) {
-			sectoralType = DataSet.SECTORALS_TYPES[i];
-			localCount = (int) (((DataSet.LOCAL_HUMANS + DataSet.LOCAL_TRAVELER_HUMANS) * DataSet.SECTORALS_POPULATION[i]) / 100);
-			localTravelersCount = (int) ((DataSet.LOCAL_TRAVELER_HUMANS * DataSet.SECTORALS_POPULATION[i]) / 100);
+		for (i = 0; i < Town.sectoralsCount; i++) {
+			sectoralType = Town.sectoralsTypes[i];
+			localCount = (int) (((Town.localHumans + Town.localTravelerHumans) * Town.sectoralsPopulation[i]) / 100);
+			localTravelersCount = (int) ((Town.localTravelerHumans * Town.sectoralsPopulation[i]) / 100);
 			int extraHomes = (int) (localCount / DataSet.HOUSE_INHABITANTS_MEAN[sectoralType]) - homePlaces.get(i).size();
 			if (extraHomes > 0) {
 				createFictitiousHomes(i, extraHomes);
-				System.out.println("HOGARES PROMEDIO FALTANTES EN SEC " + (i+1) + ": " + extraHomes);
+				if (DEBUG_MSG)
+					System.out.println("HOGARES PROMEDIO FALTANTES EN SEC " + (i+1) + ": " + extraHomes);
 			}
-			else {
+			else if (extraHomes < -1) {
 				deleteExtraHomes(i, extraHomes*-1);
-				System.out.println("HOGARES PROMEDIO SOBRANTES EN SEC " + (i+1) + ": " + extraHomes*-1);
+				if (DEBUG_MSG)
+					System.out.println("HOGARES PROMEDIO SOBRANTES EN SEC " + (i+1) + ": " + extraHomes*-1);
 			}
 			// Crear humanos que viven y trabajan/estudian en contexto
 			for (j = 0; j < DataSet.AGE_GROUPS; j++) {
 				locals[i][j] = (int) Math.ceil((localCount * DataSet.HUMANS_PER_AGE_GROUP[j]) / 100);
 				localHumansCount += locals[i][j];
+				localHumansIndex[j] += locals[i][j];
 				localTravelers[i][j] = (int) Math.ceil((localTravelersCount * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[sectoralType][j]) / 100);
 				locals[i][j] -= localTravelers[i][j];
 			}
 			//
 		}
 		
-		int foreignCount = DataSet.FOREIGN_TRAVELER_HUMANS;
+		int foreignCount = Town.foreignTravelerHumans;
 		int[] foreignTravelers = new int[DataSet.AGE_GROUPS];
 		foreignHumansCount = 0;
-		// Crear humanos que viven fuera y trabajan/estudian en contexto
+		// Calcular la cantidad de humanos que vive fuera y trabaja/estudia en contexto
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			foreignTravelers[i] = (int) Math.ceil((foreignCount * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[0][i]) / 100);
 			foreignHumansCount += foreignTravelers[i];
 		}
 		//
 		
-		// DEBUG
-		/*
-		for (i = 0; i < DataSet.SECTORALS_COUNT; i++)
-			for (j = 0; j < DataSet.AGE_GROUPS; j++)
-				System.out.println(locals[i][j] + "," + localTravelers[i][j]);
-		for (j = 0; j < DataSet.AGE_GROUPS; j++)
-			System.out.println(foreignTravelers[j]);
-		*/
-		
 		contextHumans = new HumanAgent[localHumansCount + foreignHumansCount];
-		int humInd = 0;
+		// Calcula el indice en contextHumans donde comienza cada grupo etario
+		int[] humIdx = new int[DataSet.AGE_GROUPS]; // Indice desde cual ubicar cada grupo etario
+		for (j = 1; j < DataSet.AGE_GROUPS; j++) {
+			localHumansIndex[j] += localHumansIndex[j - 1];
+			humIdx[j] = localHumansIndex[j - 1];
+		}
 		
 		HumanAgent tempHuman = null;
 		HomeAgent tempHome = null;
@@ -981,35 +1091,35 @@ public class ContextCreator implements ContextBuilder<Object> {
 		unemployedCount = 0;
 		unschooledCount = 0;
 		noncollegiateCount = 0;
-		
-		// Primero se crean los extranjeros, se asume que hay cupo de lugares de estudio y trabajo
-		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			for (j = 0; j < foreignTravelers[i]; j++) {
-				tempJob = findAGWorkingPlace(0, i, null);
-				contextHumans[humInd++] = createForeignHuman(i, tempJob);
-			}
-		}
+		loadOccupationalNumbers();
 		
 		Uniform disUniHomesIndex;
-		// Segundo se crean los locales, pero que trabajan o estudian fuera
-		for (i = 0; i < DataSet.SECTORALS_COUNT; i++) {
+		// Primero se crean los locales, pero que trabajan o estudian fuera
+		for (i = 0; i < Town.sectoralsCount; i++) {
 			disUniHomesIndex = RandomHelper.createUniform(0, homePlaces.get(i).size()-1);
-			sectoralType = DataSet.SECTORALS_TYPES[i];
+			sectoralType = Town.sectoralsTypes[i];
 			for (j = 0; j < DataSet.AGE_GROUPS; j++) {
 				for (k = 0; k < localTravelers[i][j]; k++) {
 					tempHome = homePlaces.get(i).get(disUniHomesIndex.nextInt());
 					//
 					tempHuman = createHuman(sectoralType, i, j, tempHome, null);
 					tempHome.addOccupant(tempHuman);
-					contextHumans[humInd++] = tempHuman;
+					contextHumans[humIdx[j]++] = tempHuman;
+					// Se resta primero la capacidad de estudiantes primario, universitarios y por ultimo trabajadores
+					if (schooledCount[sectoralType][j] > 0)
+						--schooledCount[sectoralType][j];
+					else if (collegiateCount[sectoralType][j] > 0)
+						--collegiateCount[sectoralType][j];
+					else if (employedCount[sectoralType][j] > 0)
+						--employedCount[sectoralType][j];
 				}
 			}
 		}
 		
-		// Por ultimo se crean los 100% locales
-		for (i = 0; i < DataSet.SECTORALS_COUNT; i++) {
+		// Segundo se crean los 100% locales
+		for (i = 0; i < Town.sectoralsCount; i++) {
 			disUniHomesIndex = RandomHelper.createUniform(0, homePlaces.get(i).size()-1);
-			sectoralType = DataSet.SECTORALS_TYPES[i];
+			sectoralType = Town.sectoralsTypes[i];
 			for (j = 0; j < DataSet.AGE_GROUPS; j++) {
 				for (k = 0; k < locals[i][j]; k++) {
 					tempHome = homePlaces.get(i).get(disUniHomesIndex.nextInt());
@@ -1017,21 +1127,78 @@ public class ContextCreator implements ContextBuilder<Object> {
 					//
 					tempHuman = createHuman(sectoralType, i, j, tempHome, tempJob);
 					tempHome.addOccupant(tempHuman);
-					contextHumans[humInd++] = tempHuman;
+					contextHumans[humIdx[j]++] = tempHuman;
 				}
 			}
 		}
 		
-		if (unemployedCount != 0)
-			System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
-		if (unschooledCount != 0)
-			System.out.println("BANCOS EN ESCUELA FALTANTES: " + unschooledCount);
-		if (noncollegiateCount != 0)
-			System.out.println("BANCOS EN FACULTAD FALTANTES: " + noncollegiateCount);
+		int foreignInd = localHumansCount; // Primer indice en contextHumans de extranjeros
+		// Por ultimo se crean los extranjeros, si ya no quedan cupos de trabajo trabajan fuera
+		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
+			for (j = 0; j < foreignTravelers[i]; j++) {
+				tempJob = findAGWorkingPlace(0, i);
+				contextHumans[foreignInd++] = createForeignHuman(i, tempJob);
+			}
+		}
+		
+		if (DEBUG_MSG) {
+			if (unschooledCount != 0)
+				System.out.println("CUPO ESTUDIANTES PRI/SEC FALTANTES: " + unschooledCount);
+			if (noncollegiateCount != 0)
+				System.out.println("CUPO ESTUDIANTES TER/UNI FALTANTES: " + noncollegiateCount);
+			if (unemployedCount != 0)
+				System.out.println("CUPO TRABAJADORES FALTANTES: " + unemployedCount);
+		}
 	}
-
+	
 	/**
-	 * Busca lugar de trabajo/estudio en las distintas colecciones (escuela, facultad, trabajo), segun tipo de seccional, franja etaria y ocupacion<p>
+	 * Calcula la cantidad de estudiantes y trabajadores locales
+	 */
+	private void loadOccupationalNumbers() {
+		employedCount = new int[2][DataSet.AGE_GROUPS];
+		schooledCount = new int[2][DataSet.AGE_GROUPS];
+		collegiateCount = new int[2][DataSet.AGE_GROUPS];
+		//
+		int i, j;
+		double[] percPP = {0d, 0d};
+		for (i = 0; i < Town.sectoralsCount; i++) {
+			percPP[Town.sectoralsTypes[i]] += Town.sectoralsPopulation[i];
+		}
+		//
+		int humansCount;
+		int schooledSum = 0, collegiateSum = 0, employedSum = 0;
+		for (i = 0; i < 2; i++) {
+			for (j = 0; j < DataSet.AGE_GROUPS; j++) {
+				humansCount = (int) Math.ceil((Town.localHumans + Town.localTravelerHumans) * percPP[i] * DataSet.HUMANS_PER_AGE_GROUP[j] / 10000);
+				switch (j) {
+				case 0: // todos primarios/secundarios
+					schooledCount[i][j] = (int) Math.ceil((humansCount * DataSet.OCCUPATION_PER_AGE_GROUP[i][j][0]) / 100);
+					break;
+				case 1: // 45% primarios/secundarios, resto universitarios
+					schooledCount[i][j] = (int) Math.ceil((humansCount * (DataSet.OCCUPATION_PER_AGE_GROUP[i][j][0] * 0.45)) / 100);
+					collegiateCount[i][j] = (int) Math.ceil((humansCount * DataSet.OCCUPATION_PER_AGE_GROUP[i][j][0]) / 100) - schooledCount[i][j];
+					break;
+				default:// todos universitarios
+					collegiateCount[i][j] = (int) Math.ceil((humansCount * DataSet.OCCUPATION_PER_AGE_GROUP[i][j][0]) / 100);
+					break;
+				}
+				employedCount[i][j] = (int) Math.ceil((humansCount * DataSet.OCCUPATION_PER_AGE_GROUP[i][j][1]) / 100);
+				//
+				schooledSum += schooledCount[i][j];
+				collegiateSum += collegiateCount[i][j];
+				employedSum += employedCount[i][j];
+			}
+		}
+		
+		if (DEBUG_MSG) {
+			System.out.println("ESTUDIANTES LOCALES PRI/SEC: " + schooledSum);
+			System.out.println("ESTUDIANTES LOCALES TER/UNI: " + collegiateSum);
+			System.out.println("TRABAJADORES LOCALES: " + employedSum);
+		}
+	}
+	
+	/**
+	 * Busca lugar de trabajo/estudio si hay cupo para el tipo de seccional y franja etaria del humano<p>
 	 * @param secType
 	 * @param ageGroup
 	 * @param home 
@@ -1040,31 +1207,24 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private BuildingAgent findAGWorkingPlace(int secType, int ageGroup, BuildingAgent home) {
 		BuildingAgent workplace = null;
 		//
-		double occupation[] = DataSet.OCCUPATION_PER_AGE_GROUP[secType][ageGroup];
-		int r = RandomHelper.nextIntFromTo(1, 100);
-		int i = 0;
-        while (r > occupation[i]) {
-        	r -= occupation[i];
-        	++i;
-        }
-        
-        if (i == 0) { // estudiante
-        	if (ageGroup == 0 || (ageGroup == 1 && (occupation[i] - r < occupation[i]*.45d))) { // 45% es primario/secundario
-        		workplace = findWorkingPlace(schoolPlaces);
-            	if (workplace == null) {
-            		workplace = home;
-            		++unschooledCount;
-            	}
+		if (schooledCount[secType][ageGroup] > 0) { // estudiante primario/secundario
+			--schooledCount[secType][ageGroup];
+    		workplace = findWorkingPlace(schoolPlaces);
+        	if (workplace == null) {
+        		workplace = home;
+        		++unschooledCount;
         	}
-        	else {
-        		workplace = findWorkingPlace(universityPlaces);
-            	if (workplace == null) {
-            		workplace = home;
-            		++noncollegiateCount;
-            	}
+		}
+		else if (collegiateCount[secType][ageGroup] > 0) { // estudiante universitario
+			--collegiateCount[secType][ageGroup];
+    		workplace = findWorkingPlace(universityPlaces);
+        	if (workplace == null) {
+        		workplace = home;
+        		++noncollegiateCount;
         	}
-        }
-        else if (i == 1) { // trabajor
+		}
+		else if (employedCount[secType][ageGroup] > 0) { // trabajor
+			--employedCount[secType][ageGroup];
         	int wp = RandomHelper.nextIntFromTo(1, 100);
         	// Primero ver si tiene un trabajo convencional
         	if (wp <= DataSet.WORKING_FROM_HOME[secType] + DataSet.WORKING_OUTDOORS[secType]) {
@@ -1080,10 +1240,42 @@ public class ContextCreator implements ContextBuilder<Object> {
 	        	if (workplace == null)
 	        		++unemployedCount;
         	}
+		}
+		else { // inactivo
+			workplace = home;
+		}
+		//
+		return workplace;
+	}
+	
+	/**
+	 * Busca lugar de trabajo/estudio para extranjeros segun tipo de seccional, franja etaria y ocupacion<p>
+	 * @param secType
+	 * @param ageGroup
+	 * @return WorkplaceAgent, BuildingAgent o null
+	 */
+	private BuildingAgent findAGWorkingPlace(int secType, int ageGroup) {
+		BuildingAgent workplace = null; // inactivo por defecto
+		//
+		double occupation[] = DataSet.OCCUPATION_PER_AGE_GROUP[secType][ageGroup];
+		int r = RandomHelper.nextIntFromTo(1, 100);
+		int i = 0;
+        while (r > occupation[i]) {
+        	r -= occupation[i];
+        	++i;
         }
-        else { // inactivo
-        	workplace = home;
+        if (i == 0) { // estudiante
+        	if (ageGroup == 0 || (ageGroup == 1 && (occupation[i] - r < occupation[i]*.45d))) { // 45% es primario/secundario
+        		workplace = findWorkingPlace(schoolPlaces);
+        	}
+        	else {
+        		workplace = findWorkingPlace(universityPlaces);
+        	}
         }
+        else if (i == 1) { // trabajor
+	        workplace = findWorkingPlace(workPlaces);
+        }
+		//
 		return workplace;
 	}
 	

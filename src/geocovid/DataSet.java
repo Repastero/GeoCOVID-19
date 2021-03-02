@@ -1,47 +1,6 @@
 package geocovid;
 
 public final class DataSet {
-	public static final String SHP_FILE_PARCELS	= "./data/parana.shp";
-	public static final String SHP_FILE_PLACES	= "./data/places.shp";
-	public static final String CSV_FILE_PLACES_PROPERTIES = "./data/parana-places-markov.csv";
-	
-	/** Entre <b>LOCAL_HUMANS</b> y <b>LOCAL_TRAVELER_HUMANS</b> tendria que dar 256800 (272650 sin restar menores de 5 anos - fuente Abelardo) */
-	public static final int LOCAL_HUMANS		= 236000;	// Cantidad de Humanos locales (no salen a trabajar)
-	public static final int LOCAL_TRAVELER_HUMANS	= 20800;	// Cantidad de Humanos que trabajan afuera
-	public static final int FOREIGN_TRAVELER_HUMANS	= 0;		// Cantidad de Humanos que viven afuera
-	
-	/** Tipo de seccional segun indice: 0 tipo 2 | 1 tipo 11 */
-	public static final int[] SECTORALS_TYPES = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}; // SEC2 - 50% poblacion | SEC11 - 50% poblacion
-	/** Porcentaje de la poblacion que tiene domicilio (vota) en cada seccional - Fuente escrutinio 2015 */
-	public static final double[] SECTORALS_POPULATION = { 6.6, 5.5, 3.8, 6.3, 5.1, 1.9, 1.0, 11.9, 2.2, 3.0, 6.1, 9.5, 10.5, 1.0, 8.3, 6.5, 8.6, 2.2 };
-	public static final int SECTORALS_COUNT = SECTORALS_POPULATION.length;
-	
-	/** Dia del corrente ano donde ocurre cambio de fase<p> @see <a href="https://espanol.epochconverter.com/dias/2020">Numeros de dias 2020</a> */
-	public static final int[] LOCKDOWN_PHASES_DAYS	= {164,183,202,216,230,245,255,258,265,274,288,303,311,344,359,360,366,367,375,382,389,396}; // Dia 0 = 12 de Junio (dia 164)
-	/* Dia de inicio de cada fase
-	 * 12 junio
-	 *  1 julio
-	 * 20 julio
-	 *  3 agosto
-	 * 17 agosto
-	 * 31 agosto
-	 * 11 septiembre
-	 * 14 septiembre
-	 * 21 septiembre
-	 *  1 octubre
-	 *  10 octubre
-	 * 29 octubre
-	 *  6 noviembre
-	 *  9 diciembre
-	 * 24 diciembre
-	 * 25 diciembre
-	 * 31 diciembre
-	 *  1 enero
-	 *  9 enero
-	 *  16 enero
-	 *  23 enero
-	 *  30 enero
-	 */
 	
 	/** Cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
@@ -64,9 +23,6 @@ public final class DataSet {
 	public static final double DEFAULT_PLACES_CAP_LIMIT		= 4d;	// metros cuadrados de superficie util, por persona
 	/** Multiplicador del limit de aforo en Places de ocio */
 	public static final double ENTERTAINMENT_CAP_LIMIT_MOD	= 2d;
-	
-	/** Valor por cual se multiplica beta para obtener la chance de contagio al realizar una actividad fuera del contexto */
-	public static final int OOC_CONTAGION_VALUE = 3850;	// aumentar para incrementar el contagio fuera del contexto
 	
 	/** Modificador de chance de contagio en lugares al aire libre */
 	public static final double INFECTION_RATE_OUTSIDE_MOD = 0.5d; // 0.5 = 50% de adentro | 1 = sin modificar

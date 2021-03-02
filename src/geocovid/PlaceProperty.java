@@ -77,7 +77,8 @@ public final class PlaceProperty {
 		String[] nextLine;
 		int[] dataIndexes = {};
 		try {
-			reader = new CSVReader(new FileReader(DataSet.CSV_FILE_PLACES_PROPERTIES), ',');
+			String csvPath = Town.getPlacesPropertiesFilepath();
+			reader = new CSVReader(new FileReader(csvPath), ',');
 			while ((nextLine = reader.readNext()) != null) {
 				if (!headerFound) {
 					dataIndexes = readHeader(nextLine);

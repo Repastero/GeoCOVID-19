@@ -85,7 +85,27 @@
   <globeLayers/>
   <staticCoverages>
     <entry>
-      <string>./data/Esri.tif</string>
+      <string>./data/parana/parana.tif</string>
+      <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
+    </entry>
+    <entry>
+      <string>./data/gualeguay/gualeguay.tif</string>
+      <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
+    </entry>
+    <entry>
+      <string>./data/diamante/diamante.tif</string>
+      <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
+    </entry>
+    <entry>
+      <string>./data/nogoya/nogoya.tif</string>
+      <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
+    </entry>
+    <entry>
+      <string>./data/victoria/victoria.tif</string>
+      <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
+    </entry>
+    <entry>
+      <string>./data/sansalvador/sansalvador.tif</string>
       <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
     </entry>
   </staticCoverages>

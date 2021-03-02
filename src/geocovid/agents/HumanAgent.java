@@ -10,6 +10,7 @@ import cern.jet.random.Normal;
 import geocovid.BuildingManager;
 import geocovid.DataSet;
 import geocovid.InfectionReport;
+import geocovid.MarkovChains;
 import geocovid.Temperature;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedule;
@@ -38,6 +39,7 @@ public class HumanAgent {
 	private int currentActivity = 0; // Localizacion actual es el estado de markov donde esta. El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros (supermercados, farmacias, etc)
 	private int ageGroup = 0;
 	private boolean foreignTraveler = false;
+	private boolean touristTraveler = false;
 	private double relocationTime = -1d;
 	protected int halfTicksDelay = 0;
 	
@@ -69,14 +71,19 @@ public class HumanAgent {
     
     private Map<Integer, Integer> socialInteractions = new HashMap<>(); // ID contacto, cantidad de contactos
     
-	public HumanAgent(int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign) {
+	public HumanAgent(int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos) {
 		this.sectoralType = secHome;
 		this.sectoralIndex = secHomeIndex;
 		this.homePlace = home;
 		this.workPlace = work;
 		this.workplacePosition = workPos;
 		this.ageGroup = ageGroup;
+	}
+    
+	public HumanAgent(int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign, boolean tourist) {
+		this(secHome, secHomeIndex, ageGroup, home, work, workPos);
 		this.foreignTraveler = foreign;
+		this.touristTraveler = tourist;
 	}
 	
 	public static void initAgentID() {
@@ -437,6 +444,8 @@ public class HumanAgent {
         int[][][] matrixTMMC;
         if (!foreignTraveler)
         	matrixTMMC = (!quarantined ? localTMMC[sectoralType][ageGroup] : isolatedLocalTMMC[ageGroup]);
+        else if (touristTraveler)
+        	matrixTMMC = MarkovChains.TOURIST_DEFAULT_TMMC;
         else
         	matrixTMMC = (!quarantined ? travelerTMMC : infectedTravelerTMMC);
         

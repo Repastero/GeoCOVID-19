@@ -12,7 +12,7 @@ public class HomeAgent extends BuildingAgent {
 	private double lastQuarentineST = -DataSet.PREVENTIVE_QUARANTINE_TIME;
 	
 	public HomeAgent(int sectoralType, int sectoralIndex, Coordinate coord, long id) {
-		super(sectoralType, sectoralIndex, coord, id, "home", DataSet.HOME_BUILDING_AREA[sectoralType], DataSet.HOME_BUILDING_COVERED_AREA[sectoralType]);
+		super(sectoralType, sectoralIndex, coord, id, "home", DataSet.HOME_BUILDING_AREA[sectoralType], DataSet.HOME_BUILDING_COVERED_AREA[sectoralType], DataSet.BUILDING_AVAILABLE_AREA, false);
 	}
 	
 	public HomeAgent(BuildingAgent ba) {

@@ -23,8 +23,8 @@ import repast.simphony.random.RandomHelper;
 import repast.simphony.space.gis.Geography;
 
 public final class BuildingManager {
-	private static final Envelope[] SECTORALS_BOUNDARY = new Envelope[DataSet.SECTORALS_COUNT]; // Rectangulos con las coordenadas minimas y maximas de cada seccional 
-	private static final Coordinate[] SECTORALS_CENTRE = new Coordinate[DataSet.SECTORALS_COUNT]; // Coordenadas del centro de cada seccional
+	private static Envelope[] sectoralsBoundary; // Rectangulos con las coordenadas minimas y maximas de cada seccional 
+	private static Coordinate[] sectoralsCentre; // Coordenadas del centro de cada seccional
 	
 	private static Context<Object> context; // Lo uso para crear el Query con PropertyEquals
 	private static Geography<Object> geography; // Lo uso para crear el Query con PropertyEquals
@@ -105,14 +105,16 @@ public final class BuildingManager {
 	 * @param y2 maximo
 	 */
 	public static void setBoundary(double[] x1, double[] x2, double[] y1, double[] y2) {
+		sectoralsBoundary = new Envelope[Town.sectoralsCount]; 
+		sectoralsCentre = new Coordinate[Town.sectoralsCount];
 		for (int i = 0; i < x1.length; i++) {
-			SECTORALS_BOUNDARY[i] = new Envelope(x1[i], x2[i], y1[i], y2[i]);
-			SECTORALS_CENTRE[i] = SECTORALS_BOUNDARY[i].centre();
+			sectoralsBoundary[i] = new Envelope(x1[i], x2[i], y1[i], y2[i]);
+			sectoralsCentre[i] = sectoralsBoundary[i].centre();
 		}
 	}
 	
 	public static Coordinate[] getSectoralsCentre() {
-		return SECTORALS_CENTRE;
+		return sectoralsCentre;
 	}
 	
 	/**
@@ -133,15 +135,15 @@ public final class BuildingManager {
 		// Si es el primer Place de su tipo, inicializar listas que van en Maps
 		else {
 			// Crear una lista del nuevo tipo de Place, para cada seccional
-			List<List<WorkplaceAgent>> buildList = new ArrayList<List<WorkplaceAgent>>(DataSet.SECTORALS_COUNT);
-			for (int i = 0; i < DataSet.SECTORALS_COUNT; i++) {
+			List<List<WorkplaceAgent>> buildList = new ArrayList<List<WorkplaceAgent>>(Town.sectoralsCount);
+			for (int i = 0; i < Town.sectoralsCount; i++) {
 				buildList.add(new ArrayList<WorkplaceAgent>());
 			}
 			// Agregar el nuevo Building
 			buildList.get(secIndex).add(build);
 			placesMap.put(type, buildList);
 			// Sumar 1 mas a la seccional que corresponda
-			placesCount.put(type, new int[DataSet.SECTORALS_COUNT]);
+			placesCount.put(type, new int[Town.sectoralsCount]);
 			++placesCount.get(type)[secIndex];
 			//
 			if (prop.getActivityType() == 2) // Ocio
@@ -211,6 +213,10 @@ public final class BuildingManager {
 				closedPlaces.remove(type);
 			}
 		}
+	}
+	
+	public static List<WorkplaceAgent> getWorkplaces(String type) {
+		return workplacesMap.get(type);
 	}
 	
 	private static void fillActivitiesChances(List<PlaceProperty> propList, String[] types, int[][] chances, int[] chancesSum) {
@@ -333,7 +339,7 @@ public final class BuildingManager {
 		boolean atHome = false;
 		if (currentBuilding == null) {
 			// Si no esta en un Building, va a una de las seccionales aleatoriamente
-			secIndex = RandomHelper.nextIntFromTo(0, DataSet.SECTORALS_COUNT - 1);
+			secIndex = RandomHelper.nextIntFromTo(0, Town.sectoralsCount - 1);
 		}
 		else if (currentBuilding.getSectoralIndex() == secIndex) {
 			atHome = true;

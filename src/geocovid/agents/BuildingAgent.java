@@ -41,6 +41,7 @@ public class BuildingAgent {
 	private Map<Integer, HumanAgent> humansMap = new HashMap<>(); // Mapa <Id Humano, HumanAgent>
 	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>(); // Mapa <Id Superficie, SurfaceAgent>
 	//
+	
 	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea) {
 		this.sectoralType = secType;
 		this.sectoralIndex = secIndex;
@@ -49,56 +50,32 @@ public class BuildingAgent {
 		this.type = type;
 		this.area = area;
 		this.coveredArea = coveredArea;
-		//
-		setRealArea(DataSet.BUILDING_AVAILABLE_AREA);
-		setBuildingShape();
 	}
 	
-	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea, double areaModifier) {
-		// Constructor Workplace
-		this.sectoralType = secType;
-		this.sectoralIndex = secIndex;
-		this.coordinate = coord;
-		this.id = id;
-		this.type = type;
-		this.area = area;
-		this.coveredArea = coveredArea;
-		this.workingPlace = true;
+	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea, double areaModifier, boolean workplace) {
+		// Constructor Home/Workplace
+		this(secType, secIndex, coord, id, type, area, coveredArea);
 		//
+		this.workingPlace = workplace;
 		setRealArea(areaModifier);
 		setBuildingShape();
 	}
 	
 	public BuildingAgent(int secType, int secIndex, Coordinate coord, int realArea, boolean outdoor) {
 		// Constructor Evento
-		this.sectoralType = secType;
-		this.sectoralIndex = secIndex;
-		this.coordinate = coord;
-		this.id = 0xFFFFFFFF;
-		this.type = "event";
-		this.realArea = realArea;
-		this.outdoor = outdoor;
-		//
-		if (outdoor) {
+		this(secType, secIndex, coord, 0xFFFFFFFF, "event", 0, 0);
+		if (outdoor)
 			this.area = realArea;
-			this.coveredArea = 0;
-		}
-		else {
-			this.area = 0;
+		else
 			this.coveredArea = realArea;
-		}
 		//
+		this.outdoor = outdoor;
 		setBuildingShape();
 	}
 	
 	public BuildingAgent(BuildingAgent ba) {
 		// Constructor para crear copia de ba
-		this.sectoralType = ba.sectoralType;
-		this.coordinate = ba.coordinate;
-		this.id = ba.id;
-		this.type = ba.type;
-		this.area = ba.area;
-		this.coveredArea = ba.coveredArea;
+		this(ba.sectoralType, ba.sectoralIndex, ba.coordinate, ba.id, ba.type, ba.area, ba.coveredArea);
 		//
 		this.realArea = ba.realArea;
 		setBuildingShape();

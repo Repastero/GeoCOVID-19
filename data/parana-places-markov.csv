@@ -109,6 +109,8 @@ hospital,hospital,3,22000,80,0,60,0,0,1,2,3
 insurance_agency,insurance_agency,3,200,80,0,15,0,1,2,3,1
 insurance_company,insurance_agency,,,,0,15,,,,,
 internet_service_provider,internet_service_provider,3,100,100,0,25,1,2,2,2,1
+cable_company,internet_service_provider,,,,,,,,,,
+telephone_company,internet_service_provider,,,,,,,,,,
 jewelry_store,jewelry_store,3,100,100,0,25,0,1,2,3,2
 laundry,laundry,3,100,100,3,0,0,2,4,2,4
 law_firm,law_firm,3,200,80,0,30,0,1,2,3,1
