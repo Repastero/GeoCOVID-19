@@ -393,54 +393,95 @@ public class ContextCreator implements ContextBuilder<Object> {
 	/**
 	 * Programa evento forzado en Building ficticio para ciertos Humanos.
 	 * @param realArea valor neto de area donde sucede evento 
-	 * @param outdoor si el evento sucede al aire libre
+	 * @param outdoor si el evento sucede al aire libre (indoor en true para mitad y mitad)
+	 * @param indoor si el evento sucede en lugar cerrado (outdoor en true para mitad y mitad)
 	 * @param events cantidad de eventos a crear
 	 * @param humansPerEvent cantidad de Humanos por evento
 	 * @param ageGroupPerc porcentaje de Humanos por franja etaria
 	 * @param ticksDuration duracion del evento en ticks
 	 */
-	private void scheduleForcedEvent(int realArea, boolean outdoor, int events, int humansPerEvent, int[] ageGroupPerc, int ticksDuration) {
+	public void scheduleForcedEvent(int realArea, boolean outdoor, boolean indoor, int events, int humansPerEvent, int[] ageGroupPerc, int ticksDuration) {
 		int[] agPerBuilding = new int[ageGroupPerc.length];
-		int adjHumPerPlace = 0; // Cantidad ajustada de Humanos por Place
-		for (int i = 0; i < ageGroupPerc.length; i++) {
-			agPerBuilding[i] = Math.round((humansPerEvent * ageGroupPerc[i]) / 100);
-			adjHumPerPlace += agPerBuilding[i];
-		}
+	    int adjHumPerPlace = 0; // Cantidad ajustada de Humanos por Place (tendria que dar igual)
+		double doubleP, decimalRest = 0d;
+		int integerP;
+	    for (int i = 0; i < ageGroupPerc.length; i++) {
+	    	// Calculo la cantidad para esta franja etaria
+	    	doubleP = (humansPerEvent * ageGroupPerc[i]) / 100d;
+	    	// Separo la parte entera
+	    	integerP = (int) doubleP;
+	    	// Sumo la parte decimal que sobra 
+	    	decimalRest += doubleP - integerP;
+	    	// Si los restos decimales suman 1 o mas, se suma un entero
+	    	if (decimalRest >= 1d) {
+	    		decimalRest -= 0.99d;
+	    		++integerP;
+	    	}
+	    	agPerBuilding[i] = integerP;
+	    	adjHumPerPlace += agPerBuilding[i];
+	    }
 		
 		HumanAgent[][] activeHumans = gatherHumansForEvent(events, adjHumPerPlace, agPerBuilding);
 		
 		List<BuildingAgent> buildings = new ArrayList<BuildingAgent>();
 		Coordinate[] coords = BuildingManager.getSectoralsCentre();
 		int sectoralType, sectoralIndex;
+		boolean paramOutdoor = outdoor; // para usar como parametro y poder invertir
+		// Crea las parcelas ficticias en seccionales aleatorias
 		for (int i = 0; i < events; i++) {
 			sectoralIndex = RandomHelper.nextIntFromTo(0, Town.sectoralsCount - 1);
 			sectoralType = Town.sectoralsTypes[sectoralIndex];
-			buildings.add(new BuildingAgent(sectoralType, sectoralIndex, coords[sectoralIndex], realArea, outdoor));
+			buildings.add(new BuildingAgent(sectoralType, sectoralIndex, coords[sectoralIndex], realArea, paramOutdoor));
+			if (outdoor && indoor) // mitad y mitad
+				paramOutdoor = !paramOutdoor;
 		}
 		
 		distributeHumansInEvent(buildings, activeHumans, ticksDuration);
 	}
 	
 	/**
+	 * Retorna el mayor divisor del numero dado, que sea menor o igual al maximo.
+	 */
+	private int getDivisor(int number, int max) {
+		int result;
+		// Si esta dentro del rango minimo
+		if (number < 2 || max < 2)
+			return 1;
+		for (int i = 2; i <= Math.sqrt(number); i++) {
+			if (number % i == 0) {
+				result = number / i;
+				if (result <= max)
+					return result;
+			}
+		}
+		// Es numero primo
+		return getDivisor(number - 1, max);
+	}
+	
+	/**
+	 * Segun los parametros calcula la cantidad de eventos, participantes en c/u y area neta.
+	 * @param humans cantidad de participantes total
+	 * @param sqPerHuman posiciones por humano
+	 * @return Array con area de eventos, cantidad de eventos y humanos por evento
+	 */
+	private int[] getEventParameters(int humans, double sqPerHuman) {
+		int humansPerEvent = getDivisor(humans, 250); // humanos por fiesta
+		int events = humans / humansPerEvent; // cantidad de fiestas
+	    int area = (int) ((humansPerEvent / DataSet.HUMANS_PER_SQUARE_METER) * sqPerHuman) + 1; // metros del area
+	    return new int[] {area, events, humansPerEvent};
+	}
+	
+	/**
 	 * Programa fiestas entre jovenes adultos segun los parametros dados.
 	 * @param humansTotal cantidad total de humanos en fiestas 
 	 * @param sqPerHuman cuadrados por humano
-	 * @param outdoor si las fiestas son al aire libre
-	 * @param indoor si las fiestas son en lugares cerrados
+	 * @param outdoor si las fiestas son al aire libre (indoor en true para mitad y mitad)
+	 * @param indoor si las fiestas son en lugares cerrados (outdoor en true para mitad y mitad)
 	 */
 	public void scheduleYoungAdultsParty(int humansTotal, double sqPerHuman, boolean outdoor, boolean indoor) {
-		// Segun la cantidad de participantes, calcula: la cantidad de fiestas, participantes en cada una y area neta 
-	    int humansPerParty = ((int) Math.sqrt(humansTotal) + 1) << 1; // humanos por fiesta
-	    int parties = humansTotal / humansPerParty; // cantidad de fiestas
-	    int area = (int) ((humansPerParty / DataSet.HUMANS_PER_SQUARE_METER) * sqPerHuman); // metros del area
+		int[] eventParams = getEventParameters(humansTotal, sqPerHuman);
 	    // Programa el evento
-	    if (outdoor && indoor) { // mitad y mitad
-	    	scheduleForcedEvent(area, true, parties - (parties >> 1), humansPerParty, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-	    	scheduleForcedEvent(area, false, parties >> 1			, humansPerParty, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-	    }
-	    else { // afuera o adentro
-	    	scheduleForcedEvent(area, outdoor, parties, humansPerParty, new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
-	    }
+	    scheduleForcedEvent(eventParams[0], outdoor, indoor, eventParams[1], eventParams[2], new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
 	}
 	
 	/**
@@ -452,9 +493,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * @param indoor si las fiestas son en lugares cerrados
 	 */
 	private void startRepeatingYoungAdultsParty(int interval, int humansTotal, double sqPerHuman, boolean outdoor, boolean indoor) {
+		int[] eventParams = getEventParameters(humansTotal, sqPerHuman);
+		// Programa el evento
 		ScheduleParameters params;
 		params = ScheduleParameters.createRepeating(schedule.getTickCount(), (interval * 12), ScheduleParameters.FIRST_PRIORITY);
-		youngAdultsPartyAction = schedule.schedule(params, this, "scheduleYoungAdultsParty", humansTotal, sqPerHuman, outdoor, indoor);
+		youngAdultsPartyAction = schedule.schedule(params, this, "scheduleForcedEvent",
+				eventParams[0], outdoor, indoor, eventParams[1], eventParams[2], new int[] {0,65,35,0,0}, 4); // 4 ticks = 6 horas
 	}
 	
 	/**
@@ -663,8 +707,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 365: // 31 diciembre
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
 			tmp = (int) Math.round(Town.getLocalPopulation() / 15 * 0.8d);
-			scheduleForcedEvent(18, true,  tmp - (tmp >> 1),15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
-			scheduleForcedEvent(18, false, tmp >> 1,		15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
+			scheduleForcedEvent(18, true, true, tmp, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			break;
 			
 		case 366: // 1 enero
