@@ -64,7 +64,7 @@ public final class DataSet {
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
-	public static final int	CS_MIN_INFECTION_RATE		= 15;	// sobre 100
+	public static final int	CS_MIN_INFECTION_RATE		= 12;	// sobre 100
 	
 	// Informacion de temperatura para calcular la duracion del virus en superficie contaminada
 	public static final int	OUTDOORS_MIN_TEMPERATURE	= 10;	// temperatura media minima anual en exteriores

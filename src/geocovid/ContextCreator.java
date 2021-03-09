@@ -675,37 +675,32 @@ public class ContextCreator implements ContextBuilder<Object> {
 		case 257: // 14 septiembre
 			BuildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			setTMMCs("september", MarkovChains.SEC2_SEPTEMBER_TMMC, MarkovChains.SEC11_SEPTEMBER_TMMC);
-			setSocialDistancing(40);
 			break;
-			
 		case 264: // 21 septiembre
 			BuildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
 			BuildingManager.limitActivitiesCapacity(3d);
-			
 			setSocialDistancing(35);
 			break;
 		case 273: // 1 octubre
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
-			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(50);
+			BuildingManager.limitActivitiesCapacity(3.75d);
+			setSocialDistancing(45);
 			break;
 		case 302: // 29 octubre
 			BuildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
 			BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(45);
 			break;
 		case 310: // 6 noviembre
 			// Nueva alversoetapa
 			setTMMCs("november", MarkovChains.SEC2_NOVEMBER_TMMC, MarkovChains.SEC11_NOVEMBER_TMMC);
 			BuildingManager.limitActivitiesCapacity(3d);
-			setSocialDistancing(45);
+			DataSet.setMaskEffectivity(0.2);
 			break;
 		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.SEC2_HOLIDAYS_TMMC, MarkovChains.SEC11_HOLIDAYS_TMMC);
 			BuildingManager.openPlaces(new String[] {"bus_station", "childrens_party_service", "night_club", "tourist_attraction", "campground"});
 			setSocialDistancing(40);
 			break;
-			
 		case 358: // 24 diciembre
 			BuildingManager.limitOtherActCap(1d);
 			setSocialDistancing(20);
@@ -715,11 +710,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 			tmp = (int) Math.round(Town.getLocalPopulation() / 15 * 0.8d);
 			scheduleForcedEvent(18, true, true, tmp, 15, new int[] {14, 18, 23, 32, 13}, 2); // 2 ticks = 3 horas
 			break;
-			
 		case 366: // 1 enero
-			DataSet.setMaskEffectivity(0.1);
-			BuildingManager.limitActivitiesCapacity(2d); //3d
-			setSocialDistancing(30);
+			DataSet.setMaskEffectivity(0.15);
+			BuildingManager.limitActivitiesCapacity(2d);
 			setTMMCs("october", MarkovChains.SEC2_OCTOBER_TMMC, MarkovChains.SEC11_OCTOBER_TMMC);
 			// Periodo turistico todo el mes de Enero
 			//setTouristSeason(30, 3, 2000, 10); // 30 dias, 3 dias recambio, 2000 turistas por grupo, 10 infecciosos por grupo
@@ -728,21 +721,17 @@ public class ContextCreator implements ContextBuilder<Object> {
 			tmp = (int) Math.round(Town.getLocalPopulation() * 0.04d);
 			scheduleYoungAdultsParty(tmp, 1.2d, true, false);
 			break;
-			
 		case 374: // 9 enero
 			// Festejos entre jovenes - 0.8% de la poblacion a 1.2 cuadrados por persona, mitad afuera y mitad adentro
-			BuildingManager.limitActivitiesCapacity(3d);
-			DataSet.setMaskEffectivity(0.2);
-			setSocialDistancing(40);
+			BuildingManager.limitActivitiesCapacity(2.5d);
 			tmp = (int) Math.round(Town.getLocalPopulation() * 0.008d);
 			startRepeatingYoungAdultsParty(7, tmp, 1.2d, true, true);
 			break;
 		case 388: // 23 enero
-			BuildingManager.limitActivitiesCapacity(3d);
+			setSocialDistancing(40);
 			break;
-		case 410: // 15 febrero
-			BuildingManager.limitActivitiesCapacity(4d);
-			setSocialDistancing(50);
+		case 411: // 15 febrero
+			BuildingManager.limitActivitiesCapacity(3.5d);
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);

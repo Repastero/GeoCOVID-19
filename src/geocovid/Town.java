@@ -6,7 +6,7 @@ public final class Town {
 	/** Nombre del municipio a simular */
 	private static String townName;
 	/** Dias por defecto de cambio de fase */
-	private static final int[] DEFAULT_PHASES_DAYS = new int[] {163,201,215,229,254,257,264,273,302,310,343,358,359,365,366,374,388};
+	private static final int[] DEFAULT_PHASES_DAYS = new int[] {163,201,215,229,254,257,264,273,302,310,343,358,359,365,366,374,388,411};
 	
 	/** Cantidad de Humanos locales (no salen a trabajar) */
 	public static int localHumans;
@@ -97,7 +97,7 @@ public final class Town {
 				0,
 				new int[] {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
 				new double[] {6.6, 5.5, 3.8, 6.3, 5.1, 1.9, 1.0, 11.9, 2.2, 3.0, 6.1, 9.5, 10.5, 1.0, 8.3, 6.5, 8.6, 2.2},
-				new int[] {163,182,201,215,229,244,254,257,264,273,302,310,343,358,359,365,366,374,388},
+				new int[] {163,182,201,215,229,244,254,257,264,273,302,310,343,358,359,365,366,374,388,411},
 				1,
 				3850,
 				true);
