@@ -78,6 +78,7 @@ public final class BuildingManager {
 		activitiesCapacityLimit = 0d;
 		//
 		placesMap.clear(); // Por si cambio el SHP entre corridas
+		workplacesMap.clear(); // Por si cambio el SHP entre corridas
 		infectiousHumans.clear(); // Por si quedo algun infeccioso
 		//
 		enterPropList.clear(); // Por las dudas

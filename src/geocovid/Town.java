@@ -87,8 +87,17 @@ public final class Town {
 		return String.format("./data/%d-%s.csv", year, regionName);
 	}
 	
-	public static void setTown(String name) {
+	/**
+	 * Si cambia la ciudad, carga sus atributos.
+	 * @param name nombre de ciudad
+	 * @return si se cambio de ciudad
+	 */
+	public static boolean setTown(String name) {
+		// Chequeo si es la misma
+		if (name.equals(townName))
+			return false;
 		townName = name;
+		//
 		switch (townName) {
 		case "parana":
 			setTownData(
@@ -165,5 +174,6 @@ public final class Town {
 		default:
 			throw new InvalidParameterException("Ciudad erronea: " + townName);
 		}
+		return true;
 	}
 }

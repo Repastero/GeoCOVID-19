@@ -121,7 +121,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 		params = ScheduleParameters.createOneTime(outbreakStartTick, 0.9d);
 		schedule.schedule(params, this, "infectLocalRandos", infectedAmount);
 		
-		Town.setTown(townName);
+		// Al cambiar de ciudad, resetea lugares de alojamiento
+		if (Town.setTown(townName)) {
+			lodgingPlacesSI = null;
+		}
+		
 		// Programa los cambios de fases, pasadas y futuras
 		int phaseDay;
 		int[] phasesStartDay = Town.lockdownPhasesDays;
