@@ -104,7 +104,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	public void printSimulationDuration() {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
 		
-		System.out.printf("Simulacion NÂ°: %5d | Seed: %d | Tiempo: %.2f minutos%n",
+		System.out.printf("Simulacion N°: %5d | Seed: %d | Tiempo: %.2f minutos%n",
 				simulationRun, RandomHelper.getSeed(), (simTime / (double)(1000*60)));
 		System.out.printf("Dias epidemia: %5d%n",
 				(int) (schedule.getTickCount()) / 24 - obStartDelayDays);
