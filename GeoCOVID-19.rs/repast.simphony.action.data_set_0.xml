@@ -1,12 +1,12 @@
-<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.7.0">
+<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
   <name>Reporte</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
-  <inclRandomSeed>false</inclRandomSeed>
+  <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
     <start>0.0</start>
-    <interval>12.0</interval>
+    <interval>24.0</interval>
     <priority>-Infinity</priority>
     <pType>LAST</pType>
     <duration>-1.0</duration>

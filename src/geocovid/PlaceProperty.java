@@ -10,30 +10,30 @@ import org.apache.commons.lang3.StringUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
+/**
+ * Propiedades de places y metodos para leer archivo de salida de markov.
+ */
 public final class PlaceProperty {
+	/** Tipo secundario */
 	private String googleMapsType;
+	/** Tipo primario */
 	private String googlePlaceType;
+	/** Indice tipo actividad (0,1,2,3) */
 	private int activityType;
+	/** Area total */
 	private int buildingArea;
+	/** Porcentaje area cubierta */
 	private int buildingCoveredArea;
+	/** Trabajadores por lugar */
 	private int workersPerPlace;
+	/** Trabajadores por area */
 	private int workersPerArea;
+	/** Chances por grupo etario */
 	private int[] activityChances = new int[DataSet.AGE_GROUPS];
 	
 	public PlaceProperty(String gmapsType, String gplaceType) {
 		this.googleMapsType = gmapsType;
 		this.googlePlaceType = gplaceType;
-	}
-	
-	public PlaceProperty(String gmapsType, String gplaceType, PlaceProperty pp) {
-		this.googleMapsType = gmapsType;
-		this.googlePlaceType = gplaceType;
-		this.activityType = pp.activityType;
-		this.buildingArea = pp.buildingArea;
-		this.buildingCoveredArea = pp.buildingCoveredArea;
-		this.workersPerPlace = pp.workersPerPlace;
-		this.workersPerArea = pp.workersPerArea;
-		this.activityChances = pp.activityChances;
 	}
 	
 	public PlaceProperty(String gmapsType, String gplaceType, int type, int avgArea, int avgCoveredArea, int workersPlace, int workersArea, int[] chances) {
@@ -47,6 +47,16 @@ public final class PlaceProperty {
 		this.activityChances = chances;
 	}
 	
+	public PlaceProperty(String gmapsType, String gplaceType, PlaceProperty pp) {
+		this(gmapsType, gplaceType, pp.activityType, pp.buildingArea, pp.buildingCoveredArea, pp.workersPerPlace, pp.workersPerArea, pp.activityChances);
+	}
+	
+	/**
+	 * Busca el indice de columna de cada header. 
+	 * @param rows array de Strings
+	 * @return <b>int[]</b> indice de headers
+	 * @throws Exception si faltan headers
+	 */
 	private static int[] readHeader(String[] rows) throws Exception {
 		String[] headers = {"Google_Maps_type","Google_Place_type","Activity_type","Area","Covered_area","Workers_place","Workers_area","Chance_1","Chance_2","Chance_3","Chance_4","Chance_5"};
 		int[] indexes = new int[headers.length];
@@ -66,7 +76,12 @@ public final class PlaceProperty {
 		return indexes;
 	}
 	
-	public static Map<String, PlaceProperty> loadPlacesProperties() {
+	/**
+	 * Lee el archivo de salida de markov y carga las propiedades de cada tipo de places.
+	 * @param filePath ruta archivo
+	 * @return mapa con propiedades por cada tipo de place
+	 */
+	public static Map<String, PlaceProperty> loadPlacesProperties(String filePath) {
 		PlaceProperty placeProperty;
 		String gMapsType;
 		String gPlaceType;
@@ -77,8 +92,7 @@ public final class PlaceProperty {
 		String[] nextLine;
 		int[] dataIndexes = {};
 		try {
-			String csvPath = Town.getPlacesPropertiesFilepath();
-			reader = new CSVReader(new FileReader(csvPath), ',');
+			reader = new CSVReader(new FileReader(filePath), ',');
 			while ((nextLine = reader.readNext()) != null) {
 				if (!headerFound) {
 					dataIndexes = readHeader(nextLine);

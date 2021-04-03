@@ -9,33 +9,40 @@ import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 
 /**
- * Los valores de temperatura exteriores, se importar desde un archivo csv.<p>
- * Los valores de temperatura interiores se calculan segun los valores minimos y maximos de la zona.<p>
- * La variacion de temperatura interior se hace para el hemisferio sur, mas especificamente Argentina.
+ * Con los valores de temperatura promedio, calcula el beta en interiores, exteriores y fuera de contexto.
  */
 public class Temperature {
+	/** Numero de regiones: sur, centro y norte */
+	private static final int REGIONS = 3;
+	
 	private static int currentYear;
 	private static int dayOfTheYear;
 	/** Temperatura exteriores */
-	private static double odCurrentTemp;
+	private static double[] odCurrentTemp = new double[REGIONS];
 	/** Temperatura interiores */
-	private static final double[] temperature = new double[366];
+	private static final double[][] temperature = new double[REGIONS][366];
 	/** Beta diario para cada tipo de seccional */
-	private static double[] infectionRate = new double[2];
+	private static double[][] infectionRate = new double[REGIONS][2];
 	/** Beta diario para espacios al aire libre */
-	private static double infectionRateOutside;
+	private static double[] infectionRateOutside = new double[REGIONS];
 	/** Valor de contagio diario estando fuera del contexto */
-	private static int oocContagionChance;
+	private static int[] oocContagionChance = new int[REGIONS];
 	
 	/**
-	 * Lee de archivo csv los datos de temperatura media del ano actual.<p>
-	 * Calcula la tasa de contagio en interiores y exteriores.
-	 * @param year ano de inicio (2020 o +)
-	 * @param days dias desde fecha de inicio
+	 * @param startYear ano de inicio (2020 o +)
+	 * @param startDay dias desde fecha de inicio
 	 */
-	public Temperature(int year, int days) {
-		currentYear = year;
-		dayOfTheYear = days;
+	public Temperature(int startYear, int startDay) {
+		currentYear = startYear;
+		dayOfTheYear = startDay;
+		initTemperature();
+	}
+	
+	/**
+	 * Lee de archivo csv los datos de temperatura media del ano actual.
+	 */
+	public static void initTemperature() {
+		int year = currentYear;
 		loadWeatherData(year); // Leer temp del ano inicio
 		// Suma anos si la cantidad de dias > 365
 		while (dayOfTheYear > 365) {
@@ -45,21 +52,17 @@ public class Temperature {
 		// Si la cantidad de dias supera el ano de inicio, se vuelve a leer 
 		if (year != currentYear)
 			loadWeatherData(currentYear);
-		//
-		odCurrentTemp = temperature[dayOfTheYear];
 		// Setear las chances de infeccion del dia inicial
 		updateInfectionChances();
 	}
 	
-	@ScheduledMethod(start = 12d, interval = 12d, priority = ScheduleParameters.FIRST_PRIORITY)
+	@ScheduledMethod(start = 24, interval = 24, priority = ScheduleParameters.FIRST_PRIORITY)
 	public static void updateDailyTemperature() {
 		// Ultimo dia del ano, lee los datos del ano siguiente
 		if (++dayOfTheYear == 366) {
 			dayOfTheYear = 0;
 			loadWeatherData(++currentYear);
 		}
-		//
-		odCurrentTemp = temperature[dayOfTheYear];
 		// Setear las chances de infeccion del dia actual
 		updateInfectionChances();
 	}
@@ -69,10 +72,13 @@ public class Temperature {
 	 * beta en seccional 11, en espacios abiertos y chance de contagio fuera del contexto. 
 	 */
 	private static void updateInfectionChances() {
-		infectionRate[0] = (-13 * odCurrentTemp + 494d) / 13; // Formula Emanuel
-		infectionRate[1] = infectionRate[0] * DataSet.INFECTION_RATE_SEC11_MOD;
-		infectionRateOutside = infectionRate[0] * DataSet.INFECTION_RATE_OUTSIDE_MOD;
-		oocContagionChance = (int) (150000 - (Town.oocContagionValue * infectionRateOutside));
+		for (int r = 0; r < REGIONS; r++) {
+			odCurrentTemp[r] = temperature[r][dayOfTheYear];
+			infectionRate[r][0] = (-9d * odCurrentTemp[r] + 365d) / 13d; // Temp max 27.3 -> beta 9.177 | Temp min 9.6 -> beta 21.430
+			infectionRate[r][1] = infectionRate[r][0] * DataSet.INFECTION_RATE_SEC11_MOD;
+			infectionRateOutside[r] = infectionRate[r][0] * DataSet.INFECTION_RATE_OUTSIDE_MOD;
+			oocContagionChance[r] = (int) (150000 - (DataSet.OOC_CONTAGION_VALUE * infectionRateOutside[r]));
+		}
 	}
 	
 	/**
@@ -87,12 +93,14 @@ public class Temperature {
 		CSVReader reader = null;
 		String [] nextLine;
 		int i = 0;
+		int r = 0;
 		try {
 			reader = new CSVReader(new FileReader(file), ';');
 			while ((nextLine = reader.readNext()) != null) {
 				if (i >= dayFrom) {
 					try {
-						temperature[index] = Double.valueOf(nextLine[0]);
+						for (r = 0; r < REGIONS; r++)
+							temperature[r][index] = Double.valueOf(nextLine[r]);
 						index++;
 					} catch (NumberFormatException e) {
 						if (headerFound) {
@@ -119,23 +127,41 @@ public class Temperature {
 	}
 	
 	private static void loadWeatherData(int year) {
-		String weatherFile = Town.getWeatherFilepath(year);
+		String weatherFile = String.format("./data/%d-entrerios.csv", year);
 		readCSV(weatherFile, 0, 0, 366);
 	}
 	
-	public static double getInfectionRate(boolean outdoor) {
+	/**
+	 * Chance de contagio segun region parametros.
+	 * @param region indice (0,1,2)
+	 * @param outdoor en un parcela al exterior
+	 * @return <b>double</b> beta (0 a 1)
+	 */
+	public static double getInfectionRate(int region, boolean outdoor) {
 		if (outdoor)
-			return infectionRateOutside;
-		return infectionRate[0];
+			return infectionRateOutside[region];
+		return infectionRate[region][0];
 	}
 	
-	public static double getInfectionRate(boolean outdoor, int sectoralType) {
+	/**
+	 * Chance de contagio segun region parametros.
+	 * @param region indice (0,1,2)
+	 * @param outdoor en un parcela al exterior
+	 * @param sectoralType indice tipo (0,1)
+	 * @return <b>double</b> beta (0 a 1)
+	 */
+	public static double getInfectionRate(int region, boolean outdoor, int sectoralType) {
 		if (outdoor)
-			return infectionRateOutside;
-		return infectionRate[sectoralType];
+			return infectionRateOutside[region];
+		return infectionRate[region][sectoralType];
 	}
 	
-	public static int getOOCContagionChance() {
-		return oocContagionChance;
+	/**
+	 * Chance de contagio fuera del contexto o parcelas, segun region.
+	 * @param region indice (0,1,2)
+	 * @return <b>int</b> chance contagio
+	 */
+	public static int getOOCContagionChance(int region) {
+		return oocContagionChance[region];
 	}
 }

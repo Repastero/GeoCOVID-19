@@ -1,18 +1,29 @@
 package geocovid.agents;
 
-import geocovid.DataSet;
 import geocovid.InfectionReport;
-import geocovid.Town;
 import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 
+/**
+ * Representa las unidades de transporte publico.
+ */
 public class PublicTransportAgent {
-	private SurfaceAgent seats[][][] = new SurfaceAgent[Town.sectoralsCount][DataSet.PUBLIC_TRANSPORT_UNITS][DataSet.PUBLIC_TRANSPORT_SEATS];
+	private int region;
+	private SurfaceAgent seats[][][];
+	private int ptUnits;
+	private int ptSeats;
+	
+	public PublicTransportAgent(int regionIdx, int sectorals, int tranUnits, int tranSeats) {
+		this.region = regionIdx;
+		this.ptUnits = tranUnits;
+		this.ptSeats = tranSeats;
+		this.seats = new SurfaceAgent[sectorals][tranUnits][tranSeats];
+	}
 	
 	public void jumpAboard(HumanAgent human, int sectoral) {
-		int unit = RandomHelper.nextIntFromTo(0, DataSet.PUBLIC_TRANSPORT_UNITS-1);
-		int seat = RandomHelper.nextIntFromTo(0, DataSet.PUBLIC_TRANSPORT_SEATS-1);
+		int unit = RandomHelper.nextIntFromTo(0, ptUnits - 1);
+		int seat = RandomHelper.nextIntFromTo(0, ptSeats - 1);
 		
 		if (!human.wasExposed())
 			checkIfSurfaceContaminated(human, seats[sectoral][unit][seat]);
@@ -35,7 +46,7 @@ public class PublicTransportAgent {
 	private SurfaceAgent removeSpreader(SurfaceAgent surface) {
 		if (surface == null) {
 			// Se crea una superficie con la posicion como ID
-			surface = new SurfaceAgent(true); // Se crea como superficie al exterior
+			surface = new SurfaceAgent(region, true); // Se crea como superficie al exterior
 		}
 		else {
 			// Si la superficie ya estaba contaminada, se 'renueva' el virus

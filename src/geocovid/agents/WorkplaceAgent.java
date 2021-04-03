@@ -3,8 +3,12 @@ package geocovid.agents;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import geocovid.DataSet;
+import geocovid.contexts.SubContext;
 import repast.simphony.random.RandomHelper;
 
+/**
+ * Representa las parcelas donde los Humanos trabajan o estudian.
+ */
 public class WorkplaceAgent extends BuildingAgent {
 	private int[][] workPositions;
 	private int workPositionsCount;
@@ -12,11 +16,14 @@ public class WorkplaceAgent extends BuildingAgent {
 	private int activityType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
+	/** Capacidad maxima (metros util * humanos por metro cuadrado) */
+	private int maximumCapacity;
+	/** Capacidad por defecto (maximumCapacity / humanos por metro cuadrado) */
 	private int defaultCapacity;
 	private boolean closed = false;
 	
-	public WorkplaceAgent(int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
-		super(sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
+	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
 		
 		this.workplaceType = workType;
 		this.activityType = activityType;
@@ -43,6 +50,7 @@ public class WorkplaceAgent extends BuildingAgent {
 				cap = workPositionsCount + 1; // permitir al menos un cliente
 			}
 		}
+		// Que no supere la capacidad por defecto
 		if (cap <= defaultCapacity)
 			setCapacity(cap);
 	}
@@ -97,15 +105,15 @@ public class WorkplaceAgent extends BuildingAgent {
 				++row;
 			setStartingRow(row);
 		}
-		defaultCapacity = getCapacity();
-		
+		maximumCapacity = getCapacity();
+		defaultCapacity = maximumCapacity / DataSet.HUMANS_PER_SQUARE_METER;
 		// Por defecto la capacidad maxima es de 1 humano por metro cuadrado
-		setCapacity(defaultCapacity / DataSet.HUMANS_PER_SQUARE_METER);
+		setCapacity(defaultCapacity);
 	}
 	
 	/**
 	 * Selecciona al azar una posicion de la lista de puestos, para el trabajador.
-	 * @return {x, y}
+	 * @return posicion {x, y}
 	 */
 	public int[] getWorkPosition() {
 		int randomIndex = RandomHelper.nextIntFromTo(0, workPositionsCount-1);

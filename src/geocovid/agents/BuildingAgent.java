@@ -10,12 +10,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import geocovid.DataSet;
 import geocovid.InfectionReport;
 import geocovid.Temperature;
+import geocovid.contexts.SubContext;
 import repast.simphony.random.RandomHelper;
 
+/**
+ * Clase base de parcelas.
+ */
 public class BuildingAgent {
+	private SubContext context;	// Puntero
+	private int sectoralType;	// Indice de tipo de seccional
+	private int sectoralIndex;	// Indice de seccional
 	// Atributos del GIS
-	private int sectoralType;
-	private int sectoralIndex;
 	private Coordinate coordinate;
 	private long id;
 	private String type;
@@ -35,14 +40,18 @@ public class BuildingAgent {
 	// Atributos staticos para checkear el radio de contactos personales
 	private static int xShiftsPD[];
 	private static int yShiftsPD[];
-	// Listas de Agentes dentro de Building 
-	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent trasmisores
-	private List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>(); // Lista de HumanAgent pre trasmisores (sintomaticos)
-	private Map<Integer, HumanAgent> humansMap = new HashMap<>(); // Mapa <Id Humano, HumanAgent>
-	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>(); // Mapa <Id Superficie, SurfaceAgent>
 	//
+	/** Lista de HumanAgent trasmisores */
+	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>();
+	/** Lista de HumanAgent pre-trasmisores (sintomaticos) */
+	private List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>();
+	/** Mapa de HumanAgent dentro de parcela <Id Humano, HumanAgent> */
+	private Map<Integer, HumanAgent> humansMap = new HashMap<>();
+	/** Mapa de SurfaceAgent dentro de parcela <Id Superficie, SurfaceAgent> */
+	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
 	
-	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea) {
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea) {
+		this.context = subContext;
 		this.sectoralType = secType;
 		this.sectoralIndex = secIndex;
 		this.coordinate = coord;
@@ -52,18 +61,18 @@ public class BuildingAgent {
 		this.coveredArea = coveredArea;
 	}
 	
-	public BuildingAgent(int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea, double areaModifier, boolean workplace) {
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea, double areaModifier, boolean workplace) {
 		// Constructor Home/Workplace
-		this(secType, secIndex, coord, id, type, area, coveredArea);
+		this(subContext, secType, secIndex, coord, id, type, area, coveredArea);
 		//
 		this.workingPlace = workplace;
 		setRealArea(areaModifier);
 		setBuildingShape();
 	}
 	
-	public BuildingAgent(int secType, int secIndex, Coordinate coord, int realArea, boolean outdoor) {
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, int realArea, boolean outdoor) {
 		// Constructor Evento
-		this(secType, secIndex, coord, 0xFFFFFFFF, "event", 0, 0);
+		this(subContext, secType, secIndex, coord, 0xFFFFFFFF, "event", 0, 0);
 		if (outdoor)
 			this.area = realArea;
 		else
@@ -75,7 +84,7 @@ public class BuildingAgent {
 	
 	public BuildingAgent(BuildingAgent ba) {
 		// Constructor para crear copia de ba
-		this(ba.sectoralType, ba.sectoralIndex, ba.coordinate, ba.id, ba.type, ba.area, ba.coveredArea);
+		this(ba.context, ba.sectoralType, ba.sectoralIndex, ba.coordinate, ba.id, ba.type, ba.area, ba.coveredArea);
 		//
 		this.realArea = ba.realArea;
 		setBuildingShape();
@@ -106,11 +115,11 @@ public class BuildingAgent {
 	}
 	
 	/**
-	 * Carga los valores de desplazamientos de X e Y, segun el radio, en los vectores
-	 * @param radius
-	 * @param xs
-	 * @param ys
-	 * @return
+	 * Carga los valores de desplazamientos de X e Y, segun el radio dado.
+	 * @param radius radio
+	 * @param xs desvios de x
+	 * @param ys desvios de y
+	 * @return <b>int</b> radio del circulo
 	 */
 	public static int getCircleRadius(int radius, int[] xs, int[] ys) {
 		// Desvio maximo de X + Y
@@ -132,6 +141,10 @@ public class BuildingAgent {
 		return circleRadius;
 	}
 	
+	/**
+	 * Setea el area real de parcela, segun area cubierta y area ocupable
+	 * @param availableAreaMod
+	 */
 	private void setRealArea(double availableAreaMod) {
 		// Si es espacio verde tomo toda el area
 		if (coveredArea > 0) {
@@ -174,7 +187,7 @@ public class BuildingAgent {
 	/**
 	 * Asigna un lugar en la grilla para el nuevo ingreso, si hay capacidad
 	 * @param human HumanAgent
-	 * @return {x, y} o null
+	 * @return posicion {x, y} o null
 	 */
 	public int[] insertHuman(HumanAgent human) {
 		if (humansMap.size() >= capacity) { 
@@ -196,7 +209,7 @@ public class BuildingAgent {
 	 * Inserta el humano en la posicion de la grilla dada y en humansMap.
 	 * @param human HumanAgent
 	 * @param pos nueva posicion
-	 * @return {x, y} en grilla
+	 * @return posicion {x, y} en grilla
 	 */
 	public int[] insertHuman(HumanAgent human, int[] pos) {
 		if (humansMap.put(getPosId(pos), human) != null)
@@ -239,7 +252,7 @@ public class BuildingAgent {
 		}
 		// Si es contagioso se buscan contactos cercanos susceptibles
 		if (human.isContagious()) {
-			if ((humansMap.size() - spreadersList.size()) != 0)
+			if ((humansMap.size() - spreadersList.size()) != 0) // no hay susceptibles
 				spreadVirus(human, pos);
 			// 
 			removeSpreader(human, pos);
@@ -250,9 +263,9 @@ public class BuildingAgent {
 	}
 	
 	/**
-	 * Lo mismo que <b>spreadVirus</b> pero no discrimina covidosos
-	 * @param agent
-	 * @param agentPos
+	 * Lo mismo que <b>spreadVirus</b> pero no discrimina covidosos.
+	 * @param agent humano
+	 * @param agentPos posicion
 	 */
 	public void sociallyInteract(HumanAgent agent, int[] agentPos) {
 		int spId = agent.getAgentID();
@@ -299,7 +312,7 @@ public class BuildingAgent {
 		SurfaceAgent surface = surfacesMap.get(csId);
 		if (surface == null) {
 			// Se crea una superficie con la posicion como ID
-			surfacesMap.put(csId, new SurfaceAgent(outdoor));
+			surfacesMap.put(csId, new SurfaceAgent(context.getTownRegion(), outdoor));
 		}
 		else {
 			// Si la superficie ya estaba contaminada, se 'renueva' el virus
@@ -321,9 +334,6 @@ public class BuildingAgent {
 	 * @param pos {x, y} en grilla
 	 */
 	public void removePreSpreader(HumanAgent human, int[] pos) {
-		// Si quedo afuera, no se continua
-		if (pos == null)
-			return;
 		preSpreadersList.remove(human);
 	}
 	
@@ -334,17 +344,17 @@ public class BuildingAgent {
 	 * @return <b>true</b> si hubo contagio
 	 */
 	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
-		double infectionRate = Temperature.getInfectionRate(outdoor, sectoralType);
+		double infectionRate = Temperature.getInfectionRate(context.getTownRegion(), outdoor, sectoralType);
 		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
 			// Si es un lugar de trabajo se chequea si respetan distanciamiento y usan cubreboca
 			if (workingPlace) {
-				if (DataSet.getSDPercentage() != 0) {
+				if (context.getSDPercentage() != 0) {
 					// Si es un lugar cerrado o se respeta el distanciamiento en exteriores
-					if ((!outdoor) || DataSet.sDOutdoor()) {
+					if ((!outdoor) || context.sDOutdoor()) {
 						// Si los dos humanos respetan el distanciamiento
 						if (spreader.distanced && prey.distanced) {
 							// Si se respeta el distanciamiento en lugares de trabajo
-							if (!(spreader.atWork() && prey.atWork()) || DataSet.sDWorkspace())
+							if (!(spreader.atWork() && prey.atWork()) || context.sDWorkspace())
 								return false;
 						}
 					}
@@ -353,19 +363,19 @@ public class BuildingAgent {
 				if (spreader.isPreInfectious()) {
 					if (spreader.atWork() && prey.atWork()) {
 						// Si no usan cubrebocas en el lugar de trabajo, existe contacto estrecho
-						if (!DataSet.wearMaskWorkspace()) {
+						if (!context.wearMaskWorkspace()) {
 							prey.setCloseContact(spreader.getInfectiousStartTime());
 							return true;
 						}
 						return false;
 					}
 				}
-				else if (DataSet.getMaskEffectivity() > 0) {
+				else if (context.getMaskEffectivity() > 0) {
 					// Si es un lugar cerrado o se usa cubreboca en exteriores
-					if ((!outdoor) || DataSet.wearMaskOutdoor()) {
+					if ((!outdoor) || context.wearMaskOutdoor()) {
 						// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
-						if (!(spreader.atWork() && prey.atWork()) || DataSet.wearMaskWorkspace()) {
-							infectionRate *= 1 - DataSet.getMaskEffectivity();
+						if (!(spreader.atWork() && prey.atWork()) || context.wearMaskWorkspace()) {
+							infectionRate *= 1 - context.getMaskEffectivity();
 						}
 					}
 				}
@@ -402,8 +412,8 @@ public class BuildingAgent {
 							checkContagion(spHuman, prey);
 			    		}
 			    	}
-		    	}
-	    	}
+				}
+			}
 		}
 	}
     
@@ -418,6 +428,17 @@ public class BuildingAgent {
 		int xShift, yShift;
 		for (HumanAgent spreader : spreaders) {
 			spPos = spreader.getCurrentPosition();
+			// Fix temporal al raro bug del spreader fantasma 
+			if (spPos == null) {
+				if (spreaders == spreadersList)
+					System.err.println("spreadersList fantasma!");
+				else
+					System.err.println("preSpreadersList fantasma!");
+				// saco el fantasma de la lista para que no moleste mas
+				spreaders.remove(spreader);
+				continue;
+			}
+			//
 			xShift = Math.abs(pos[0] - spPos[0]);
 			yShift = Math.abs(pos[1] - spPos[1]);
 			if (xShift < infCircleRadius && yShift < infCircleRadius) { // que X o Y individualmente no exedan el radio de contagio
@@ -451,7 +472,7 @@ public class BuildingAgent {
 	/**
 	 * El ID de superficie se calcula como: (Y * ANCHO) + X.
 	 * @param pos {x, y} de superficie
-	 * @return id superficie
+	 * @return <b>int</b> id superficie
 	 */
 	private int getPosId(int[] pos) {
 		return (pos[1]*size[0])+pos[0];

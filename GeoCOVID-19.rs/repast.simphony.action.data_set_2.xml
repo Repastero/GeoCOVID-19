@@ -1,14 +1,14 @@
-<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.7.0">
+<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
   <name>Contactos</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>false</inclRandomSeed>
   <scheduleParams>
-    <start>12.0</start>
-    <interval>12.0</interval>
+    <start>24.0</start>
+    <interval>24.0</interval>
     <priority>-Infinity</priority>
-    <pType>LAST</pType>
+    <pType>FIRST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
     <hashCode>-1669922361</hashCode>

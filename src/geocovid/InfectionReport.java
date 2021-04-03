@@ -1,19 +1,17 @@
 package geocovid;
 
 import repast.simphony.engine.environment.RunEnvironment;
+import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 
 /**
- * El objetivo de esta clase es puramente informativo y mas que nada para llevar la cuenta de los Humanos infectados que no siempre estan en el Contexto.
+ * Lleva la sumatoria de los estados de los Humanos (expuestos, hospitalizados, etc), contactos personales y actividades diarias.
  */
 public class InfectionReport {
-	/** Para indicar que se infectaron los iniciales */
-	public static boolean outbreakStarted;
+	public static int simulationStartDay;
 	//
-	private static int simulationMinDay;
 	private static int deathLimit;
 	//
-	private static int daysCount;
 	private static int cumExposedAll;		// Acumulado
 	private static int cumExposedToCSAll;	// Acumulado
 	private static int insAsxInfectiousAll;	// Instantaneo
@@ -35,15 +33,13 @@ public class InfectionReport {
 	private static int[] humansInteracting;
 	private static double[] avgSocialInteractions;
 	//
-	private static int[] dailyActivitiesTicks;	// Cuenta medios tick
-	private static int totalDailyActTicks;		// Cuenta medios tick
+	private static int[] dailyActivitiesTicks;	// Cuenta ticks
+	private static int totalDailyActTicks;		// Cuenta ticks
 	
-	public InfectionReport(int minDay, int maxDeaths) {
-		outbreakStarted	= false;
-		simulationMinDay= minDay;
-		deathLimit		= maxDeaths;
+	public InfectionReport(int startDay, int maxDeaths) {
+		simulationStartDay	= startDay;
+		deathLimit			= maxDeaths;
 		
-		daysCount			= 0;
 		cumExposedAll		= 0;
 		cumExposedToCSAll	= 0;
 		insAsxInfectiousAll	= 0;
@@ -69,37 +65,31 @@ public class InfectionReport {
 		totalDailyActTicks	= 0;
 	}
 	
-	@ScheduledMethod(start = 12d, interval = 12d, priority = 0.99d)
+	@ScheduledMethod(start = 24, interval = 24, priority = ScheduleParameters.FIRST_PRIORITY)
 	public void checkPandemicEnd() {
-		// Calcula las interacciones promedio y reinicia vectores
-		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+		int i;
+		// Calcula las interacciones promedio y reinicia arrays
+		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			avgSocialInteractions[i] = sumOfSocialInteractions[i] / (double)humansInteracting[i];
 			sumOfSocialInteractions[i] = 0;
 			humansInteracting[i] = 0;
 		}
 		
-		for (int i = 0; i < 4; i++) {
+		for (i = 0; i < 4; i++) {
 			dailyActivitiesTicks[i] = 0;
 		}
 		totalDailyActTicks = 0;
 		
-		if (++daysCount >= simulationMinDay) {
-			// Termina la simulacion si no hay forma de que se propague el virus y se recuperan todos los infectados
-			if ((cumRecoveredAll != 0 || cumDeathsAll != 0) && ((cumDeathsAll + cumRecoveredAll) == cumExposedAll)) {
-				System.out.println("Simulacion finalizada por fin de epidemia");
-				RunEnvironment.getInstance().endRun();
-			}
-			// Termina la simulacion si se cumple el minimo de dias de simulacion y si se supera el limite te muertes (si existe)
-			else if (deathLimit != 0 && deathLimit < cumDeathsAll){
-				System.out.println("Simulacion finalizada por limite de muertes: "+deathLimit);
-				RunEnvironment.getInstance().endRun();
-			}
+		// Termina la simulacion si se supera el limite te muertes (si existe)
+		if (deathLimit != 0 && deathLimit < cumDeathsAll) {
+			System.out.println("Simulacion finalizada por limite de muertes: "+deathLimit);
+			RunEnvironment.getInstance().endRun();
 		}
 	}
 	
-	public static void addActivityTime(int actIndex, int halfTicks) {
-		dailyActivitiesTicks[actIndex] += halfTicks;
-		totalDailyActTicks += halfTicks;
+	public static void increaseActivityTime(int actIndex) {
+		++dailyActivitiesTicks[actIndex];
+		++totalDailyActTicks;
 	}
 	
 	public static void updateSocialInteractions(int agIndex, int interactions) {
@@ -217,16 +207,15 @@ public class InfectionReport {
 	public static int getHigherCumHospitalized()	{ return cumHospitalized[4]; }
 	public static int getHigherCumRecovered()		{ return cumRecovered[4]; }
 	public static int getHigherCumDeaths()			{ return cumDeaths[4]; }
-
+	
 	public static double getChildAVGInteractions()	{ return avgSocialInteractions[0]; }
 	public static double getYoungAVGInteractions()	{ return avgSocialInteractions[1]; }
 	public static double getAdultAVGInteractions()	{ return avgSocialInteractions[2]; }
 	public static double getElderAVGInteractions()	{ return avgSocialInteractions[3]; }
 	public static double getHigherAVGInteractions()	{ return avgSocialInteractions[4]; }
 	
-	public static int getDailyHomeTime()	{ return (dailyActivitiesTicks[0] * 100) / totalDailyActTicks; }
-	public static int getDailyWorkTime()	{ return (dailyActivitiesTicks[1] * 100) / totalDailyActTicks; }
-	public static int getDailyLeisureTime()	{ return (dailyActivitiesTicks[2] * 100) / totalDailyActTicks; }
-	public static int getDailyOtherTime()	{ return (dailyActivitiesTicks[3] * 100) / totalDailyActTicks; }
-	//
+	public static int getDailyHomeTime()			{ return dailyActivitiesTicks[0] * 100 / totalDailyActTicks; }
+	public static int getDailyWorkTime()			{ return dailyActivitiesTicks[1] * 100 / totalDailyActTicks; }
+	public static int getDailyLeisureTime()			{ return dailyActivitiesTicks[2] * 100 / totalDailyActTicks; }
+	public static int getDailyOtherTime()			{ return dailyActivitiesTicks[3] * 100 / totalDailyActTicks; }
 }

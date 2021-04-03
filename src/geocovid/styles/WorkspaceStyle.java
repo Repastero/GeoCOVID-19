@@ -17,6 +17,9 @@ import gov.nasa.worldwind.render.WWTexture;
 import repast.simphony.visualization.gis3D.PlaceMark;
 import repast.simphony.visualization.gis3D.style.MarkStyle;
 
+/**
+ * Representacion grafica de WorkplaceAgents
+ */
 public class WorkspaceStyle implements MarkStyle<WorkplaceAgent>{
 	
 	private final static Map<Integer, WWTexture> TEXTURE_MAP = new HashMap<Integer, WWTexture>();

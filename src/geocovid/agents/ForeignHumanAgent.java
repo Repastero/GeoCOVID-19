@@ -1,31 +1,33 @@
 package geocovid.agents;
 
-import static repast.simphony.essentials.RepastEssentials.AddAgentToContext;
-
+import geocovid.contexts.SubContext;
 import repast.simphony.engine.schedule.ScheduleParameters;
 
+/**
+ * Agente Humano extranjero que puede entrar y salir del contexto.
+ */
 public class ForeignHumanAgent extends HumanAgent {
 	
 	private boolean inContext = true;
 	
-	public ForeignHumanAgent(int secHome, int secHomeIndex, int ageGroup, BuildingAgent job, int[] posJob) {
-		super(secHome, secHomeIndex, ageGroup, null, job, posJob, true, false);
+	public ForeignHumanAgent(SubContext subContext, int secHome, int secHomeIndex, int ageGroup, BuildingAgent job, int[] posJob) {
+		super(subContext, secHome, secHomeIndex, ageGroup, null, job, posJob, true, false);
 	}
 	
-	public ForeignHumanAgent(int secHomeIndex) {
+	public ForeignHumanAgent(SubContext subContext, int secHomeIndex) {
 		// Constructor turista - Tipo seccional 2, grupo etario 2
-		super(0, secHomeIndex, 2, null, null, null, true, true);
+		super(subContext, 0, secHomeIndex, 2, null, null, null, true, true);
 	}
 	
 	public void addToContext() {
-		AddAgentToContext("GeoCOVID-19", this);
+		context.add(this);
 		inContext = true;
 	}
 	
 	@Override
-	public void removeInfectiousFromContext() {
+	public void removeFromContext() {
 		if (inContext) {
-			super.removeInfectiousFromContext();
+			super.removeFromContext();
 			inContext = false;
 		}
 	}
@@ -37,7 +39,7 @@ public class ForeignHumanAgent extends HumanAgent {
 			return;
 		
 		// Si se recupera, vuelve al dia siguiente
-		double newDayTick = Math.ceil(schedule.getTickCount() / 12) * 12;
+		double newDayTick = Math.ceil(schedule.getTickCount() / 24) * 24;
 		
         // Schedule one shot
 		ScheduleParameters params = ScheduleParameters.createOneTime(newDayTick, ScheduleParameters.FIRST_PRIORITY);
@@ -49,16 +51,5 @@ public class ForeignHumanAgent extends HumanAgent {
 		if (asyntomatic) // para que no sume como nuevo expuesto
 			exposed = true;
 		super.setInfectious(asyntomatic, initial);
-	}
-	
-	@Override
-	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
-		BuildingAgent newBuilding = null;
-		// Si toca casa, sale del contexto por 1 tick
-		if (activityIndex == 0)
-    		halfTicksDelay = 2;
-		else
-    		return super.switchActivity(prevActivityIndex, activityIndex);
-		return newBuilding;
 	}
 }
