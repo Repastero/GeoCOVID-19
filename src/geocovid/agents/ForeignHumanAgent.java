@@ -1,22 +1,33 @@
 package geocovid.agents;
 
-import static repast.simphony.essentials.RepastEssentials.RemoveAgentFromContext;
-import static repast.simphony.essentials.RepastEssentials.AddAgentToContext;
-
+import geocovid.contexts.SubContext;
 import repast.simphony.engine.schedule.ScheduleParameters;
 
+/**
+ * Agente Humano extranjero que puede entrar y salir del contexto.
+ */
 public class ForeignHumanAgent extends HumanAgent {
 	
 	private boolean inContext = true;
-
-	public ForeignHumanAgent(int ageGroup, BuildingAgent home, BuildingAgent job, int[] posJob) {
-		super(ageGroup, home, job, posJob, true);
+	
+	public ForeignHumanAgent(SubContext subContext, int secHome, int secHomeIndex, int ageGroup, BuildingAgent job, int[] posJob) {
+		super(subContext, secHome, secHomeIndex, ageGroup, null, job, posJob, true, false);
+	}
+	
+	public ForeignHumanAgent(SubContext subContext, int secHomeIndex) {
+		// Constructor turista - Tipo seccional 2, grupo etario 2
+		super(subContext, 0, secHomeIndex, 2, null, null, null, true, true);
+	}
+	
+	public void addToContext() {
+		context.add(this);
+		inContext = true;
 	}
 	
 	@Override
-	public void removeInfectiousFromContext() {
+	public void removeFromContext() {
 		if (inContext) {
-			super.removeInfectiousFromContext();
+			super.removeFromContext();
 			inContext = false;
 		}
 	}
@@ -28,37 +39,17 @@ public class ForeignHumanAgent extends HumanAgent {
 			return;
 		
 		// Si se recupera, vuelve al dia siguiente
-		double newDayTick = Math.ceil(schedule.getTickCount() / 12) * 12;
+		double newDayTick = Math.ceil(schedule.getTickCount() / 24) * 24;
 		
         // Schedule one shot
-		ScheduleParameters params = ScheduleParameters.createOneTime(newDayTick, 0.6d); // ScheduleParameters.FIRST_PRIORITY
-		schedule.schedule(params, this, "switchLocation");
+		ScheduleParameters params = ScheduleParameters.createOneTime(newDayTick, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, this, "addToContext");
 	}
 	
 	@Override
-	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
-		BuildingAgent newBuilding = null;
-		double endTime = schedule.getTickCount();
-		// Si toca casa, sale del contexto por 2 ticks
-		if (activityIndex == 0) {
-			if (inContext) {
-    			RemoveAgentFromContext("GeoCOVID-19", this);
-    			inContext = false;
-    		}
-    		endTime += 2;
-		}
-		else {
-    		if (!inContext) {
-    			AddAgentToContext("GeoCOVID-19", this);
-    			inContext = true;
-    		}
-    		return super.switchActivity(prevActivityIndex, activityIndex);
-		}
-		
-        // Schedule one shot
-		ScheduleParameters params = ScheduleParameters.createOneTime(endTime, 0.6d); // ScheduleParameters.FIRST_PRIORITY
-		schedule.schedule(params, this, "switchLocation");
-		
-		return newBuilding;
+	public void setInfectious(boolean asyntomatic, boolean initial) {
+		if (asyntomatic) // para que no sume como nuevo expuesto
+			exposed = true;
+		super.setInfectious(asyntomatic, initial);
 	}
 }

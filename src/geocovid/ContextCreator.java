@@ -1,30 +1,14 @@
 package geocovid;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
+import java.net.JarURLConnection;
+import java.text.SimpleDateFormat;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.simple.SimpleFeatureIterator;
-import org.opengis.feature.simple.SimpleFeature;
-
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
-
-import cern.jet.random.Uniform;
 import geocovid.agents.BuildingAgent;
 import geocovid.agents.HumanAgent;
-import geocovid.agents.ForeignHumanAgent;
-import geocovid.agents.WorkplaceAgent;
+import geocovid.contexts.ConcordContext;
+import geocovid.contexts.GchuContext;
+import geocovid.contexts.ParanaContext;
+import geocovid.contexts.SubContext;
 import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
@@ -36,221 +20,105 @@ import repast.simphony.random.RandomHelper;
 import repast.simphony.space.gis.Geography;
 import repast.simphony.space.gis.GeographyParameters;
 
+/**
+ * Contexto principal de modelo.
+ */
 public class ContextCreator implements ContextBuilder<Object> {
-	private List<BuildingAgent> homePlaces = new ArrayList<BuildingAgent>();
-	private List<WorkplaceAgent>workPlaces = new ArrayList<WorkplaceAgent>();
-	private List<WorkplaceAgent>schoolPlaces = new ArrayList<WorkplaceAgent>();
-	private List<WorkplaceAgent>universityPlaces = new ArrayList<WorkplaceAgent>();
+	private ISchedule schedule; // Puntero
+	private Geography<Object> geography; // Puntero
 	
-	private Map<Long, String> placesType = new HashMap<>();
-	
-	private Context<Object> context;
-	private Geography<Object> geography;
-	
+	// Parametros de simulacion
+	private int simulationStartYear;
 	private int simulationStartDay;
 	private int simulationMaxTick;
-	private int simulationMinDay;
 	private int deathLimit;
-	private int infectedAmount;
-	private int outbreakStartTick;
-	private int lockdownStartTick;
+	private int simulationRun;
+	private int obStartDelayDays;
+	private int weekendStartTick;
 	
+	/** Tiempo inicio de simulacion */
 	private long simulationStartTime;
 	
-	private long maxParcelId; // Para no repetir ids, al crear casas ficticias
-	private int unemployedCount; // Contador de empleos faltantes
-	private int unschooledCount; // Contador de bancos faltantes en escuelas
+	/** Suma inicial de agentes humanos */
+	private int humansCount;
 	
-	/** Ver <b>corridas</b> en <a href="file:../../GeoCOVID-19.rs/parameters.xml">/GeoCOVID-19.rs/parameters.xml</a> */
-	static int corridas = 50;
+	/** Ticks que representan el tiempo de una semana */
+	static final int WEEKLY_TICKS = 7*24;
+	/** Ticks que representan el tiempo que dura el fin de semana */
+	static final int WEEKEND_TICKS = 2*24;
 	
-	static final int WEEKLY_TICKS = 12*7; // ticks que representan el tiempo de una semana
-	static final int WEEKEND_TICKS = 12*2; // ticks que representan el tiempo que dura el fin de semana
+	/** Lista de municipios a simular */
+	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
+		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
+		"gualeguaychu","uruguay","federacion","colon","ibicuy",
+		"concordia","lapaz","villaguay","federal","tala","feliciano"
+	};
+	
+	public ContextCreator() {
+		// Para corridas en batch imprime fecha de compilacion
+		printJarVersion(this.getClass());
+	}
 	
 	@Override
 	public Context<Object> build(Context<Object> context) {
-		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
+		simulationStartTime = System.currentTimeMillis();
+		
+		schedule = RunEnvironment.getInstance().getCurrentSchedule();
+		// Programa metodo para inicio de simulacion - para medir duracion
 		ScheduleParameters params = ScheduleParameters.createOneTime(0d, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, this, "startSimulation");
+		// Programa metodo para fin de simulacion - para imprimir reporte final
 		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
 		schedule.schedule(params, this, "printSimulationDuration");
-
+		
 		// Crear la proyeccion para almacenar los agentes GIS (EPSG:4326).
 		GeographyParameters<Object> geoParams = new GeographyParameters<Object>();
 		this.geography = GeographyFactoryFinder.createGeographyFactory(null).createGeography("Geography", context, geoParams);
-		setBachParameters();
 		
+		setBachParameters(); // Lee parametros de simulacion
 		RunEnvironment.getInstance().endAt(simulationMaxTick);
+		Town.outbreakStartDelay = obStartDelayDays;
 		
-		// Schedule one shot para agregar infectados
-		params = ScheduleParameters.createOneTime(outbreakStartTick, 0.9d);
-		schedule.schedule(params, this, "infectLocalRandos", infectedAmount);
+		HumanAgent.initAgentID(); // Reinicio contador de IDs
+		BuildingAgent.initInfAndPDRadius(); // Crea posiciones de infeccion en grilla
+
+		context.add(new InfectionReport(simulationStartDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
+		context.add(new Temperature(simulationStartYear, simulationStartDay)); // Para leer temperatura diaria y calcular tasas de contagio
 		
-		// Schedule one shot para iniciar cierre de emergencia (tiempo de primer caso + tiempo inicio cuarentena
-		params = ScheduleParameters.createOneTime(lockdownStartTick, 0.9d);
-		schedule.schedule(params, this, "initiateLockdown");
+		SubContext.setGeography(geography); // Todos los SubContext usan la misma geografia
+		createSubContexts(context); // Crear sub contexts por cada ciudad
 		
-		// Schedules one shot para los inicios y los fines de semana, hasta el comienzo de la cuartentena.
-		setWeekendMovement();
-		
-		this.context = context;
-		context.add(new InfeccionReport(simulationMinDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
-		context.add(new Temperature(simulationStartDay)); // Para calcular temperatura diaria, para estela
-		
-		loadPlacesShapefile();
-		loadParcelsShapefile();
-		initHumans();
+		// BuildingManager usa el contexto principal y geografia
+		BuildingManager.setMainContextAndGeography(context, geography);
 		
 		return context;
-	}
-	
-	/**
-	 * Programa en schedule los metodos para cambiar matrices de markov en los periodos de fines de semanas.<p>
-	 * Cuando termina se asigna "setHumansDefaultTMMC"
-	 */
-	private void setWeekendMovement() {
-		ISchedule schedule = RunEnvironment.getInstance().getCurrentSchedule();
-		ScheduleParameters params;
-		int endWKND;
-		for (int i = WEEKLY_TICKS - WEEKEND_TICKS; i < lockdownStartTick; i += WEEKLY_TICKS) {
-			params = ScheduleParameters.createOneTime(i, ScheduleParameters.FIRST_PRIORITY);
-			schedule.schedule(params, this, "setHumansWeekendTMMC");
-			endWKND = (i + WEEKEND_TICKS > lockdownStartTick) ? lockdownStartTick : i + WEEKEND_TICKS;
-			params = ScheduleParameters.createOneTime(endWKND, ScheduleParameters.FIRST_PRIORITY);
-			schedule.schedule(params, this, "setHumansDefaultTMMC");
-		}
 	}
 	
 	public void startSimulation() {
 		simulationStartTime = System.currentTimeMillis();
 	}
 	
+	/**
+	 * Imprime en consola el reporte final de simulacion.
+	 */
 	public void printSimulationDuration() {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
-		System.out.println("Tiempo simulacion: " + (simTime / (double)(1000*60)) + " minutos");
 		
-		System.out.println("Susceptibles: " + (DataSet.LOCAL_HUMANS + DataSet.LOCAL_TRAVELER_HUMANS + DataSet.FOREIGN_TRAVELER_HUMANS));
+		System.out.printf("Simulacion N°: %5d | Seed: %d | Tiempo: %.2f minutos%n",
+				simulationRun, RandomHelper.getSeed(), (simTime / (double)(1000*60)));
+		System.out.printf("Dias epidemia: %5d%n",
+				(int) (schedule.getTickCount()) / 24 - obStartDelayDays);
+		System.out.printf("Susceptibles: %6d | Infectados: %d | Infectados por estela: %d%n",
+				humansCount,
+				InfectionReport.getCumExposed(),
+				InfectionReport.getCumExposedToCS());
+		System.out.printf("Recuperados:  %6d | Muertos: %d%n",
+				InfectionReport.getCumRecovered(),
+				InfectionReport.getCumDeaths());
 		
-		System.out.println("Infectados acumulados: " + InfeccionReport.getExposedCount());
-		System.out.println("Infectados por estela: " + InfeccionReport.getExposedToCSCount());
-    
-		System.out.println("Recuperados: " + InfeccionReport.getRecoveredCount());
-		System.out.println("Muertos: " + InfeccionReport.getDeathsCount());
-		
-		System.out.println("Infectados acumulados Niños: " + InfeccionReport.getChildExposedCount());
-		System.out.println("Recuperados Niños: " + InfeccionReport.getChildRecoveredCount());
-		System.out.println("Muertos Niños: " + InfeccionReport.getChildDeathsCount());
-		
-		System.out.println("Infectados acumulados Jovenes: " + InfeccionReport.getYoungExposedCount());
-		System.out.println("Recuperados Jovenes: " + InfeccionReport.getYoungRecoveredCount());
-		System.out.println("Muertos Jovenes: " + InfeccionReport.getYoungDeathsCount());
-		
-		System.out.println("Infectados acumulados Adultos: " + InfeccionReport.getAdultExposedCount());
-		System.out.println("Recuperados Adultos: " + InfeccionReport.getAdultRecoveredCount());
-		System.out.println("Muertos Adultos: " + InfeccionReport.getAdultDeathsCount());
-		
-		System.out.println("Infectados acumulados Mayores: " + InfeccionReport.getElderExposedCount());
-		System.out.println("Recuperados Mayores: " + InfeccionReport.getElderRecoveredCount());
-		System.out.println("Muertos Mayores: " + InfeccionReport.getElderDeathsCount());
-		
-		System.out.println("Infectados acumulados Muy Mayores: " + InfeccionReport.getHigherExposedCount());
-		System.out.println("Recuperados Muy Mayores: " + InfeccionReport.getHigherRecoveredCount());
-		System.out.println("Muertos Muy Mayores: " + InfeccionReport.getHigherDeathsCount());
-		
-		System.out.println("Dias de epidemia: " + (int) (RunEnvironment.getInstance().getCurrentSchedule().getTickCount() - outbreakStartTick) / 12);
-	}
-	
-	/**
-	 * Selecciona al azar la cantidad de Humanos locales seteada en los parametros y los infecta.
-	 */
-	public void infectLocalRandos(int amount) {
-		int infected = 0;
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount << 2); // Busco por 4, por las dudas
-		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
-			HumanAgent humano = (HumanAgent) iterator.next();
-			if (!humano.isForeign()) {
-				humano.setInfectious(true);
-				if (++infected == amount)
-					break;
-			}
+		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+			System.out.println(InfectionReport.getInfectedReport(i));
 		}
-	}
-	
-	/**
-	 * Selecciona al azar la cantidad de Humanos seteada en los parametros y los infecta.
-	 */
-	public void infectRandos(int amount) {
-		Iterable<Object> collection = context.getRandomObjects(HumanAgent.class, amount);
-		for (Iterator<Object> iterator = collection.iterator(); iterator.hasNext();) {
-			HumanAgent humano = (HumanAgent) iterator.next();
-			if (!humano.exposed)
-				humano.setInfectious(true);
-		}
-	}
-	
-	/**
-	 * Asignar las matrices de markov que se utilizan los fines de semana.
-	 */
-	public void setHumansWeekendTMMC() {
-		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_WEEKEND_TMMC;
-		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_WEEKEND_TMMC;
-		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_WEEKEND_TMMC;
-		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_WEEKEND_TMMC;
-		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_WEEKEND_TMMC;
-		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_WEEKEND_TMMC;
-	}
-	
-	/**
-	 * Asignar las matrices de markov que se utilizan al principio de simulacion.<p>
-	 * Ver {@link #initHumans()}
-	 */
-	public void setHumansDefaultTMMC() {
-		HumanAgent.localTMMC[0]			= MarkovChains.CHILD_DEFAULT_TMMC;
-		HumanAgent.localTMMC[1]			= MarkovChains.YOUNG_DEFAULT_TMMC;
-		HumanAgent.localTMMC[2]			= MarkovChains.ADULT_DEFAULT_TMMC;
-		HumanAgent.localTMMC[3]			= MarkovChains.ELDER_DEFAULT_TMMC;
-		HumanAgent.localTMMC[4]			= MarkovChains.HIGHER_DEFAULT_TMMC;
-		HumanAgent.travelerTMMC			= MarkovChains.TRAVELER_DEFAULT_TMMC;
-		
-		HumanAgent.infectedLocalTMMC[0] = HumanAgent.localTMMC[0];
-		HumanAgent.infectedLocalTMMC[1] = HumanAgent.localTMMC[1];
-		HumanAgent.infectedLocalTMMC[2] = HumanAgent.localTMMC[2];
-		HumanAgent.infectedLocalTMMC[3] = HumanAgent.localTMMC[3];
-		HumanAgent.infectedLocalTMMC[4] = HumanAgent.localTMMC[4];
-		HumanAgent.infectedTravelerTMMC	= HumanAgent.travelerTMMC;
-	}
-	
-	/**
-	 * Asignar las matrices de markov que se van a utilizar al comenzar la cuarentena.
-	 */
-	public void initiateLockdown() {
-		// Infectados sintomaticos
-		HumanAgent.infectedLocalTMMC[0] = MarkovChains.INFECTED_CHILD_TMMC;
-		HumanAgent.infectedLocalTMMC[1] = MarkovChains.INFECTED_YOUNG_TMMC;
-		HumanAgent.infectedLocalTMMC[2] = MarkovChains.INFECTED_ADULT_TMMC;
-		HumanAgent.infectedLocalTMMC[3] = MarkovChains.INFECTED_ELDER_TMMC;
-		HumanAgent.infectedLocalTMMC[4] = MarkovChains.INFECTED_HIGHER_TMMC;
-		HumanAgent.infectedTravelerTMMC = MarkovChains.INFECTED_TRAVELER_TMMC;
-		
-		// Confinamiento con salida a compras.
-		/*
-		HumanAgent.localTMMC[0] = MarkovChains.CHILD_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[1] = MarkovChains.YOUNG_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[2] = MarkovChains.ADULT_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[3] = MarkovChains.ELDER_HARD_CONFINEMENT_TMMC;
-		HumanAgent.localTMMC[4] = MarkovChains.HIGHER_HARD_CONFINEMENT_TMMC;
-		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_CONFINEMENT_TMMC;
-		*/
-		
-		// Cuarentena en españa
-		/*
-		HumanAgent.localTMMC[0] = MarkovChains.YOUNG_SPAIN_TMMC;
-		HumanAgent.localTMMC[1] = MarkovChains.YOUNG_SPAIN_TMMC;
-		HumanAgent.localTMMC[2] = MarkovChains.ADULT_SPAIN_TMMC;
-		HumanAgent.localTMMC[3] = MarkovChains.ELDER_SPAIN_TMMC;
-		HumanAgent.localTMMC[4] = MarkovChains.HIGHER_SPAIN_TMMC;
-		HumanAgent.travelerTMMC = MarkovChains.TRAVELER_FULL_DAY_CONFINEMENT_TMMC;
-		*/
 	}
 
 	/**
@@ -258,371 +126,82 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	private void setBachParameters() {
 		Parameters params = RunEnvironment.getInstance().getParameters();
-		// Dia calendario, para calcular temperatura (0 - 364)
+		// Ano simulacion, para calcular temperatura (queda fijo en 2020)
+		simulationStartYear	= 2020;
+		// Dia de inicio, desde la fecha 01/01/2020
 		simulationStartDay	= ((Integer) params.getValue("diaInicioSimulacion")).intValue();
 		// Dias maximo de simulacion - por mas que "diaMinimoSimulacion" sea mayor (0 = Infinito)
-		simulationMaxTick	= ((Integer) params.getValue("diasSimulacion")).intValue() * 12;
-		// Dias minimo de simulacion - por mas que supere "cantidadMuertosLimite" (0 ...)
-		simulationMinDay	= ((Integer) params.getValue("diasMinimoSimulacion")).intValue();
+		simulationMaxTick	= ((Integer) params.getValue("diasSimulacion")).intValue() * 24;
+		// Dias hasta primer sabado
+		int daysFromSat = (4 + simulationStartDay) % 7; // el 4to dia de 2020 es sabado
+		weekendStartTick = (daysFromSat == 0) ? 0 : (7 - daysFromSat) * 24;
 		// Cantidad de muertos que debe superar para finalizar simulacion - ver "diaMinimoSimulacion" (0 = Infinito)
 		deathLimit			= ((Integer) params.getValue("cantidadMuertosLimite")).intValue();
-		// Dia de entrada de infectados
-		outbreakStartTick	= ((Integer) params.getValue("diaEntradaCaso")).intValue() * 12;
-		// Cantidad de infectados iniciales
-		infectedAmount		= ((Integer) params.getValue("cantidadInfectados")).intValue();
-		// Dias de delay desde que entran los infectados para iniciar cuarentena (0 = Ninguno)
-		lockdownStartTick	= ((Integer) params.getValue("diaInicioCuarentena")).intValue() * 12;
-		// Cuarentena comienza segun primer caso + inicio cuarentena
-		lockdownStartTick	+= outbreakStartTick;
-		
-		corridas			= (Integer) params.getValue("corridas");
+		// Dias de demora en entrada de infectados
+		obStartDelayDays	= ((Integer) params.getValue("diasRetrasoEntradaCaso")).intValue();
+		// Cantidad de corridas para hacer en batch
+		simulationRun		= (Integer) params.getValue("corridas");
 	}
-
-	private void loadPlacesShapefile() {
-		List<SimpleFeature> features = loadFeaturesFromShapefile(DataSet.SHP_FILE_PLACES);
-		placesType.clear();
-		
-		//long id;
-		long idParcel;
-		//String name;
-		String type;
-		//int rating;
-		
-		for (SimpleFeature feature : features) {
-			Geometry geom = (Geometry) feature.getDefaultGeometry();
-			if (geom == null || !geom.isValid()) {
-				System.err.println("Invalid geometry: " + feature.getID());
-			} 
-			if (geom instanceof Point) {
-				//id = (Long)feature.getAttribute("id");
-				idParcel = (Long)feature.getAttribute("id_parcel");
-				//name = (String) feature.getAttribute("name");
-				type = (String) feature.getAttribute("type");
-				//rating = (int) feature.getAttribute("ratings");
-				
-				placesType.put(idParcel, type);
-			}
-			else {
-				System.err.println("Error creating agent for " + geom);
-			}
-		}
-		features.clear();
-	}
-
-	private void loadParcelsShapefile() {
-		List<SimpleFeature> features = loadFeaturesFromShapefile(DataSet.SHP_FILE_PARCELS);
-		homePlaces.clear();
-		workPlaces.clear();
-		schoolPlaces.clear();
-		universityPlaces.clear();
-		
-		BuildingAgent tempBuilding = null;
-		WorkplaceAgent tempWorkspace = null;
-		String placeType;
-		maxParcelId = 0;
-		
-		// Armo la lista con los tipos de lugares de entretenimiento y otros, para filtrar los lugares de trabajo
-		List<String> placesTypeList = Arrays.asList(ArrayUtils.addAll(BuildingManager.entertainmentTypes, BuildingManager.otherTypes));
-		BuildingManager.initManager(context, geography);
-		
-		double maxX = -180d;
-		double minX = 180d;
-		double maxY = -90d;
-		double minY = 90d;
-		double tempX, tempY;
-		
-		long id;
-		long blockId;
-		String type;
-		int area;
-		int coveredArea;
-		for (SimpleFeature feature : features) {
-			Geometry geom = (Geometry) feature.getDefaultGeometry();
-			
-			// Busca los valores min y max de X e Y
-			// para crear el Extent o Boundary que incluye a todas las parcelas
-			tempX = geom.getCoordinate().x;
-			if (tempX > maxX)		maxX = tempX;
-			else if (tempX < minX)	minX = tempX;
-			tempY = geom.getCoordinate().y;
-			if (tempY > maxY)		maxY = tempY;
-			else if (tempY < minY)	minY = tempY;
+	
+	/**
+	 * Crea sub contextos para cada ciudad, de acuerdo a la region que pertenecen.
+	 * @param context contexto principal
+	 */
+	private void createSubContexts(Context<Object> context) {
+		humansCount = 0;
+		Town tempTown;
+		SubContext subContext;
+		SubContext lastContexts[] = new SubContext[3];
+		for (int i = 0; i < TOWN_NAMES.length; i++) {
+			tempTown = new Town(TOWN_NAMES[i]);
+			humansCount += tempTown.getLocalPopulation();
+			// Segun el indice de la region, el tipo de sub contexto
+			if (tempTown.regionType == 0)
+				subContext = new ParanaContext(tempTown);
+			else if (tempTown.regionType == 1)
+				subContext = new GchuContext(tempTown);
+			else
+				subContext = new ConcordContext(tempTown);
 			//
-			
-			if (geom == null || !geom.isValid()) {
-				System.err.println("Invalid geometry: " + feature.getID());
-				continue;
-			}
-			if (geom instanceof Point) {
-				// Formato propio OV
-				id = (Long)feature.getAttribute("id");
-				blockId = (Long)feature.getAttribute("block");
-				type = (String)feature.getAttribute("type");
-				area = (int)feature.getAttribute("area");
-				coveredArea = (int)feature.getAttribute("cover_area");
-				
-				if (id > maxParcelId)
-					maxParcelId = id;
-				
-				if (area == 0) { // los terrenos sin construir los tomo igual
-					area = 100;
-					coveredArea = 80;
-				}
-				
-				if (!placesType.containsKey(id)) {
-					tempBuilding = new BuildingAgent(geom, id, blockId, type, area, coveredArea);
-					homePlaces.add(tempBuilding);
-					context.add(tempBuilding);
-					geography.move(tempBuilding, geom);
-				}
-				else {
-					placeType = placesType.remove(id);
-					if (placeType.contains("lodging")) {
-						// Si es alojamiento, divido la superficie por 80 por casa
-						for (int i = 0; i < (area / 80); i++) {
-							tempBuilding = new BuildingAgent(geom, id, blockId, type, 80, 70);
-							homePlaces.add(tempBuilding);
-							context.add(tempBuilding);
-							geography.move(tempBuilding, geom);
-						}
-					}
-					else {
-						tempWorkspace = new WorkplaceAgent(geom, id, blockId, type, area, coveredArea, placeType);
-						if (placeType.contains("school"))
-							schoolPlaces.add(tempWorkspace);
-						else if (placeType.contains("university"))
-							universityPlaces.add(tempWorkspace);
-						else {
-							workPlaces.add(tempWorkspace);
-							// Si es lugar con atencion al publico, se agrega a la lista de actividades
-							if (placesTypeList.contains(placeType))
-								BuildingManager.addPlace(placeType, tempWorkspace);
-						}
-						context.add(tempWorkspace);
-						geography.move(tempWorkspace, geom);
-					}
-				}
-			}
+			context.addSubContext(subContext);
+			// Guardar el ultimo de cada tipo de sub contexto
+			lastContexts[tempTown.regionType] = subContext;
 		}
-		features.clear();
 		
-		BuildingManager.setBoundary(minX, maxX, minY, maxY);
-	}
-	
-	/**
-	 * Lee el archivo GIS y retorna sus items en una lista.
-	 * @param filename  ruta del archivo shape
-	 * @return lista con SimpleFeatures
-	 */
-	private List<SimpleFeature> loadFeaturesFromShapefile(String filename) {
-		URL url = null;
-		try {
-			url = new File(filename).toURI().toURL();
-		} catch (MalformedURLException e1) {
-			e1.printStackTrace();
-		}
-		//
-		List<SimpleFeature> features = new ArrayList<SimpleFeature>();
-		ShapefileDataStore store = new ShapefileDataStore(url);
-		SimpleFeatureIterator fiter = null;
-		try {
-			fiter = store.getFeatureSource().getFeatures().features();
-			while (fiter.hasNext()) {
-				features.add(fiter.next());
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		finally {
-			// liberar recursos
-			fiter.close();
-			store.dispose();
-		}
-		//
-		return features;
-	}
-	
-	/**
-	 * Selecciona hogares al azar y los duplica, incrementando su id.
-	 * @param extraHomes
-	 */
-	private void createFictitiousHomes(int extraHomes) {
-		BuildingAgent tempBuilding, tempHome;
-		int[] ciIndexes = IntStream.range(0, homePlaces.size()).toArray();
-		int indexesCount = homePlaces.size()-1;
-		int randomIndex;
-		
-		for (int i = 0; i <= extraHomes; i++) {
-			if (indexesCount >= 0) {
-				randomIndex = RandomHelper.nextIntFromTo(0, indexesCount);
-				tempHome = homePlaces.get(ciIndexes[randomIndex]);
-				ciIndexes[randomIndex] = ciIndexes[indexesCount--];
-				//
-				tempBuilding = new BuildingAgent(tempHome);
-				tempBuilding.setId(++maxParcelId);
-				homePlaces.add(tempBuilding);
-				context.add(tempBuilding);
-				geography.move(tempBuilding, tempBuilding.getGeometry());
+		// Programar el cambio de markovs en fines de semana
+		for (SubContext cont : lastContexts) {
+			if (cont != null) { // si se creo ciudad de esta region
+				setWeekendMovement(cont);
 			}
 		}
 	}
 	
 	/**
-	 * Crea Humanos y asigna a cada uno un lugar aleatorio en la grilla, como posicion del hogar.
+	 * Programa en schedule los metodos para cambiar matrices de markov en los periodos de fines de semanas.
+	 * @param subContext sub contexto
 	 */
-	private void createHuman(int ageGroup, BuildingAgent home, BuildingAgent work) {
-		int[] workPos = null;
-		HumanAgent tempHuman;
-		// Se le asigna una posicion fija en el trabajo, si es que trabaja
-		if (work instanceof WorkplaceAgent) {
-			workPos = ((WorkplaceAgent)work).getWorkPosition();
-		}
-		// Si tiene hogar es local, si no extranjero
-		if (home != null)
-			tempHuman = new HumanAgent(ageGroup, home, work, workPos, false);
-		else
-			tempHuman = new ForeignHumanAgent(ageGroup, home, work, workPos);
-		context.add(tempHuman);
-		tempHuman.setStartLocation();
-	}
-
-	/**
-	 * Crea Humanos dependiendo la franja etaria, lugar de trabajo y vivienda.
-	 * @see DataSet#HUMANS_PER_AGE_GROUP
-	 * @see DataSet#localHumans
-	 */
-	private void initHumans() {
-		HumanAgent.initAgentID(); // Reinicio contador de IDs
-		setHumansDefaultTMMC();
-		BuildingAgent.initInfectionRadius(); // Crea posiciones de infeccion en grilla
-		
-		int localHumansCount = DataSet.LOCAL_HUMANS + DataSet.LOCAL_TRAVELER_HUMANS;
-		// Crear casas ficticias si es que faltan
-		int extraHomes = (localHumansCount / DataSet.HOUSE_INHABITANTS_MEAN) - homePlaces.size();
-		if (extraHomes > 0)
-			createFictitiousHomes(extraHomes);
-		Uniform disUniHomesIndex = RandomHelper.createUniform(0, homePlaces.size()-1);
-		//
-		
-		int[] locals = new int[DataSet.AGE_GROUPS];
-		int[] localTravelers = new int[DataSet.AGE_GROUPS];
-		int[] foreignTravelers = new int[DataSet.AGE_GROUPS];
-		
-		int i, j;
-		// Crear humanos que viven y trabajan/estudian en OV
-		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			locals[i] = (int) Math.ceil((localHumansCount * DataSet.HUMANS_PER_AGE_GROUP[i]) / 100);
-			localTravelers[i] = (int) Math.ceil((DataSet.LOCAL_TRAVELER_HUMANS * DataSet.LOCAL_HUMANS_PER_AGE_GROUP[i]) / 100);
-			locals[i] -= localTravelers[i];
-			//
-			foreignTravelers[i] = (int) Math.ceil((DataSet.FOREIGN_TRAVELER_HUMANS * DataSet.FOREIGN_HUMANS_PER_AGE_GROUP[i]) / 100);
-		}
-		//
-		
-		// DEBUG
-		//for (i = 0; i < DataSet.AGE_GROUPS; i++)
-		//	System.out.println(locals[i] + " | " + localTravelers[i] + " | " + foreignTravelers[i]);
-		
-		BuildingAgent tempHome = null;
-		BuildingAgent tempJob = null;
-		unemployedCount = 0;
-		unschooledCount = 0;
-		
-		// Primero se crean los extranjeros, se asume que hay cupo de lugares de estudio y trabajo
-		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			for (j = 0; j < foreignTravelers[i]; j++) {
-				tempJob = findAGWorkingPlace(i, null);
-				createHuman(i, null, tempJob);
-			}
-		}
-		
-		// Segundo se crean los locales, pero que trabajan o estudian fuera
-		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			for (j = 0; j < localTravelers[i]; j++) {
-				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-				createHuman(i, tempHome, null);
-			}
-		}
-		
-		// Por ultimo se crean los 100% locales
-		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			for (j = 0; j < locals[i]; j++) {
-				tempHome = homePlaces.get(disUniHomesIndex.nextInt());
-				tempJob = findAGWorkingPlace(i, tempHome);
-				createHuman(i, tempHome, tempJob);
-			}
-		}
-		
-		//System.out.println("HUMANOS TOTALES: " + (localHumansCount + foreignTravelerHumans));
-		if (unemployedCount != 0)
-			System.out.println("PUESTOS TRABAJO FALTANTES: " + unemployedCount);
-		if (unschooledCount != 0)
-			System.out.println("BANCOS EN ESCUELA FALTANTES: " + unschooledCount);
-	}
-
-	/**
-	 * Busca lugar de trabajo/estudio en las distintas colecciones (escuela, facultad, trabajo), segun franja etaria y ocupacion<p>
-	 * @param ageGroup
-	 * @param home 
-	 * @return WorkplaceAgent, BuildingAgent o null
-	 */
-	private BuildingAgent findAGWorkingPlace(int ageGroup, BuildingAgent home) {
-		BuildingAgent workplace = null;
-		//
-		double occupation[] = DataSet.OCCUPATION_PER_AGE_GROUP[ageGroup];
-		int r = RandomHelper.nextIntFromTo(1, 100);
-		int i = 0;
-        while (r > occupation[i]) {
-        	r -= occupation[i];
-        	++i;
-        }
-        
-        if (i == 0) { // estudiante
-        	if (ageGroup == 0 || (ageGroup == 1 && (occupation[i] - r < occupation[i]*.4d))) // 40% es primario
-        		workplace = findWorkingPlace(schoolPlaces);
-        	else
-        		workplace = findWorkingPlace(universityPlaces);
-        	if (workplace == null)
-        		++unschooledCount;
-        }
-        else if (i == 1) { // trabajor
-        	int wp = RandomHelper.nextIntFromTo(1, 100);
-        	// Primero ver si tiene un trabajo convencional
-        	if (wp <= DataSet.WORKING_FROM_HOME + DataSet.WORKING_OUTDOORS) {
-        		// Si no, puede trabajar en la casa o al exterior
-        		wp = RandomHelper.nextIntFromTo(1, DataSet.WORKING_FROM_HOME + DataSet.WORKING_OUTDOORS);
-        		if (wp <= DataSet.WORKING_FROM_HOME)
-        			workplace = home;
-        		else
-        			workplace = null;
-        	}
-        	else {
-	        	workplace = findWorkingPlace(workPlaces);
-	        	if (workplace == null)
-	        		++unemployedCount;
-        	}
-        }
-        else { // inactivo
-        	workplace = home;
-        }
-		return workplace;
+	private void setWeekendMovement(Object subContext) {
+		ScheduleParameters params;
+		params = ScheduleParameters.createRepeating(weekendStartTick, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, subContext, "setHumansWeekendTMMC", true);
+		params = ScheduleParameters.createRepeating(weekendStartTick + WEEKEND_TICKS, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, subContext, "setHumansWeekendTMMC", false);
 	}
 	
 	/**
-	 * Busca y resta una posicion de trabajador en la lista de lugares.
-	 * @param list
-	 * @return WorkplaceAgent o null
+	 * Imprime la hora de compilacion del jar (si existe).
+	 * @param cl clase actual
 	 */
-	private WorkplaceAgent findWorkingPlace(List<WorkplaceAgent> list) {
-		int index;
-		WorkplaceAgent workplace = null;
-		if (!list.isEmpty()) {
-			index = RandomHelper.nextIntFromTo(0, list.size()-1);
-			workplace = list.get(index);
-			workplace.reduceVacancies();
-			if (!workplace.vacancyAvailable())
-				list.remove(index);
-		}
-		return workplace;
+	private static void printJarVersion(Class<?> cl) {
+	    try {
+	        String rn = cl.getName().replace('.', '/') + ".class";
+	        JarURLConnection j = (JarURLConnection) cl.getClassLoader().getResource(rn).openConnection();
+	        long totalMS = j.getJarFile().getEntry("META-INF/MANIFEST.MF").getTime();
+	        // Convierte de ms a formato fecha hora
+			SimpleDateFormat sdFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+			System.out.println("Fecha y hora de compilacion: " + sdFormat.format(totalMS));
+	    } catch (Exception e) {
+	    	// Si no es jar, no imprime hora de compilacion
+	    }
 	}
 }

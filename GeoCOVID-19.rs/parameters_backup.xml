@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<parameters>
+				<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
+						defaultValue="__NULL__"
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="cantidadMuertosLimite" displayName="Numero maximo de muertes aceptables" type="int" 
+						defaultValue="300" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="corridas" displayName="Cantidad de simulaciones que se quieren realizar" type="int" 
+						defaultValue="100" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="diaEntradaCaso" displayName="Dia de entrada de infectados" type="int" 
+						defaultValue="0" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="diasSimulacion" displayName="Dias maximo de simulacion" type="int" 
+						defaultValue="214" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="diasMinimoSimulacion" displayName="Dias minimo de simulacion" type="int" 
+						defaultValue="214" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="diaInicioSimulacion" displayName="Dia inicio simulacion (desde 1/1/20)" type="int" 
+						defaultValue="183" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="cantidadInfectados" displayName="Numero de infectados iniciales" type="int" 
+						defaultValue="1" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+									
+		/>
+				<parameter name="nombreMunicipio" displayName="Nombre de municipio (en minusculas y sin espacios)" type="java.lang.String" 
+						defaultValue="victoria,123,456" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$StringStringConverter"
+									
+		/>
+		</parameters>
+
+

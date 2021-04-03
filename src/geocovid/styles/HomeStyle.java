@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import geocovid.agents.BuildingAgent;
+import geocovid.agents.HomeAgent;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.render.BasicWWTexture;
 import gov.nasa.worldwind.render.Material;
@@ -17,7 +17,10 @@ import gov.nasa.worldwind.render.WWTexture;
 import repast.simphony.visualization.gis3D.PlaceMark;
 import repast.simphony.visualization.gis3D.style.MarkStyle;
 
-public class HomeStyle implements MarkStyle<BuildingAgent>{
+/**
+ * Representacion grafica de HomeAgents
+ */
+public class HomeStyle implements MarkStyle<HomeAgent>{
 	
 	private final static Map<Integer, WWTexture> TEXTURE_MAP = new HashMap<Integer, WWTexture>();
 	
@@ -44,12 +47,12 @@ public class HomeStyle implements MarkStyle<BuildingAgent>{
 	}
 	
 	@Override
-	public double getLineWidth(BuildingAgent obj) {
+	public double getLineWidth(HomeAgent obj) {
 		return 0;
 	}
 
 	@Override
-	public WWTexture getTexture(BuildingAgent object, WWTexture texture) {
+	public WWTexture getTexture(HomeAgent object, WWTexture texture) {
 		// WWTexture is null on first call.
 		int humAmount = object.getHumansAmount();
 		if (humAmount > 6) // Maximo 6 personas en hogar
@@ -58,7 +61,7 @@ public class HomeStyle implements MarkStyle<BuildingAgent>{
 	}
 
 	@Override
-	public PlaceMark getPlaceMark(BuildingAgent object, PlaceMark mark) {
+	public PlaceMark getPlaceMark(HomeAgent object, PlaceMark mark) {
 		// PlaceMark is null on first call.
 		if (mark == null) {
 			mark = new PlaceMark();
@@ -75,47 +78,47 @@ public class HomeStyle implements MarkStyle<BuildingAgent>{
 	}
 
 	@Override
-	public Offset getIconOffset(BuildingAgent obj) {
+	public Offset getIconOffset(HomeAgent obj) {
 		return Offset.CENTER;
 	}
 
 	@Override
-	public double getElevation(BuildingAgent obj) {
+	public double getElevation(HomeAgent obj) {
 		return 0;
 	}
 
 	@Override
-	public double getScale(BuildingAgent obj) {
+	public double getScale(HomeAgent obj) {
 		return 1d;
 	}
 
 	@Override
-	public double getHeading(BuildingAgent obj) {
+	public double getHeading(HomeAgent obj) {
 		return 0;
 	}
 
 	@Override
-	public String getLabel(BuildingAgent obj) {
+	public String getLabel(HomeAgent obj) {
 		return null;
 	}
 
 	@Override
-	public Color getLabelColor(BuildingAgent obj) {
+	public Color getLabelColor(HomeAgent obj) {
 		return null;
 	}
 
 	@Override
-	public Font getLabelFont(BuildingAgent obj) {
+	public Font getLabelFont(HomeAgent obj) {
 		return null;
 	}
 
 	@Override
-	public Offset getLabelOffset(BuildingAgent obj) {
+	public Offset getLabelOffset(HomeAgent obj) {
 		return null;
 	}
 
 	@Override
-	public Material getLineMaterial(BuildingAgent obj, Material lineMaterial) {
+	public Material getLineMaterial(HomeAgent obj, Material lineMaterial) {
 		return null;
 	}
 }

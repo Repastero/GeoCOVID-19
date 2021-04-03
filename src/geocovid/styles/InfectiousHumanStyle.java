@@ -7,6 +7,9 @@ import gov.nasa.worldwind.render.SurfacePolygon;
 import gov.nasa.worldwind.render.SurfaceShape;
 import repast.simphony.visualization.gis3D.style.SurfaceShapeStyle;
 
+/**
+ * Representacion grafica de InfectiousHumanAgents (HumanAgent contagioso)
+ */
 public class InfectiousHumanStyle implements SurfaceShapeStyle<InfectiousHumanAgent>{
 
 	@Override

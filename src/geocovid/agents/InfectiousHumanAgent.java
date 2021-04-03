@@ -2,6 +2,9 @@ package geocovid.agents;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+/**
+ * Esta clase se utiliza para representar en mapa la ubicacion del infectado.
+ */
 public class InfectiousHumanAgent {
 	
 	private int humanAgentID;

@@ -6,12 +6,12 @@ freezedried_data/
 icons/
 installer/
 integration/
-lib/
 misc/
 output/
 repast-licenses/
 
 # Files
+/*.csv
 *.log
 *.txt
 *.patch

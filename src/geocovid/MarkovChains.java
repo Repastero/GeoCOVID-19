@@ -3,263 +3,256 @@ package geocovid;
 /**
  * Matrices de 4x4x4 - Probabilidades sobre 1000. 4 periodos del dia X 4
  * posiciones actuales X 4 probabilidades de lugares.<p>
- * <i>MaxiF: La probabilidad de la cadena de markov de movimiento temporal es un
- * arreglo que: probabilidadTMMC[P,i,j], donde P es el periodo del dia (8-11
- * 11-14 14-17 17-20hs) i es el nodo de donde sale, y j es el nodo a donde va.<p>
+ * MaxiF: La probabilidad de la cadena de markov de movimiento temporal es un
+ * arreglo que: probabilidadTMMC[P,i,j], donde P es el periodo del dia (8-12 12-16 16-20 20-24hs)
+ * i es el nodo de donde sale, y j es el nodo a donde va.<p>
  * El nodo 0 es la casa, el 1 es el trabajo/estudio, el 2 es ocio, el 3 es otros
  * (supermercados, farmacias, etc) Ej: probabilidadTMMC[1][1][2] es la
  * probabilidad de que en el periodo 1 salga del trabajo 1 al lugar de ocio 2</i>
  */
 public final class MarkovChains {
-	/** Matriz modificada para los Humanos que estan en la 1er franja etaria. */
-	public static final int CHILD_DEFAULT_TMMC[][][] = {
-			{ {  50, 875,  25,  50 }, {  25, 900,  25,  50 }, {  25, 900,  25,  50 }, {  25, 900,  25,  50 } },
-			{ { 900,  50,  25,  25 }, { 800,  10,  95,  95 }, { 800,  10,  95,  95 }, { 800,  10,  95,  95 } },
-			{ { 100, 600, 250,  50 }, {  25, 850, 100,  25 }, { 100, 350, 500,  50 }, { 100, 500, 300, 100 } },
-			{ { 500, 100, 300, 100 }, { 300, 100, 300, 300 }, { 600,   0, 300, 100 }, { 500,   0, 200, 300 } } };
-
-	/** Matriz modificada para los Humanos que estan en la 2er franja etaria. */
-	public static final int YOUNG_DEFAULT_TMMC[][][] = CHILD_DEFAULT_TMMC;
-
-	/** Matriz modificada para los Humanos que estan en la 3er franja etaria. */
+	
+	public static final int YOUNG_DEFAULT_TMMC[][][] = {
+		{ {  75,850, 50, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 } },
+		{ { 900, 50, 25, 25 }, { 550,300,100, 50 }, { 800, 10, 95, 95 }, { 800, 10, 95, 95 } },
+		{ { 175,550,250, 25 }, {  50,850, 75, 25 }, { 200,350,400, 50 }, { 200,350,300,150 } },
+		{ { 525,100,275,100 }, { 325,150,225,300 }, { 575,  0,325,100 }, { 525,  0,225,250 } } };
 	public static final int ADULT_DEFAULT_TMMC[][][] = {
-			{ {  25, 925,  25,  25 }, {  25, 925,  25,  25 }, {  25, 925,  25,  25 }, {  25, 925,  25,  25 } },
-			{ { 900,  50,  25,  25 }, { 650, 200, 100,  50 }, { 700, 110,  95,  95 }, { 700, 110,  95,  95 } },
-			{ { 250, 500, 225,  25 }, { 100, 850,  25,  25 }, { 200, 675, 100,  25 }, { 200, 675, 100,  25 } },
-			{ { 500, 150, 250, 100 }, {  50, 250, 400, 300 }, { 200, 100, 600, 100 }, { 500,   0, 250, 250 } } };
-
-	/** Matriz modificada para los Humanos que estan en la 4ta franja etaria. */
-	public static final int ELDER_DEFAULT_TMMC[][][] = ADULT_DEFAULT_TMMC;
-
-	/** Matriz modificada para los Humanos que estan en la 5ta franja etaria. */
+		{ {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 } },
+		{ { 900, 50, 25, 25 }, { 450,400,100, 50 }, { 700,120, 90, 90 }, { 700,120, 90, 90 } },
+		{ { 200,575,200, 25 }, { 100,850, 25, 25 }, { 200,675,100, 25 }, { 200,675,100, 25 } },
+		{ { 525,150,225,100 }, { 225,250,225,300 }, { 575,100,225,100 }, { 525,  0,225,250 } } };
 	public static final int HIGHER_DEFAULT_TMMC[][][] = {
-			{ { 700, 0, 100, 200 }, { 700, 0, 100, 200 }, { 700, 0, 100, 200 }, { 700, 0, 100, 200 } },
-			{ { 900, 0,  25,  75 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 }, { 800, 0, 100, 100 } },
-			{ { 800, 0, 150,  50 }, { 300, 0, 450, 250 }, { 700, 0, 300,   0 }, { 700, 0,   0, 300 } },
-			{ { 950, 0,  25,  25 }, { 950, 0,  25,  25 }, { 950, 0,  25,  25 }, { 950, 0,  25,  25 } } };
-
+		{ { 700,0,125,175 }, { 1000,0,0,0 }, { 700,0,125,175 }, { 700,0,125,175 } },
+		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0, 75, 75 } },
+		{ { 800,0,175, 25 }, { 1000,0,0,0 }, { 700,0,300,  0 }, { 700,0,  0,300 } },
+		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 950,0, 25, 25 }, { 950,0, 25, 25 } } };
+	/**	Matrices de markov en tiempos normales */
+	public static final int[][][][] DEFAULT_TMMC = {YOUNG_DEFAULT_TMMC, YOUNG_DEFAULT_TMMC, ADULT_DEFAULT_TMMC, ADULT_DEFAULT_TMMC, HIGHER_DEFAULT_TMMC};
+	
 	/** Matriz modificada para los Humanos que viven afuera. */
 	public static final int TRAVELER_DEFAULT_TMMC[][][] = {
-			{ {   0,  800, 100, 100 }, {    0, 800, 100, 100 }, {    0, 800, 100, 100 }, {    0, 800, 100, 100 } },
-			{ {  900,   0,  50,  50 }, {  800,   0, 100, 100 }, {  800,   0, 100, 100 }, {  800,   0, 100, 100 } },
-			{ {  300, 400, 200, 100 }, {  300, 500, 100, 100 }, {  300, 350, 250, 100 }, {  300, 400, 200, 100 } },
-			{ { 1000,   0,   0,   0 }, { 1000,   0,   0,   0 }, { 1000,   0,   0,   0 }, { 1000,   0,   0,   0 } } };
-
-	/// *******************************CUARENTENA1*******************************
-	// Confinamiento con salida a compras.
-	public static final int CHILD_CONFINEMENT_TMMC[][][] = {
-		{ {935,0,1, 64},{935,0,1, 64},{935,0,1, 64},{935,0,1, 64} },
-		{ {880,0,1,119},{880,0,1,119},{880,0,1,119},{880,0,1,119} },
-		{ {880,0,1,129},{880,0,1,119},{880,0,1,119},{880,0,1,119} },
-		{ {935,0,1, 64},{935,0,1, 64},{935,0,1, 64},{935,0,1, 64} }
-	};
-	
-	public static final int YOUNG_CONFINEMENT_TMMC[][][] = CHILD_CONFINEMENT_TMMC;
-	
-	public static final int ADULT_CONFINEMENT_TMMC[][][] = {
-		{ {904,30,1, 65},{904,30,1, 65},{904,30,1, 65},{904,30,1, 65} },
-		{ {854,25,1,120},{854,25,1,120},{854,25,1,120},{854,25,1,120} },
-		{ {854,25,1,120},{854,25,1,120},{854,25,1,120},{854,25,1,120} },
-		{ {904,30,1, 65},{904,30,1, 65},{904,30,1, 65},{904,30,1, 65} }
-	};
-	public static final int ELDER_CONFINEMENT_TMMC[][][] = ADULT_CONFINEMENT_TMMC;
-	
-	public static final int HIGHER_CONFINEMENT_TMMC[][][] = {
-		{ {850,0,0,150},{850,0,0,150},{850,0,0,150},{975,0,0,25}},
-		{ {950,0,0, 50},{950,0,0, 50},{950,0,0, 50},{975,0,0,25}},
-		{ {950,0,0, 50},{950,0,0, 50},{950,0,0, 50},{975,0,0,25}},
-		{ {900,0,0,100},{900,0,0,100},{900,0,0,100},{975,0,0,25}}
-	};
-	
-	
-	public static final int TRAVELER_CONFINEMENT_TMMC[][][] = {
-		{ {875,60,0, 65},{875,60,0, 65},{875,60,0, 65},{875,60,0, 65} },
-		{ {830,50,0,120},{830,50,0,120},{830,50,0,120},{830,50,0,120} },
-		{ {830,50,0,120},{830,50,0,120},{830,50,0,120},{830,50,0,120} },
-		{ {875,60,0, 65},{875,60,0, 65},{875,60,0, 65},{875,60,0, 65} }
-	};
-	
-	public static final int INFECTED_CHILD_TMMC[][][] = {
-		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-		{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}}
-	};
-	
-	public static final int INFECTED_YOUNG_TMMC[][][] = INFECTED_CHILD_TMMC;
-	
-	public static final int INFECTED_ADULT_TMMC[][][] = INFECTED_YOUNG_TMMC;
-
-	public static final int INFECTED_ELDER_TMMC[][][] = {
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}}
-	};
-	
-	public static final int INFECTED_HIGHER_TMMC[][][] = INFECTED_ELDER_TMMC;
-	
-	public static final int INFECTED_TRAVELER_TMMC[][][] = INFECTED_ELDER_TMMC;
-	
-	/////*******************************CUARENTENA MAS SEVERA*******************************
-	
-	public static final int CHILD_HARD_CONFINEMENT_TMMC[][][] = {
-		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
-		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
-		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} },
-		{ {985,10,0,5},{985,10,0,5},{985,10,0,5},{985,10,0,5} }
-	};
-	
-	public static final int YOUNG_HARD_CONFINEMENT_TMMC[][][] = CHILD_HARD_CONFINEMENT_TMMC;
-	
-	public static final int ADULT_HARD_CONFINEMENT_TMMC[][][] = {
-			{ {940,30,0, 30},{940,30,0, 30},{940,30,0, 30},{940,30,0, 30} },
-			{ {940,30,0, 30},{940,30,0, 30},{940,30,0, 30},{940,30,0, 30} },
-			{ {940,30,0, 30},{940,30,0, 30},{940,30,0, 30},{940,30,0, 30} },
-			{ {940,30,0, 30},{940,30,0, 30},{940,30,0, 30},{940,30,0, 30} },
-	};
-	
-	public static final int ELDER_HARD_CONFINEMENT_TMMC[][][] = ADULT_HARD_CONFINEMENT_TMMC;
-	
-	public static final int HIGHER_HARD_CONFINEMENT_TMMC[][][] = {
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}},
-			{ {999,0,0,1},{999,0,0,1},{999,0,0,1},{999,0,0,1}}
-	};
-	
-	
-	
-	
-	///*******************************CUARENTENA4*******************************
-	// Confinamiento total de todos estados de sitio.// ES UN ESCENARIO MUY IREAL
-	public static final int ACTIVE_FULL_DAY_CONFINEMENT_TMMC[][][] = {
-		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}},
-		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}},
-		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}},
-		{ {1000,0,0,0},{1000,0,0,0},{1000,0,0,0},{1000,0,0,0}}
-	};
-	
-	public static final int TRAVELER_FULL_DAY_CONFINEMENT_TMMC[][][] = ACTIVE_FULL_DAY_CONFINEMENT_TMMC;
-	
-	public static final int ELDER_FULL_DAY_CONFINEMENT_TMMC[][][] = ACTIVE_FULL_DAY_CONFINEMENT_TMMC;
-	
-	
-	///*******************************FINES DE SEMANA*******************************
-	
-	public static final int CHILD_WEEKEND_TMMC[][][] = {
-		{ { 500, 0, 400, 100 }, { 900, 0, 100, 0 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } },
-		{ { 575, 0, 300, 125 }, { 900, 0, 100, 0 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } },
-		{ { 500, 0, 475, 25 }, { 500, 0, 400, 100 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } },
-		{ { 500, 0, 475, 25 }, { 500, 0, 400, 100 }, { 300, 0, 675, 25 }, { 500, 0, 500, 0 } }
-	};
-
-	/** Matriz modificada para los Humanos que estan en la 2er franja etaria. */
-    public static final int YOUNG_WEEKEND_TMMC[][][] = CHILD_WEEKEND_TMMC;
-		
-	/** Matriz modificada para los Humanos que estan en la 3er franja etaria. */
-	public static final int ADULT_WEEKEND_TMMC[][][] = {
-		{ {700,100,100,100}, {700,100,100,100}, {300, 50,500,150},{300, 50,500,150} },
-		{ {500,  0,400,100}, {500,  0,400,100}, {500,  0,400,100},{500,  0,400,100} },
-		{ {500,  0,400,100}, {500,  0,400,100}, {500,  0,400,100},{500,  0,400,100} },
-		{ {700,100,100,100}, {700,100,100,100}, {300, 50,500,150},{900,  0,100,  0} },
-	};
-	/** Matriz modificada para los Humanos que estan en la 5ta franja etaria. */
-	public static final int ELDER_WEEKEND_TMMC[][][] = ADULT_WEEKEND_TMMC;
-	
-	/** Matriz modificada para los Humanos que estan en la 4ta franja etaria. */
-	public static final int HIGHER_WEEKEND_TMMC[][][] = {
-		{ {950,  0, 50,  0}, {950,  0, 50,  0}, {950,  0, 50,  0},{950,  0, 50,  0} },
-		{ {650,  0,300, 50}, {650,  0,300, 50}, {350,  0,300, 350},{950,  0,50, 0} },
-		{ {650,  0,300, 50}, {650,  0,300, 50}, {350,  0,300, 350},{950,  0,50, 0} },
-		{ {950,  0, 50,  0}, {950,  0, 50,  0}, {950,  0, 50,  0},{950,  0, 50,  0} },
-	};
-	
-	
-	
-	/** Matriz modificada para los Humanos que trabajan afuera o viven afuera. */
+		{ {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 } },
+		{ { 950,  0, 25, 25 }, { 850,  0,100, 50 }, { 820,  0, 90, 90 }, { 820,  0, 90, 90 } },
+		{ { 200,575,200, 25 }, { 100,850, 25, 25 }, { 200,675,100, 25 }, { 200,675,100, 25 } },
+		{ {1000,  0,  0,  0 }, {1000,  0,  0,  0 }, {1000,  0,  0,  0 }, {1000,  0,  0,  0 } } };
+	/** Matriz modificada para los Humanos que viven afuera, para fines de semana. */
 	public static final int TRAVELER_WEEKEND_TMMC[][][] = {
-		{ {  0,1000,  0,  0},{  0,1000,  0,  0},{  0,1000,  0,  0},{  0,1000,  0,  0} },
-		{ {950,   0, 25, 25},{800,   0,100,100},{800,   0,100,100},{800,   0,100,100} },
-		{ {300,   0,350,350},{300,   0,350,350},{300,   0,350,350},{300,   0,350,350} },
-		{ {950,   0, 25, 25},{100,   0,450,450},{700,   0,300,  0},{700,   0,  0,300} }
-	};
+		{ { 350,400, 75,175 }, { 350,400, 75,175 }, { 350,400, 75,175 }, { 350,400, 75,175 } },
+		{ { 950,  0, 50, 50 }, { 850,  0,100, 50 }, { 820,  0, 90, 90 }, { 820,  0, 90, 90 } },
+		{ { 400,225,275,100 }, { 475,325,100,100 }, { 450,275,175,100 }, { 450,275,175,100 } },
+		{ { 975,  0, 25,  0 }, { 975,  0, 25,  0 }, { 975,  0, 25,  0 }, { 975,  0, 25,  0 } } };
 	
-	//
-	///*******************************CUARENTENA5*******************************
-	// Confinamiento de todos sólo con salida a compras Organizadas, viejos de tarde , jovenes adultos de mañana.
-	public static final int ACTIVE_HALF_DAY_CONFINEMENT_TMMC[][][] = {
-		{ {1000,0,0,  0},{1000,0,0,  0},{1000,0,0,  0},{1000,0,0,  0} },
-		{ {1000,0,0,  0},{1000,0,0,  0},{1000,0,0,  0},{1000,0,0,  0} },
-		{ { 800,0,0,200},{ 900,0,0,100},{ 800,0,0,200},{ 800,0,0,200} },
-		{ { 900,0,0,100},{ 800,0,0,200},{ 800,0,0,200},{ 800,0,0,200} }
-	};
+	/** Matriz modificada para los Humanos turistas. */
+	public static final int TOURIST_DEFAULT_TMMC[][][] = {
+		{ { 200,0,400,400 }, { 1000,0,0,0 }, { 200,0,400,400 }, { 200,0,400,400 } },
+		{ { 900,0, 50, 50 }, { 1000,0,0,0 }, { 700,0,200,100 }, { 700,0,200,100 } },
+		{ { 350,0,350,300 }, { 1000,0,0,0 }, { 300,0,400,300 }, { 300,0,400,300 } },
+		{ { 600,0,250,150 }, { 1000,0,0,0 }, { 450,0,250,300 }, { 450,0,300,250 } } };
 	
-	public static final int ELDER_HALF_DAY_CONFINEMENT_TMMC[][][] = {
-		{ { 700,0,100,200},{ 900,0, 25, 75},{ 700,0,100,200},{ 700,0,100,200} },
-		{ { 925,0, 25, 50},{ 800,0,100,100},{ 800,0,100,100},{ 800,0,100,100} },
-		{ {1000,0,  0,  0},{1000,0,  0,  0},{1000,0,  0,  0},{1000,0,  0,  0} },
-		{ {1000,0,  0,  0},{1000,0,  0,  0},{1000,0,  0,  0},{1000,0,  0,  0} }
-	};
+	/** Matriz modificada para los Humanos que se aislan por ser sintomaticos. */
+	public static final int ISOLATED_TMMC[][][] = {
+		{ { 999, 0, 0, 1 }, {1000, 0, 0, 0 }, { 999, 0, 0, 1 }, { 999, 0, 0, 1 } },
+		{ { 999, 0, 0, 1 }, {1000, 0, 0, 0 }, { 999, 0, 0, 1 }, { 999, 0, 0, 1 } },
+		{ { 999, 0, 0, 1 }, {1000, 0, 0, 0 }, { 999, 0, 0, 1 }, { 999, 0, 0, 1 } },
+		{ { 999, 0, 0, 1 }, {1000, 0, 0, 0 }, {1000, 0, 0, 0 }, {1000, 0, 0, 0 } } };
 	
-	public static final int TRAVELER_HALF_DAY_CONFINEMENT_TMMC[][][] = ACTIVE_HALF_DAY_CONFINEMENT_TMMC;
+	/** Diferencia en actividades los fines de semana. */
+	public static final int WEEKEND_DIFF[][][] = {
+		{ { 150,-225,25,50 }, { 0,0,0,0 }, { 150,-225,25,50 }, { 150,-225,25,50 } },
+		{ {   5, -25,10,10 }, { 0,0,0,0 }, { -40, -10,25,25 }, { -40, -10,25,25 } },
+		{ {  25,-175,75,75 }, { 0,0,0,0 }, {  25,-175,75,75 }, {  25,-175,75,75 } },
+		{ {  25, -75,50, 0 }, { 0,0,0,0 }, {   0,   0, 0, 0 }, {   0,   0, 0, 0 } } };
+	
+	public static final int YOUNG_SEC11_DIFF[][][] = {
+		{ { 200,-200,  0,0 }, { 0,0,0,0 }, { 200,-200,  0,0 }, { 200,-200,  0,0 } },
+		{ { -50,  50,  0,0 }, { 0,0,0,0 }, { -50,  50,  0,0 }, { -50,  50,  0,0 } },
+		{ { -25, -25, 50,0 }, { 0,0,0,0 }, { -25, -25, 50,0 }, { -25, -25, 50,0 } },
+		{ {-100,   0,100,0 }, { 0,0,0,0 }, {-100,   0,100,0 }, {-100,   0,100,0 } } };
+	public static final int ADULT_SEC11_DIFF[][][] = {
+		{ { 200,-200, 0,0 }, { 0,0,0,0 }, { 200,-200, 0,0 }, { 200,-200, 0,0 } },
+		{ { -50,  50, 0,0 }, { 0,0,0,0 }, { -50,  50, 0,0 }, { -50,  50, 0,0 } },
+		{ { -25, -25,50,0 }, { 0,0,0,0 }, { -25, -25,50,0 }, { -25, -25,50,0 } },
+		{ { -75,   0,75,0 }, { 0,0,0,0 }, { -75,   0,75,0 }, { -75,   0,75,0 } } };
+	public static final int HIGHER_SEC11_DIFF[][][] = {
+		{ { 50,0,-50,0 }, { 0,0,0,0 }, { 50,0,-50,0 }, { 50,0,-50,0 } },
+		{ {-25,0, 25,0 }, { 0,0,0,0 }, {-25,0, 25,0 }, {-25,0, 25,0 } },
+		{ {-50,0, 50,0 }, { 0,0,0,0 }, {-50,0, 50,0 }, {-50,0, 50,0 } },
+		{ {-10,0, 10,0 }, { 0,0,0,0 }, {-10,0, 10,0 }, {-10,0, 10,0 } } };
+	/** Diferencia en matrices para habitantes de seccional tipo 11 */
+	public static final int[][][][] SEC11_DIFF = {YOUNG_SEC11_DIFF, YOUNG_SEC11_DIFF, ADULT_SEC11_DIFF, ADULT_SEC11_DIFF, HIGHER_SEC11_DIFF};
+	
+	public static final int YOUNG_JUNE_TMMC[][][] = {
+		{ { 275,650, 50, 25 }, {  25,900, 50,25 }, {  25,900, 50,25 }, {  25,900, 50, 25 } },
+		{ { 900, 50, 25, 25 }, { 550,300,100,50 }, { 800, 10, 95,95 }, { 800, 10, 95, 95 } },
+		{ { 250,400,250,100 }, { 225,625, 75,75 }, { 300,300,350,50 }, { 300,300,250,150 } },
+		{ { 725,100,100, 75 }, { 725,150, 50,75 }, { 825,  0,100,75 }, { 850,  0, 75, 75 } } };
+	public static final int ADULT_JUNE_TMMC[][][] = {
+		{ { 200,750, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25,25 }, {  25,925, 25, 25 } },
+		{ { 900, 50, 25, 25 }, { 450,400,100, 50 }, { 700,120, 90,90 }, { 700,120, 90, 90 } },
+		{ { 250,450,200,100 }, { 225,675, 25, 75 }, { 300,575,100,25 }, { 300,575,100, 25 } },
+		{ { 700,150, 50,100 }, { 700,150, 50,100 }, { 825, 50, 50,75 }, { 850,  0, 50,100 } } };
+	public static final int HIGHER_JUNE_TMMC[][][] = {
+		{ { 800,0,75,125 }, { 1000,0,0,0 }, { 800,0, 75,125 }, { 800,0,75,125 } },
+		{ { 950,0,25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0,75, 75 } },
+		{ { 900,0,75, 25 }, { 1000,0,0,0 }, { 900,0,100,  0 }, { 850,0, 0,150 } },
+		{ { 990,0, 5,  5 }, { 1000,0,0,0 }, { 990,0,  5,  5 }, { 990,0, 5,  5 } } };
+	/** Matrices de markov del mes de Junio / Julio 2020 */
+	public static final int[][][][] JUNE_TMMC = {YOUNG_JUNE_TMMC, YOUNG_JUNE_TMMC, ADULT_JUNE_TMMC, ADULT_JUNE_TMMC, HIGHER_JUNE_TMMC};
+	
+	public static final int YOUNG_AUGUST_TMMC[][][] = {
+		{ { 225,700, 50,25 }, {  25,900, 50, 25 }, {  25,900, 50,25 }, {  25,900, 50, 25 } },
+		{ { 900, 50, 25,25 }, { 550,300,100, 50 }, { 800, 10, 95,95 }, { 800, 10, 95, 95 } },
+		{ { 225,450,250,75 }, { 150,700, 75, 75 }, { 300,300,350,50 }, { 300,300,250,150 } },
+		{ { 625,100,200,75 }, { 575,150,125,150 }, { 725,  0,200,75 }, { 725,  0,125,150 } } };
+	public static final int ADULT_AUGUST_TMMC[][][] = {
+		{ { 150,800, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 } },
+		{ { 900, 50, 25, 25 }, { 450,400,100, 50 }, { 700,120, 90, 90 }, { 700,120, 90, 90 } },
+		{ { 200,500,200,100 }, { 175,725, 25, 75 }, { 275,600,100, 25 }, { 275,600,100, 25 } },
+		{ { 600,150,150,100 }, { 600,150,100,150 }, { 700, 50,150,100 }, { 700,  0,150,150 } } };
+	public static final int HIGHER_AUGUST_TMMC[][][] = {
+		{ { 750,0,100,150 }, { 1000,0,0,0 }, { 750,0,100,150 }, { 750,0,100,150 } },
+		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0, 75, 75 } },
+		{ { 875,0,100, 25 }, { 1000,0,0,0 }, { 850,0,150,  0 }, { 800,0,  0,200 } },
+		{ { 975,0, 10, 15 }, { 1000,0,0,0 }, { 975,0, 10, 15 }, { 975,0, 10, 15 } } };
+	/** Matrices de markov del mes de Agosto / Septiembre 2020 */
+	public static final int[][][][] AUGUST_TMMC = {YOUNG_AUGUST_TMMC, YOUNG_AUGUST_TMMC, ADULT_AUGUST_TMMC, ADULT_AUGUST_TMMC, HIGHER_AUGUST_TMMC};
+	
+	public static final int YOUNG_OCTOBER_TMMC[][][] = {
+		{ { 200,725, 50,25 }, {  25,900, 50, 25 }, {  25,900, 50,25 }, {  25,900, 50, 25 } },
+		{ { 900, 50, 25,25 }, { 550,300,100, 50 }, { 800, 10, 95,95 }, { 800, 10, 95, 95 } },
+		{ { 200,475,250,75 }, { 150,725, 75, 50 }, { 275,325,350,50 }, { 275,325,250,150 } },
+		{ { 600,100,225,75 }, { 425,150,175,250 }, { 675,  0,250,75 }, { 600,  0,175,225 } } };
+	public static final int ADULT_OCTOBER_TMMC[][][] = {
+		{ { 125,825, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 } },
+		{ { 900, 50, 25, 25 }, { 450,400,100, 50 }, { 700,120, 90, 90 }, { 700,120, 90, 90 } },
+		{ { 175,525,200,100 }, { 150,750, 25, 75 }, { 250,625,100, 25 }, { 250,625,100, 25 } },
+		{ { 600,150,150,100 }, { 475,150,200,175 }, { 650, 50,200,100 }, { 650,  0,200,150 } } };
+	public static final int HIGHER_OCTOBER_TMMC[][][] = {
+		{ { 725,0,100,175 }, { 1000,0,0,0 }, { 725,0,100,175 }, { 725,0,100,175 } },
+		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0, 75, 75 } },
+		{ { 850,0,125, 25 }, { 1000,0,0,0 }, { 800,0,200,  0 }, { 800,0,  0,200 } },
+		{ { 965,0, 15, 20 }, { 1000,0,0,0 }, { 965,0, 15, 20 }, { 965,0, 15, 20 } } };
+	/** Matrices de markov del mes de Octubre / Noviembre 2020 */
+	public static final int[][][][] OCTOBER_TMMC = {YOUNG_OCTOBER_TMMC, YOUNG_OCTOBER_TMMC, ADULT_OCTOBER_TMMC, ADULT_OCTOBER_TMMC, HIGHER_OCTOBER_TMMC};
+	
+	public static final int YOUNG_HOLIDAYS_TMMC[][][] = {
+		{ { 175,725, 75, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 } },
+		{ { 900, 50, 25, 25 }, { 550,300,100, 50 }, { 800, 10, 95, 95 }, { 800, 10, 95, 95 } },
+		{ { 150,500,300, 50 }, { 100,725,125, 50 }, { 200,325,425, 50 }, { 200,325,325,150 } },
+		{ { 550,100,250,100 }, { 350,150,225,275 }, { 600,  0,300,100 }, { 550,  0,225,225 } } };
+	public static final int ADULT_HOLIDAYS_TMMC[][][] = {
+		{ {  75,825, 50, 50 }, {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 } },
+		{ { 900, 50, 25, 25 }, { 450,400,100, 50 }, { 700,120, 90, 90 }, { 700,120, 90, 90 } },
+		{ { 150,525,225,100 }, { 150,750, 50, 50 }, { 200,625,125, 50 }, { 200,625,125, 50 } },
+		{ { 525,150,225,100 }, { 225,250,225,300 }, { 575,100,225,100 }, { 525,  0,225,250 } } };
+	public static final int HIGHER_HOLIDAYS_TMMC[][][] = {
+		{ { 700,0,125,175 }, { 1000,0,0,0 }, { 700,0,125,175 }, { 700,0,125,175 } },
+		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0, 75, 75 } },
+		{ { 800,0,150, 50 }, { 1000,0,0,0 }, { 675,0,300, 25 }, { 675,0, 25,300 } },
+		{ { 960,0, 20, 20 }, { 1000,0,0,0 }, { 960,0, 20, 20 }, { 960,0, 20, 20 } } };
+	/** Matrices de markov durante las fiestas */
+	public static final int[][][][] HOLIDAYS_TMMC = {YOUNG_HOLIDAYS_TMMC, YOUNG_HOLIDAYS_TMMC, ADULT_HOLIDAYS_TMMC, ADULT_HOLIDAYS_TMMC, HIGHER_HOLIDAYS_TMMC};
+	
+	public static final int YOUNG_MARCH_TMMC[][][] = {
+		{ { 125,800, 50, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 } },
+		{ { 900, 50, 25, 25 }, { 550,300,100, 50 }, { 800, 10, 95, 95 }, { 800, 10, 95, 95 } },
+		{ { 200,525,250, 25 }, {  50,850, 75, 25 }, { 200,350,400, 50 }, { 200,350,300,150 } },
+		{ { 560,100,240,100 }, { 350,150,200,300 }, { 560,  0,340,100 }, { 550,  0,200,250 } } };
+	public static final int ADULT_MARCH_TMMC[][][] = {
+		{ {  75,875, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 } },
+		{ { 900, 50, 25, 25 }, { 450,400,100, 50 }, { 700,120, 90, 90 }, { 700,120, 90, 90 } },
+		{ { 225,550,200, 25 }, { 100,850, 25, 25 }, { 200,675,100, 25 }, { 200,675,100, 25 } },
+		{ { 560,150,190,100 }, { 260,250,190,300 }, { 600,100,200,100 }, { 550,  0,200,250 } } };
+	public static final int HIGHER_MARCH_TMMC[][][] = {
+		{ { 715,0,110,175 }, { 1000,0,0,0 }, { 715,0,110,175 }, { 715,0,110,175 } },
+		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0, 75, 75 } },
+		{ { 825,0,150, 25 }, { 1000,0,0,0 }, { 725,0,275,  0 }, { 725,0,  0,275 } },
+		{ { 955,0, 20, 25 }, { 1000,0,0,0 }, { 955,0, 20, 25 }, { 955,0, 20, 25 } } };
+	/** Matrices de markov Marzo 2021 */
+	public static final int[][][][] MARCH_TMMC = {YOUNG_MARCH_TMMC, YOUNG_MARCH_TMMC, ADULT_MARCH_TMMC, ADULT_MARCH_TMMC, HIGHER_MARCH_TMMC};
+			
+	// FIN DECLARACIONES MATRICES DE MARKOV //
 
-	//Las matrices de validación no fueron modificadas
-	// Matrices de comportamiento del pueblo italiano Vo , (rural)
-	//MATRICES DE VO ITALY
-	public static final int CHILD_ITALY_TMMC[][][] = {
-		{ {25,925,25,25},{925,25,25,25},{500,10,250,240},{90,10,450,450} },
-		{ {25,925,25,25},{800,10,95,95},{500,10,250,240},{90,10,450,450} },
-		{ {25,925,25,25},{800,10,95,95},{500,10,250,240},{100,0,450,450} },
-		{ {25,925,25,25},{800,10,95,95},{500,10,250,240},{100,0,600,300} }
-	};
-    
+	/**
+	 * Suma o resta la matriz de fines de semana, a la matriz dada, y retorna el resultado.
+	 * @param base matriz a modificar
+	 * @param enable sumar o restar
+	 * @return matriz base modificada
+	 */
+	public static int[][][] setWeekendDiff(int[][][] base, boolean enable) {
+		int i,j,k;
+		for (i = 0; i < 4; i++) {
+			for (j = 0; j < 4; j++) {
+				for (k = 0; k < 4; k++) {
+					if (enable)
+						base[i][j][k] += WEEKEND_DIFF[i][j][k];
+					else
+						base[i][j][k] -= WEEKEND_DIFF[i][j][k];
+				}
+			}
+		}
+		return base;
+	}
 	
-	public static final int YOUNG_ITALY_TMMC[][][] = CHILD_ITALY_TMMC;
-		
+	/**
+	 * Suma a matriz base la matriz diff y retorna el resultado.
+	 * @param base matriz a modificar
+	 * @param diff matriz a sumar
+	 * @return matriz base modificada
+	 */
+	public static int[][][] mergeChainsDiff(int[][][] base, int[][][] diff) {
+		int[][][] result = new int[4][4][4];
+		int temp;
+		int i,j,k;
+		for (i = 0; i < 4; i++) {
+			for (j = 0; j < 4; j++) {
+				for (k = 0; k < 4; k++) {
+					temp = base[i][j][k] + diff[i][j][k];
+					if (temp < 0 || temp > 1000)
+						System.err.println(String.format("Error en matriz diff: [%d][%d][%d]", i, j, k));
+					else
+						result[i][j][k] = temp;
+				}
+			}
+		}
+		return result;
+	}
 	
-	// Adultos
-	public static final int ELDER_ITALY_TMMC[][][] = {
-		{ {490,500,5,5},{965,25,5,5},{500,490,5,5},{500,10,250,240} },
-		{ {490,500,5,5},{940,50,5,5},{500,490,5,5},{500,10,250,240} },
-		{ {490,500,5,5},{940,50,5,5},{500,490,5,5},{500,10,250,240} },
-		{ {490,500,5,5},{940,50,5,5},{500,490,5,5},{500,10,250,240} }
-	};
+	/**
+	 * Imprime en formato Java en la consola, la diferencia entre las dos matrices dadas.
+	 * @param oldc matriz a modificar
+	 * @param newc matriz a restar
+	 */
+	public static void createChainsDiff(int[][][] oldc, int[][][] newc) {
+		int[][][] result = new int[4][4][4];
+		int i,j,k;
+		for (i = 0; i < 4; i++)
+			for (j = 0; j < 4; j++)
+				for (k = 0; k < 4; k++)
+					result[i][j][k] = oldc[i][j][k] - newc[i][j][k];
+		printMarkovChains(result);
+	}
 	
-	public static final int ADULT_ITALY_TMMC[][][] = ELDER_ITALY_TMMC;
-	
-	// Mayores
-	public static final int HIGHER_ITALY_TMMC[][][] = {
-		{ {600,0,100,300},{900,0,50,50},{400,0,300,300},{990,0,5,5} },
-		{ {600,0,100,300},{900,0,50,50},{300,0,350,350},{990,0,5,5} },
-		{ {600,0,100,300},{900,0,50,50},{400,0,300,300},{990,0,5,5} },
-		{ {600,0,100,300},{900,0,50,50},{300,0,350,350},{990,0,5,5} }
-	};
-	
-	// Matrices de confinamiento de españoles
-	public static final int CHILD_SPAIN_TMMC[][][] = {
-		{ {940,0,10,50},{940,0,10,50},{940,0,10,50},{940,0,10,50} },
-		{ {940,0,10,50},{940,0,10,50},{940,0,10,50},{940,0,10,50} },
-		{ {940,0,10,50},{940,0,10,50},{940,0,10,50},{940,0,10,50} },
-		{ {940,0,10,50},{940,0,10,50},{940,0,10,50},{940,0,10,50} }
-	};
-	public static final int YOUNG_SPAIN_TMMC[][][] = CHILD_SPAIN_TMMC;
-	// Adultos
-	public static final int ADULT_SPAIN_TMMC[][][] = {
-		{ {925,25,0,50},{925,25,0,50},{900,10,0,90},{900,10,0,90} },
-		{ {925,25,0,50},{925,25,0,50},{900,10,0,90},{900,10,0,90} },
-		{ {925,25,0,50},{925,25,0,50},{900,10,0,90},{900,10,0,90} },
-		{ {925,25,0,50},{925,25,0,50},{900,10,0,90},{900,10,0,90} }
-	};
-	
-	// Mayores
-	public static final int ELDER_SPAIN_TMMC[][][] = ADULT_SPAIN_TMMC;
-	
-	// Mayores 65
-	public static final int HIGHER_SPAIN_TMMC[][][] = {
-		{ {980,0,0,20},{980,0,0,20},{980,0,0,20},{980,0,0,20} },
-		{ {980,0,0,20},{980,0,0,20},{980,0,0,20},{980,0,0,20} },
-		{ {980,0,0,20},{980,0,0,20},{980,0,0,20},{980,0,0,20} },
-		{ {980,0,0,20},{980,0,0,20},{980,0,0,20},{980,0,0,20} }
-	};
+	/**
+	 * Imprime en formato Java en la consola, la matriz de markov dada.
+	 * @param markov matriz a imprimir
+	 */
+	public static void printMarkovChains(int[][][] markov) {
+		int i,j,k;
+		for (i = 0; i < 4; i++) {
+			System.out.print("{ ");
+			for (j = 0; j < 4; j++) {
+				System.out.print("{ ");
+				for (k = 0; k < 4; k++) {
+					System.out.print(String.format("%4d", markov[i][j][k]));
+					if (k < 3)	System.out.print(",");
+				}
+				System.out.print(" }");
+				if (j < 3)	System.out.print(", ");
+			}
+			if (i < 3)	System.out.println(" }, ");
+			else		System.out.println(" } };");
+		}
+	}
 }

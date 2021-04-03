@@ -1,143 +1,58 @@
 package geocovid.agents;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Coordinate;
 
 import geocovid.DataSet;
+import geocovid.contexts.SubContext;
 import repast.simphony.random.RandomHelper;
 
+/**
+ * Representa las parcelas donde los Humanos trabajan o estudian.
+ */
 public class WorkplaceAgent extends BuildingAgent {
-	//private List<int[]> workersPosition = new ArrayList<int[]>();
 	private int[][] workPositions;
 	private int workPositionsCount;
 	private String workplaceType;
+	private int activityType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	private int vacancies = 4;
-	/** Cantidad de trajadores por actividad */
-	private static Map<String, Integer> workersPerType;
-	/** Metros cuadrados por trabajador por actividad */
-	private static Map<String, Integer> workersPerTypeAndArea;
-	static {
-		workersPerType = new HashMap<>();
-		workersPerType.put("airport", 20);
-		workersPerType.put("aquarium", 6);
-		workersPerType.put("art_gallery", 6);
-		workersPerType.put("atm", 2);
-		workersPerType.put("book_store", 3);
-		workersPerType.put("car_dealer", 10);
-		workersPerType.put("cemetery", 4);
-		workersPerType.put("church", 6);
-		workersPerType.put("funeral_home", 6);
-		workersPerType.put("gym", 6);
-		workersPerType.put("laundry", 3);
-		workersPerType.put("library", 3);
-		workersPerType.put("meal_takeaway", 8);
-		workersPerType.put("movie_rental", 3);
-		workersPerType.put("moving_company", 6);
-		workersPerType.put("museum", 6);
-		workersPerType.put("parking", 3);
-		workersPerType.put("stadium", 10);
-		workersPerType.put("synagogue", 4);
-		
-		workersPerType.put("park", 2);
-		workersPerType.put("ice_cream_shop", 4);
-		workersPerType.put("optician", 4);
-		workersPerType.put("photographer", 2);
-		workersPerType.put("computer_accessories_store", 4);
-		
-	    //
-	    workersPerTypeAndArea = new HashMap<>();
-	    workersPerTypeAndArea.put("accounting", 20);
-	    workersPerTypeAndArea.put("accounting+local_government_office", 10);
-	    workersPerTypeAndArea.put("bakery", 30);
-	    workersPerTypeAndArea.put("bakery+cafe", 40);
-	    workersPerTypeAndArea.put("bank", 40);
-	    workersPerTypeAndArea.put("bar", 30);
-	    workersPerTypeAndArea.put("bar+liquor_store", 50);
-	    workersPerTypeAndArea.put("beauty_salon", 20);
-	    workersPerTypeAndArea.put("beauty_salon+spa", 40);
-	    workersPerTypeAndArea.put("bicycle_store", 40);
-	    workersPerTypeAndArea.put("bus_station", 60);
-	    workersPerTypeAndArea.put("cafe", 40);
-	    workersPerTypeAndArea.put("car_repair", 70);
-	    workersPerTypeAndArea.put("car_repair+store", 40);
-	    workersPerTypeAndArea.put("car_wash", 40);
-	    workersPerTypeAndArea.put("casino", 50);
-	    workersPerTypeAndArea.put("clothing_store", 30);
-	    workersPerTypeAndArea.put("convenience_store", 40);
-	    workersPerTypeAndArea.put("courthouse", 40);
-	    workersPerTypeAndArea.put("dentist", 60);
-	    workersPerTypeAndArea.put("doctor", 60);
-	    workersPerTypeAndArea.put("drugstore", 20);
-	    workersPerTypeAndArea.put("electronics_store", 40);
-	    workersPerTypeAndArea.put("fire_station", 30);
-	    workersPerTypeAndArea.put("florist", 40);
-	    workersPerTypeAndArea.put("furniture_store", 50);
-	    workersPerTypeAndArea.put("gas_station", 30);
-	    workersPerTypeAndArea.put("hair_care", 20);
-	    workersPerTypeAndArea.put("hardware_store", 40);
-	    workersPerTypeAndArea.put("home_goods_store", 40);
-	    workersPerTypeAndArea.put("hospital", 60);
-	    workersPerTypeAndArea.put("insurance_agency", 15);
-	    workersPerTypeAndArea.put("jewelry_store", 20);
-	    workersPerTypeAndArea.put("lawyer", 15);
-	    workersPerTypeAndArea.put("liquor_store", 40);
-	    workersPerTypeAndArea.put("local_government_office", 10);
-	    workersPerTypeAndArea.put("locksmith", 30);
-	    workersPerTypeAndArea.put("lodging", 80);
-	    workersPerTypeAndArea.put("meal_delivery", 30);
-	    workersPerTypeAndArea.put("movie_theater", 70);
-	    workersPerTypeAndArea.put("night_club", 80);
-	    workersPerTypeAndArea.put("pet_store", 30);
-	    workersPerTypeAndArea.put("pharmacy", 30);
-	    workersPerTypeAndArea.put("pharmacy+veterinary_care", 30);
-	    workersPerTypeAndArea.put("physiotherapist", 40);
-	    workersPerTypeAndArea.put("police", 40);
-	    workersPerTypeAndArea.put("post_office", 20);
-	    workersPerTypeAndArea.put("primary_school", 8);
-	    workersPerTypeAndArea.put("primary_school+secondary_school", 8);
-	    workersPerTypeAndArea.put("real_estate_agency", 30);
-	    workersPerTypeAndArea.put("restaurant", 30);
-	    workersPerTypeAndArea.put("school", 8);
-	    workersPerTypeAndArea.put("secondary_school", 8);
-	    workersPerTypeAndArea.put("secondary_school+primary_school", 8);
-	    workersPerTypeAndArea.put("shoe_store", 30);
-	    workersPerTypeAndArea.put("shoe_store+clothing_store", 30);
-	    workersPerTypeAndArea.put("shopping_mall", 80);
-	    workersPerTypeAndArea.put("spa", 40);
-	    workersPerTypeAndArea.put("storage", 50);
-	    workersPerTypeAndArea.put("store", 30);
-	    //workersPerTypeAndArea.put("supermarket", 150);
-	    workersPerTypeAndArea.put("supermarket+department_store", 120);
-	    workersPerTypeAndArea.put("travel_agency", 20);
-	    workersPerTypeAndArea.put("university", 12);
-	    workersPerTypeAndArea.put("veterinary_care", 40);
-	    
-	    workersPerTypeAndArea.put("corporate_office", 15);
-	    workersPerTypeAndArea.put("government_office", 10);
-	    workersPerTypeAndArea.put("building_materials_supplier", 80);
-	    workersPerTypeAndArea.put("medical_office", 40);
-	    workersPerTypeAndArea.put("public_medical_center", 25);
-	    workersPerTypeAndArea.put("sport_club", 60);
-	    workersPerTypeAndArea.put("sports_complex", 120);
-	    workersPerTypeAndArea.put("grocery_or_supermarket", 40);
-	    workersPerTypeAndArea.put("supermarket+grocery_or_supermarket", 40);
-	    workersPerTypeAndArea.put("electronics_store+home_goods_store", 30);
-	}
+	/** Capacidad maxima (metros util * humanos por metro cuadrado) */
+	private int maximumCapacity;
+	/** Capacidad por defecto (maximumCapacity / humanos por metro cuadrado) */
+	private int defaultCapacity;
+	private boolean closed = false;
 	
-	public WorkplaceAgent(Geometry geo, long id, long blockid, String type, int area, int coveredArea, String workType) {
-		super(geo, id, blockid, type, area, coveredArea, DataSet.WORKPLACE_AVAILABLE_AREA);
+	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
 		
 		this.workplaceType = workType;
-		if (workersPerType.containsKey(workplaceType))
-			this.vacancies = workersPerType.get(workplaceType);
-		else if (workersPerTypeAndArea.containsKey(workplaceType))
-			this.vacancies = (getNumberOfSpots() / workersPerTypeAndArea.get(workplaceType))+1;
+		this.activityType = activityType;
+		if (workersPlace > 0)
+			this.vacancies = workersPlace;
+		else if (workersArea > 0)
+			this.vacancies = (getNumberOfSpots() / workersArea)+1;
 		else
 			System.err.println("Sin cupo de trabajadores de Workplace: " + workplaceType);
 		createWorkPositions();
+	}
+	
+	public void limitCapacity(double sqMetersPerHuman) {
+		int cap = defaultCapacity;
+		// Para calcular el maximo aforo teorico de un local comercial:
+		// dividir la superficie util transitable entre 4
+		if (sqMetersPerHuman > 0d) {
+			cap = (int) (getRealArea() / (DataSet.HUMANS_PER_SQUARE_METER * sqMetersPerHuman));
+			if (isOutdoor()) // si es al aire libre, la capacidad se dobla
+				cap <<= 1;
+			if (activityType == 2) // si es un lugar de ocio, se incrementa la capacidad
+				cap *= DataSet.ENTERTAINMENT_CAP_LIMIT_MOD;
+			if (cap <= workPositionsCount) {
+				cap = workPositionsCount + 1; // permitir al menos un cliente
+			}
+		}
+		// Que no supere la capacidad por defecto
+		if (cap <= defaultCapacity)
+			setCapacity(cap);
 	}
 	
 	/**
@@ -149,6 +64,10 @@ public class WorkplaceAgent extends BuildingAgent {
 		workPositions = new int[vacancies][2];
 		workPositionsCount = workPositions.length;
 		int distance = DataSet.SPACE_BETWEEN_WORKERS;
+		/* Prueba sin cuarentena
+		if (workplaceType.contains("primary_school") || workplaceType.contains("secondary_school"))
+			distance -= 2;
+		*/
 		int col = 0;
 		int row = 0;
 		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
@@ -182,14 +101,19 @@ public class WorkplaceAgent extends BuildingAgent {
 		}
 		// Separar los trabajadores de los clientes, si quedan filas disponibles
 		if (!fullBuilding) {
-			if (row == 0) row = 1;
+			if (row + 2 < y)
+				++row;
 			setStartingRow(row);
 		}
+		maximumCapacity = getCapacity();
+		defaultCapacity = maximumCapacity / DataSet.HUMANS_PER_SQUARE_METER;
+		// Por defecto la capacidad maxima es de 1 humano por metro cuadrado
+		setCapacity(defaultCapacity);
 	}
 	
 	/**
 	 * Selecciona al azar una posicion de la lista de puestos, para el trabajador.
-	 * @return {x, y}
+	 * @return posicion {x, y}
 	 */
 	public int[] getWorkPosition() {
 		int randomIndex = RandomHelper.nextIntFromTo(0, workPositionsCount-1);
@@ -198,11 +122,31 @@ public class WorkplaceAgent extends BuildingAgent {
 		return pos;
 	}
 	
+	public int getVacancy() {
+		return vacancies;
+	}
+	
 	public boolean vacancyAvailable() {
 		return (vacancies > 0);
 	}
 	
 	public void reduceVacancies() {
 		--this.vacancies;
+	}
+	
+	public void close() {
+		closed = true;
+	}
+	
+	public void open() {
+		closed = false;
+	}
+	
+	@Override
+	public int[] insertHuman(HumanAgent human, int[] pos) {
+		// Prevenir que ingresen cuando esta cerrado
+		if (closed)
+			return null;
+		return super.insertHuman(human, pos);
 	}
 }

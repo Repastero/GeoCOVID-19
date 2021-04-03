@@ -1,12 +1,12 @@
-<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.7.0">
+<repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
   <name>Reporte</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
-  <inclRandomSeed>false</inclRandomSeed>
+  <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
     <start>0.0</start>
-    <interval>12.0</interval>
+    <interval>24.0</interval>
     <priority>-Infinity</priority>
     <pType>LAST</pType>
     <duration>-1.0</duration>
@@ -19,35 +19,44 @@
       <string>Expuestos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>Expuestos</id>
-        <className>geocovid.InfeccionReport</className>
-        <methodName>getExposedCount</methodName>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumExposed</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Infectados Asintomaticos</string>
+      <string>Asintomaticos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>Asintomaticos</id>
-        <className>geocovid.InfeccionReport</className>
-        <methodName>getASXInfectiousCount</methodName>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsASXInfectious</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Infectados Sintomaticos</string>
+      <string>Sintomaticos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>Sintomaticos</id>
-        <className>geocovid.InfeccionReport</className>
-        <methodName>getSYMInfectiousCount</methodName>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsSYMInfectious</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Hospitalizados</string>
+      <string>Infecciosos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Hospitalizados</id>
-        <className>geocovid.InfeccionReport</className>
-        <methodName>getHospitalizedCount</methodName>
+        <id>Infecciosos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsInfectious</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Camas</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Camas</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsHospitalized</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
@@ -55,8 +64,8 @@
       <string>Recuperados</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>Recuperados</id>
-        <className>geocovid.InfeccionReport</className>
-        <methodName>getRecoveredCount</methodName>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumRecovered</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
@@ -64,8 +73,17 @@
       <string>Muertos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>Muertos</id>
-        <className>geocovid.InfeccionReport</className>
-        <methodName>getDeathsCount</methodName>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumDeaths</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Hospitalizados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Hospitalizados</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumHospitalized</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
