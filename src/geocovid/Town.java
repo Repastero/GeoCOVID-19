@@ -16,6 +16,7 @@ public final class Town {
 		{163,201,215,229,254,257,264,273,302,310,343,348,358,359,365,366,388,411,425},		// gchu
 		{163,201,215,    254,257,264,281,302,310,343,348,358,359,365,366,388,411,425}		// concord
 	};
+	/** Dias por defecto de los cambios de unidades de transporte public */
 	
 	/** Nombre del municipio a simular */
 	public String townName;

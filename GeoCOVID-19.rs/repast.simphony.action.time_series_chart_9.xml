@@ -1,9 +1,9 @@
 <repast.simphony.chart2.engine.TimeSeriesChartDescriptor simphonyVersion="2.8.0">
-  <name>Humanos</name>
-  <dataSet>Humanos</dataSet>
+  <name>Reporte</name>
+  <dataSet>Reporte</dataSet>
   <xAxisLabel>Tick Count</xAxisLabel>
   <yAxisLabel>Cantidad</yAxisLabel>
-  <chartTitle>Humanos</chartTitle>
+  <chartTitle>Reporte</chartTitle>
   <type>TIME_SERIES</type>
   <background>
     <red>192</red>
@@ -21,13 +21,49 @@
   <showLegend>true</showLegend>
   <seriesIds>
     <entry>
-      <string>Cantidad</string>
+      <string>Infecciosos</string>
       <SeriesData>
-        <label>Cantidad</label>
+        <label>Infecciosos</label>
+        <color>
+          <red>255</red>
+          <green>0</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Muertos</string>
+      <SeriesData>
+        <label>Muertos</label>
+        <color>
+          <red>102</red>
+          <green>0</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Camas</string>
+      <SeriesData>
+        <label>Camas</label>
         <color>
           <red>0</red>
           <green>0</green>
           <blue>255</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Recuperados</string>
+      <SeriesData>
+        <label>Recuperados</label>
+        <color>
+          <red>0</red>
+          <green>153</green>
+          <blue>0</blue>
           <alpha>255</alpha>
         </color>
       </SeriesData>

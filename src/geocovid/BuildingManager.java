@@ -74,6 +74,8 @@ public final class BuildingManager {
 	
 	/** Listado de types de Places y Workplaces que estan cerrados */ 
 	private final Set<String> closedPlaces = new HashSet<String>();
+	private final Map<String, List<List<WorkplaceAgent>>> closedPlacesSeccional = new HashMap<>();
+
 	
 	/** Ultimo limite de aforo en Places */
 	private double activitiesCapacityLimit = 0d;
@@ -226,6 +228,47 @@ public final class BuildingManager {
 	}
 	
 	/**
+	 * Cierra una cantidad de los lugares de trabajo/estudio y las actividades dadas.
+	 * @param typesToClose tipos de Places
+	 */
+	public void closePlaces(String[] typesToClose, 	int amountPlace) {
+		for (String type : typesToClose) {
+			int totaltype = placesTotal.get(type);
+			if(amountPlace>totaltype) {
+				System.err.printf("La cantidad de places total son %d, y usted quiere cerrar %d places, debe ingresar un numero menor", totaltype, amountPlace);
+				closePlaces(typesToClose);
+				return;
+				
+			}
+			if (closedPlaces.contains(type)) { // Ya esta cerrado
+				closedPlaces.remove(type);
+			}
+			if(!closedPlacesSeccional.containsKey(type)) {
+				// Crear una lista del nuevo tipo de Place, para cada seccional
+				List<List<WorkplaceAgent>> buildList = new ArrayList<List<WorkplaceAgent>>(sectoralsCount);
+				for (int i = 0; i < sectoralsCount; i++) 
+					buildList.add(new ArrayList<WorkplaceAgent>());
+				closedPlacesSeccional.put(type, buildList);
+			}
+			for(int i=0; i<sectoralsCount; i++) {
+				for(int j=0; j<amountPlace/sectoralsCount; j++) {
+					WorkplaceAgent tempWorkPlace = placesMap.get(type).get(i).get(j);
+					tempWorkPlace.close();
+					closedPlacesSeccional.get(type).get(i).add(tempWorkPlace);						
+				}
+			}
+			int remantent= amountPlace % sectoralsCount;
+			if(remantent != 0) {
+				for(int j=0; j<remantent; j++) {
+					int i = RandomHelper.nextIntFromTo(0, sectoralsCount);
+					WorkplaceAgent tempWorkPlace = placesMap.get(type).get(i).get(j);
+					tempWorkPlace.close();
+					closedPlacesSeccional.get(type).get(i).add(tempWorkPlace);						
+				}
+			}
+		}
+	}
+	/**
 	 * Abre los lugares de trabajo/estudio y las actividades dadas.
 	 * @param typesToOpen tipos de Places
 	 */
@@ -238,11 +281,47 @@ public final class BuildingManager {
 				// Abre los Workplaces del mismo tipo
 				workplacesMap.get(type).forEach(work -> work.open());
 				closedPlaces.remove(type);
+				
 			}
 			// Si no, es una actividad
 			else if (closedPlaces.contains(type)) {
 				placesMap.get(type).forEach(sect -> sect.forEach(work -> work.open()));
 				closedPlaces.remove(type);
+			}
+		}
+	}
+	
+	/**
+	 * Abre una cantidad de los lugares de trabajo/estudio y las actividades dadas.
+	 * @param typesToClose tipos de Places
+	 */
+	public void openPlaces(String[] typesToOpen, int amountPlace) {
+		for (String type : typesToOpen) {
+			int totaltype = placesTotal.get(type);
+			if (!closedPlaces.contains(type)) { // Ya esta cerrado
+				closedPlaces.remove(type);
+			}
+			
+			if(!closedPlacesSeccional.containsKey(type)) {
+				System.err.printf("La cantidad de places total son %d, y usted quiere cerrar %d places, debe ingresar un numero menor", totaltype, amountPlace);
+			}
+			
+			for(int i=0; i<sectoralsCount; i++) {
+				for(int j=0; j<amountPlace/sectoralsCount; j++) {
+					WorkplaceAgent tempWorkPlace = closedPlacesSeccional.get(type).get(i).get(j);
+					tempWorkPlace.open();
+					closedPlacesSeccional.get(type).get(i).remove(tempWorkPlace);						
+				}
+			}
+			
+			int remantent= amountPlace % sectoralsCount;
+			if(remantent != 0) {
+				for(int j=0; j<remantent; j++) {
+					int i = RandomHelper.nextIntFromTo(0, sectoralsCount);
+					WorkplaceAgent tempWorkPlace = closedPlacesSeccional.get(type).get(i).get(j);
+					tempWorkPlace.open();
+					closedPlacesSeccional.get(type).get(i).remove(tempWorkPlace);			
+				}
 			}
 		}
 	}
@@ -406,11 +485,6 @@ public final class BuildingManager {
     		if (atHome) {
 				// Si se va fuera del barrio
 				if (RandomHelper.nextIntFromTo(1, 100) <= context.travelOutsideChance(secType)) {
-					// Si funciona el transporte publico
-					if (publicTransport != null) {
-						if (RandomHelper.nextIntFromTo(1, 100) <= context.publicTransportChance())
-							publicTransport.jumpAboard(human, secIndex);
-					}
 					getOut = true;
 				}
     		}

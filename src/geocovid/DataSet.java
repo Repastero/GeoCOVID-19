@@ -93,4 +93,13 @@ public final class DataSet {
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 65d;	// sobre 100
 	
+	
+	//TRANSPORTE PUBLICO
+	public static final int	PUBLIC_TRANSPORT_MAX_UNIT				= 140 ;	// Parana
+	public static final int	PUBLIC_TRANSPORT_MAX_SEAT				= 20;	// 
+	public static final int	PUBLIC_TRANSPORT_MAX_STILL				= 10;	// 
+	
+
+
+	
 }

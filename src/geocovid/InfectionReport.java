@@ -35,6 +35,10 @@ public class InfectionReport {
 	//
 	private static int[] dailyActivitiesTicks;	// Cuenta ticks
 	private static int totalDailyActTicks;		// Cuenta ticks
+	//
+	private static int cumExposedPublicTransport;	// Acumulado
+	private static int cumTicketTransportPublic;	// Acumulado
+	private static int insSpacePublicTransport;		// 
 	
 	public InfectionReport(int startDay, int maxDeaths) {
 		simulationStartDay	= startDay;
@@ -63,6 +67,10 @@ public class InfectionReport {
 		
 		dailyActivitiesTicks= new int[4];
 		totalDailyActTicks	= 0;
+		
+		cumExposedPublicTransport  =  0;
+		cumTicketTransportPublic   =  0;
+		insSpacePublicTransport    =  0;
 	}
 	
 	@ScheduledMethod(start = 24, interval = 24, priority = ScheduleParameters.FIRST_PRIORITY)
@@ -86,6 +94,9 @@ public class InfectionReport {
 			RunEnvironment.getInstance().endRun();
 		}
 	}
+	
+	
+	
 	
 	public static void increaseActivityTime(int actIndex) {
 		++dailyActivitiesTicks[actIndex];
@@ -143,6 +154,9 @@ public class InfectionReport {
 		++cumDeathsAll;
 		++cumDeaths[agIndex];
 	}
+	
+
+	
 	
 	public static String getInfectedReport(int agIndex) {
 		return String.format("%-12s: Infectados %5d | Hospitalizados %4d | Muertos %3d",
@@ -218,4 +232,33 @@ public class InfectionReport {
 	public static int getDailyWorkTime()			{ return dailyActivitiesTicks[1] * 100 / totalDailyActTicks; }
 	public static int getDailyLeisureTime()			{ return dailyActivitiesTicks[2] * 100 / totalDailyActTicks; }
 	public static int getDailyOtherTime()			{ return dailyActivitiesTicks[3] * 100 / totalDailyActTicks; }
+	
+	//PUBLIC TRANSPORT
+	
+		public static int getCumExposedPublicTransport() { return cumExposedPublicTransport;  }
+		public static int getCumTicketTransportPublic() { return cumTicketTransportPublic;	}
+		public static int getInsSpacePublicTransport() { return insSpacePublicTransport;	}
+
+		
+		public static void addCumExposedPublicTransport() {
+			++cumExposedPublicTransport;
+		}
+		
+		public static void removeCumExposedPublicTransport() {
+			--cumExposedPublicTransport;
+		}
+		
+		
+		
+		public static void addCumTicketTransportPublic() {
+			++cumTicketTransportPublic;
+		}
+		
+		public static void addSeatStill() {
+			++insSpacePublicTransport;
+		}
+		
+		public static void removeSeatStill() {
+			--insSpacePublicTransport;
+		}
 }

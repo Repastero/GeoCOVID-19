@@ -1,53 +1,62 @@
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
-  <name>Actividades</name>
+  <name>Contactos</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>false</inclRandomSeed>
   <scheduleParams>
-    <start>23.0</start>
+    <start>24.0</start>
     <interval>24.0</interval>
     <priority>-Infinity</priority>
-    <pType>LAST</pType>
+    <pType>FIRST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>1913706464</hashCode>
+    <hashCode>-1669922361</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
   <methodDataSources class="linked-hash-map">
     <entry>
-      <string>Hogar</string>
+      <string>5-15</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Hogar</id>
+        <id>5-15</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getDailyHomeTime</methodName>
+        <methodName>getChildAVGInteractions</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Trabajo</string>
+      <string>16-25</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Trabajo</id>
+        <id>16-25</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getDailyWorkTime</methodName>
+        <methodName>getYoungAVGInteractions</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Ocio</string>
+      <string>26-40</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Ocio</id>
+        <id>26-40</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getDailyLeisureTime</methodName>
+        <methodName>getAdultAVGInteractions</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Otros</string>
+      <string>41-64</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Otros</id>
+        <id>41-64</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getDailyOtherTime</methodName>
+        <methodName>getElderAVGInteractions</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>65+</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>65+</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getHigherAVGInteractions</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>

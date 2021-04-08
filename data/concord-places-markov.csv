@@ -21,6 +21,7 @@ office_supply_store,book_store,,120,90,5,0,,,,,
 pen_store,book_store,,,,,,,,,,
 copy_shop,book_store,,,,,,,,,,
 commercial_printer,book_store,,,,,,,,,,
+bus,bus,2,40,40,1,4,999,999,999,999,999
 bus_station,bus_station,2,4200,60,0,60,4,8,6,4,2
 cafe,cafe,3,80,90,0,20,3,10,15,20,15
 campground,campground,2,18000,10,2,0,6,4,4,3,2
