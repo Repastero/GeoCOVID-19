@@ -11,6 +11,7 @@ import geocovid.DataSet;
 import geocovid.InfectionReport;
 import geocovid.Temperature;
 import geocovid.contexts.SubContext;
+import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.random.RandomHelper;
 
 /**
@@ -33,6 +34,7 @@ public class BuildingAgent {
 	private int startingRow = 0; // indice de fila inicial para no trabajadores 
 	private int size[] = {0,0}; // ancho x largo
 	private boolean outdoor;
+	private boolean ventilated;
 	// Atributos staticos para checkear el radio de infeccion
 	private static int infCircleRadius;
 	private static int xShiftsInf[];
@@ -235,8 +237,11 @@ public class BuildingAgent {
 		// Si es susceptible se busca si pudo contagiarse
 		if (!human.wasExposed()) {
 			// Primero busca fuentes de contagio directo
-			if (!spreadersList.isEmpty())
+			if (!spreadersList.isEmpty()) {
 				findNearbySpreaders(human, pos, spreadersList);
+				//-if (!human.wasExposed())
+				//-	checkAirborneTransmission(human);
+			}
 			// Si se contagia directamente, no checkea estela
 			if (!human.wasExposed() && !surfacesMap.isEmpty())
 				checkIfSurfaceContaminated(human, posId);
@@ -338,52 +343,92 @@ public class BuildingAgent {
 	}
 	
 	/**
-	 * Chequea todos los modificadores/escenarios para verificar si hay contagio.
-	 * @param spreader
-	 * @param prey
+	 * Chequea todos los modificadores/escenarios para verificar si hay contagio directo.
+	 * @param spreader HumanAgent contagioso
+	 * @param prey HumanAgent susceptible
 	 * @return <b>true</b> si hubo contagio
 	 */
-	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
+	private boolean checkDropletTransmission(HumanAgent spreader, HumanAgent prey) {
 		double infectionRate = Temperature.getInfectionRate(context.getTownRegion(), outdoor, sectoralType);
-		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
-			// Si es un lugar de trabajo se chequea si respetan distanciamiento y usan cubreboca
-			if (workingPlace) {
-				if (context.getSDPercentage() != 0) {
-					// Si es un lugar cerrado o se respeta el distanciamiento en exteriores
-					if ((!outdoor) || context.sDOutdoor()) {
-						// Si los dos humanos respetan el distanciamiento
-						if (spreader.distanced && prey.distanced) {
-							// Si se respeta el distanciamiento en lugares de trabajo
-							if (!(spreader.atWork() && prey.atWork()) || context.sDWorkspace())
-								return false;
-						}
-					}
-				}
-				// Si esta en la etapa donde puede crear casos de contactos cercanos
-				if (spreader.isPreInfectious()) {
-					if (spreader.atWork() && prey.atWork()) {
-						// Si no usan cubrebocas en el lugar de trabajo, existe contacto estrecho
-						if (!context.wearMaskWorkspace()) {
-							prey.setCloseContact(spreader.getInfectiousStartTime());
-							return true;
-						}
-						return false;
-					}
-				}
-				else if (context.getMaskEffectivity() > 0) {
-					// Si es un lugar cerrado o se usa cubreboca en exteriores
-					if ((!outdoor) || context.wearMaskOutdoor()) {
-						// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
-						if (!(spreader.atWork() && prey.atWork()) || context.wearMaskWorkspace()) {
-							infectionRate *= 1 - context.getMaskEffectivity();
-						}
+		// Si es un lugar de trabajo se chequea si respetan distanciamiento y usan cubreboca
+		if (workingPlace) {
+			if (context.getSDPercentage() != 0) {
+				// Si es un lugar cerrado o se respeta el distanciamiento en exteriores
+				if ((!outdoor) || context.sDOutdoor()) {
+					// Si los dos humanos respetan el distanciamiento
+					if (spreader.distanced && prey.distanced) {
+						// Si se respeta el distanciamiento en lugares de trabajo
+						if (!(spreader.atWork() && prey.atWork()) || context.sDWorkspace())
+							return false;
 					}
 				}
 			}
-			else if (spreader.quarantined) {
-				// Si esta aislado, se supone tiene todas las precauciones para no contagiar
-				infectionRate *= 1 - DataSet.ISOLATION_INFECTION_RATE_REDUCTION;
+			// Si esta en la etapa donde puede crear casos de contactos cercanos
+			if (spreader.isPreInfectious()) {
+				if (spreader.atWork() && prey.atWork()) {
+					// Si no usan cubrebocas en el lugar de trabajo, existe contacto estrecho
+					if (!context.wearMaskAtWork()) {
+						prey.setCloseContact(spreader.getInfectiousStartTime());
+						return true;
+					}
+					return false;
+				}
 			}
+			else if (context.getMaskEffectivity() > 0) {
+				// Si es un lugar cerrado o se usa cubreboca en exteriores
+				if ((!outdoor) || context.wearMaskOutdoor()) {
+					// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
+					final boolean workers = (spreader.atWork() && prey.atWork());
+					if ((!workers && context.wearMaskAtPlaces()) || (workers && context.wearMaskAtWork())) {
+						infectionRate *= 1 - context.getMaskEffectivity();
+					}
+				}
+			}
+		}
+		else if (spreader.quarantined) {
+			// Si esta aislado, se supone tiene todas las precauciones para no contagiar
+			infectionRate *= 1 - DataSet.ISOLATION_INFECTION_RATE_REDUCTION;
+		}
+		
+		// Se modifica la cantidad de droplets segun actividad
+		infectionRate *= DataSet.ACTIVITY_DROPLET_VOLUME[spreader.getCurrentActivity()];
+		
+		if (RandomHelper.nextDoubleFromTo(0d, 100d) <= infectionRate) {
+			prey.setExposed();
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Chequea todos los modificadores/escenarios para verificar si hay contagio indirecto.
+	 * @param prey HumanAgent susceptible
+	 * @return <b>true</b> si hubo contagio
+	 */
+	@SuppressWarnings("unused")
+	private boolean checkAirborneTransmission(HumanAgent prey) {
+		double lastTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		
+		// Primero revisa si el tiempo que estuvo alcanza para contagiarse
+		if ((lastTick - prey.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
+			return false;
+		
+		// Busca si hay spreaders que esten en parcela un tiempo mayor al de contagio
+		boolean aerosol = false;
+		for (HumanAgent spHuman : spreadersList) {
+			if ((lastTick - spHuman.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+				aerosol = true;
+				break;
+			}
+		}
+		
+		// Si hay aerosoles, hay riesgo de contagio indirecto
+		if (aerosol) {
+			double infectionRate = Temperature.getAerosolInfectionRate(context.getTownRegion(), outdoor, true); // TODO por ahora todo ventilado
+			// Barbijo quirurgico o casero no protege contra aerosol
+			// Se modifica la cantidad de aerosol segun actividad
+			infectionRate *= DataSet.ACTIVITY_DROPLET_VOLUME[prey.getCurrentActivity()];
+			
 			if (RandomHelper.nextDoubleFromTo(0d, 100d) <= infectionRate) {
 				prey.setExposed();
 				return true;
@@ -399,8 +444,14 @@ public class BuildingAgent {
 	 */
 	private void spreadVirus(HumanAgent spHuman, int[] spPos) {
 		HumanAgent prey;
-		// Recorre las posiciones de la grilla al rededor del infectado, buscando nuevos huespedes
 		int posX, posY;
+		double lastTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		
+		// Primero revisa si el tiempo que estuvo alcanza para contagiar
+		if ((lastTick - spHuman.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
+			return;
+		
+		// Recorre las posiciones de la grilla al rededor del infectado, buscando nuevos huespedes
 		for (int i = 0; i < xShiftsInf.length; i++) {
 			posX = spPos[0] + xShiftsInf[i];
 			posY = spPos[1] + yShiftsInf[i];
@@ -409,7 +460,10 @@ public class BuildingAgent {
 	    			prey = humansMap.get(getPosId(posX, posY));
 			    	if (prey != null) { // Si hay humano
 						if (!prey.wasExposed()) {
-							checkContagion(spHuman, prey);
+							// Revisa que el susceptible este en parcela un tiempo mayor al de contagio
+							if ((lastTick - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
+								checkDropletTransmission(spHuman, prey);
+							}
 			    		}
 			    	}
 				}
@@ -426,6 +480,12 @@ public class BuildingAgent {
 	private void findNearbySpreaders(HumanAgent human, int[] pos, List<HumanAgent> spreaders) {
 		int[] spPos = new int[2];
 		int xShift, yShift;
+		double lastTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		
+		// Primero revisa si el tiempo que estuvo alcanza para contagiarse
+		if ((lastTick - human.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
+			return;
+		
 		for (HumanAgent spreader : spreaders) {
 			spPos = spreader.getCurrentPosition();
 			// Fix temporal al raro bug del spreader fantasma 
@@ -439,11 +499,14 @@ public class BuildingAgent {
 				continue;
 			}
 			//
+			// Revisa que el spreader este en parcela un tiempo mayor al de contagio
+			if ((lastTick - spreader.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
+				continue;
 			xShift = Math.abs(pos[0] - spPos[0]);
 			yShift = Math.abs(pos[1] - spPos[1]);
 			if (xShift < infCircleRadius && yShift < infCircleRadius) { // que X o Y individualmente no exedan el radio de contagio
 				if (xShift + yShift <= infCircleRadius) { // que la suma del desplazamiento no exeda el radio de contagio
-					if (checkContagion(spreader, human)) // si se contagia, deja de buscar trasmisores
+					if (checkDropletTransmission(spreader, human)) // si se contagia, deja de buscar trasmisores
 						break;
 				}
 			}

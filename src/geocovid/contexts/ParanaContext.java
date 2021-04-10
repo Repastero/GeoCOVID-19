@@ -105,7 +105,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
 			enablePublicTransport(true);
 			setSocialDistancing(90);
-			setMaskEffectivity(0.25);
+			setMaskEffectivity(0.30);
 			break;
 		case 182: //  1 julio - solo Parana
 			enablePublicTransport(false); // comienza el paro de choferes
@@ -155,7 +155,7 @@ public class ParanaContext extends SubContext {
 			setSocialDistancing(25);
 			break;
 		case 310: // 6 noviembre
-			setMaskEffectivity(0.2);
+			setMaskEffectivity(0.25);
 			break;
 		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
@@ -170,7 +170,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 358: // 24 diciembre
 			setSocialDistancing(10);
-			setMaskEffectivity(0.15);
+			setMaskEffectivity(0.20);
 			buildingManager.limitActivitiesCapacity(1.5d);
 		case 365: // 31 diciembre
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
@@ -209,7 +209,7 @@ public class ParanaContext extends SubContext {
 	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
 	 */
 	public void setDefaultValues() {
-		setMaskValues(0, false, false);
+		setMaskValues(0, false, false, true);
 		setSDValues(0, true, false);
 		disableCloseContacts();
 		disablePrevQuarantine();

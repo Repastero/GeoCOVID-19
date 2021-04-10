@@ -78,7 +78,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 	
 	private double maskInfRateReduction;	// Fraccion de reduccion de beta al usar barbijo
 	private boolean wearMaskOutdoor;		// Si al aire libre se usa tapaboca
-	private boolean wearMaskWorkspace;		// Si entre empleados usan tapaboca
+	private boolean wearMaskAtWork;			// Si entre empleados/estudiantes usan tapaboca
+	private boolean wearMaskAtPlaces;		// Si clientes en lugares de otros/ocio usan tapaboca
 	
 	private Set<Integer> socialDistIndexes;	// Lista con ids de humanos que respetan distanciamiento
 	private int socialDistPercentage;		// Porcentaje de la poblacion que respeta el distanciamiento social
@@ -1169,12 +1170,14 @@ public abstract class SubContext extends DefaultContext<Object> {
 	/**
 	 * @param minusRate porcentaje de reduccion de infeccion (0...100)
 	 * @param enableOutdoor utilizar cubreboca en espacios abiertos
-	 * @param enableWorkplace utilizar cubreboca entre trabajadores/estudiantes
+	 * @param enableAtWork utilizar cubreboca entre trabajadores/estudiantes
+	 * @param enableAtPlaces utilizar cubreboca entre clientes de otros/ocio
 	 */
-	public void setMaskValues(int minusRate, boolean enableOutdoor, boolean enableWorkplace) {
+	public void setMaskValues(int minusRate, boolean enableOutdoor, boolean enableAtWork, boolean enableAtPlaces) {
 		maskInfRateReduction = minusRate;
 		wearMaskOutdoor = enableOutdoor;
-		wearMaskWorkspace = enableWorkplace;
+		wearMaskAtWork = enableAtWork;
+		wearMaskAtPlaces = enableAtPlaces;
 	}
 	
 	/**
@@ -1217,6 +1220,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public double getMaskEffectivity()	{ return maskInfRateReduction; }
 	/** @return <b>true</b> si se utiliza cubrebocas en espacios abiertos */
 	public boolean wearMaskOutdoor()	{ return wearMaskOutdoor; }
-	/** @return <b>true</b> si trabajadores/estudiantes utilizan cubrebocas en su trabajo/estudio */
-	public boolean wearMaskWorkspace()	{ return wearMaskWorkspace; }
+	/** @return <b>true</b> si entre trabajadores/estudiantes utilizan cubrebocas */
+	public boolean wearMaskAtWork()		{ return wearMaskAtWork; }
+	/** @return <b>true</b> si clientes de places utilizan cubrebocas */
+	public boolean wearMaskAtPlaces()	{ return wearMaskAtPlaces; }
 }

@@ -24,6 +24,8 @@ public final class DataSet {
 	
 	/** Modificador de chance de contagio en lugares al aire libre */
 	public static final double INFECTION_RATE_OUTSIDE_MOD = 0.5d; // 0.5 = 50% de adentro | 1 = sin modificar
+	/** Modificador de chance de contagio por aerosol en lugares ventilados */
+	public static final double INFECTION_RATE_VENTILATED_MOD = 0.5d; // 0.5 = 50% ventilados | 1 = sin ventilar
 	/** Modificador de chance de contagio en parcelas tipo seccional 11 */
 	public static final double INFECTION_RATE_SEC11_MOD	  = 0.9d; // 0.9 = 90% del valor comun | 1 = sin modificar
 	
@@ -40,16 +42,12 @@ public final class DataSet {
 	/** Tiempo de cuarentena preventivo al ser contacto estrecho o convivir con sintomatico (si prevQuarantineEnabled) */
 	public static final int	PREVENTIVE_QUARANTINE_TIME		= 14*24;	// en ticks (14 dias)
 	
+	/** Cantidad de droplets recibidos segun actividad y cercania fisica */
+	public static final double[] ACTIVITY_DROPLET_VOLUME = {1d, 0.5d, 0.8d, 0.25d};	// TODO a revisar
 	/** % inicial de contagio al estar en contacto con una superficie contaminada */
 	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
 	public static final int	CS_MIN_INFECTION_RATE		= 12;	// sobre 100
-	
-	// Informacion de temperatura para calcular la duracion del virus en superficie contaminada
-	public static final int	OUTDOORS_MIN_TEMPERATURE	= 10;	// temperatura media minima anual en exteriores
-	public static final int	OUTDOORS_MAX_TEMPERATURE	= 35;	// temperatura media maxima anual en exteriores
-	public static final int	INDOORS_MIN_TEMPERATURE		= 20;	// temperatura media minima anual en interiores
-	public static final int	INDOORS_MAX_TEMPERATURE		= 30;	// temperatura media maxima anual en interiores
 	
 	/** Duracion de periodo de incubacion */
 	public static final int EXPOSED_PERIOD_MEAN			= 5*24;	// 5 dias
@@ -92,5 +90,4 @@ public final class DataSet {
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 65d;	// sobre 100
-	
 }

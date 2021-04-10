@@ -149,6 +149,11 @@ public class HumanAgent {
 		return currentPosition;
 	}
 	
+	/** @return {@link HumanAgent#currentActivity} */
+	public int getCurrentActivity() {
+		return currentActivity;
+	}
+	
 	/** @return {@link HumanAgent#relocationTime} */
 	public double getRelocationTime() {
 		return relocationTime;

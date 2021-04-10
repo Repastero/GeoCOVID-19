@@ -17,14 +17,22 @@ public class Temperature {
 	
 	private static int currentYear;
 	private static int dayOfTheYear;
+	
 	/** Temperatura exteriores */
 	private static double[] odCurrentTemp = new double[REGIONS];
 	/** Temperatura interiores */
 	private static final double[][] temperature = new double[REGIONS][366];
+	
 	/** Beta diario para cada tipo de seccional */
 	private static double[][] infectionRate = new double[REGIONS][2];
 	/** Beta diario para espacios al aire libre */
-	private static double[] infectionRateOutside = new double[REGIONS];
+	private static double[] outsideInfectionRate = new double[REGIONS];
+	
+	/** Beta diario para contagio por aerosol en espacios cerrados pero ventilados */
+	private static double[] ventilatedAerosolIR = new double[REGIONS];
+	/** Beta diario para contagio por aerosol en espacios al aire libre */
+	private static double[] outsideAerosolIR = new double[REGIONS];
+	
 	/** Valor de contagio diario estando fuera del contexto */
 	private static int[] oocContagionChance = new int[REGIONS];
 	
@@ -76,8 +84,10 @@ public class Temperature {
 			odCurrentTemp[r] = temperature[r][dayOfTheYear];
 			infectionRate[r][0] = (-9d * odCurrentTemp[r] + 365d) / 13d; // Temp max 27.3 -> beta 9.177 | Temp min 9.6 -> beta 21.430
 			infectionRate[r][1] = infectionRate[r][0] * DataSet.INFECTION_RATE_SEC11_MOD;
-			infectionRateOutside[r] = infectionRate[r][0] * DataSet.INFECTION_RATE_OUTSIDE_MOD;
-			oocContagionChance[r] = (int) (150000 - (DataSet.OOC_CONTAGION_VALUE * infectionRateOutside[r]));
+			outsideInfectionRate[r] = infectionRate[r][0] * DataSet.INFECTION_RATE_OUTSIDE_MOD;
+			ventilatedAerosolIR[r] = infectionRate[r][0] * DataSet.INFECTION_RATE_VENTILATED_MOD;
+			outsideAerosolIR[r] = infectionRate[r][0] * DataSet.INFECTION_RATE_OUTSIDE_MOD * DataSet.INFECTION_RATE_VENTILATED_MOD;
+			oocContagionChance[r] = (int) (150000 - (DataSet.OOC_CONTAGION_VALUE * outsideInfectionRate[r]));
 		}
 	}
 	
@@ -139,7 +149,7 @@ public class Temperature {
 	 */
 	public static double getInfectionRate(int region, boolean outdoor) {
 		if (outdoor)
-			return infectionRateOutside[region];
+			return outsideInfectionRate[region];
 		return infectionRate[region][0];
 	}
 	
@@ -152,8 +162,24 @@ public class Temperature {
 	 */
 	public static double getInfectionRate(int region, boolean outdoor, int sectoralType) {
 		if (outdoor)
-			return infectionRateOutside[region];
+			return outsideInfectionRate[region];
 		return infectionRate[region][sectoralType];
+	}
+	
+	/**
+	 * Chance de contagio por aerosol segun region parametros.
+	 * @param region indice (0,1,2)
+	 * @param outdoor en una parcela al exterior
+	 * @param ventilated en una parcela ventilada
+	 * @return <b>double</b> beta (0 a 1)
+	 */
+	public static double getAerosolInfectionRate(int region, boolean outdoor, boolean ventilated) {
+		if (outdoor)
+			return outsideAerosolIR[region];
+		else if (ventilated)
+			return ventilatedAerosolIR[region];
+		else
+			return infectionRate[region][0];
 	}
 	
 	/**
