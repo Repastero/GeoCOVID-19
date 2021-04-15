@@ -16,8 +16,14 @@ public final class Town {
 		{163,201,215,229,254,257,264,273,302,310,343,348,358,359,365,366,388,411,425},		// gchu
 		{163,201,215,    254,257,264,281,302,310,343,348,358,359,365,366,388,411,425}		// concord
 	};
-	/** Dias por defecto de los cambios de unidades de transporte public */
+	/** Dias por defecto de los cambios de unidades de transporte publico
+	 * [enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre - 2020] */
+
+	public final double[] PUBLIC_TRANSPORT_QUALIFICATION		= {0.22, 0.28, 0.34, 0.4, 0.45, 0.51, 0.75};
 	
+	/** Cantidad maxima de transporte en Parana del municipio a simular */
+	public static final int	PUBLIC_TRANSPORT_MAX_UNIT				= 140;	// Parana
+
 	/** Nombre del municipio a simular */
 	public String townName;
 	

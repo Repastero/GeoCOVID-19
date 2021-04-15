@@ -14,7 +14,6 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	private int ptStill;
 	private int bussySeat;
 	private int bussyStill;
-	private int sprederscont=0;
 
 
 	
@@ -22,7 +21,7 @@ public class PublicTransportAgent extends WorkplaceAgent {
 		super(subContext,  sectoralType,  sectoralIndex,  coord,  id,  workType,  activityType,  area, coveredArea, workersPlace,  workersArea);
 		this.ptSeats=DataSet.PUBLIC_TRANSPORT_MAX_SEAT;
 		this.ptStill=DataSet.PUBLIC_TRANSPORT_MAX_STILL;
-		super.setCapacity(ptStill+ ptSeats - workersPlace);
+		
 	}
 	
 	@Override
@@ -31,13 +30,8 @@ public class PublicTransportAgent extends WorkplaceAgent {
 		pos = super.insertHuman(human);
 		if(pos!=null) {
 			InfectionReport.addCumTicketTransportPublic();
-//			InfectionReport.addSeatStill();
 		}
-		
-		if(getSpreadersList().size()!=0 || getPreSpreadersList().size()!=0)
-			System.out.println("Spreaders dentro del cole: " + getSpreadersList().size() + " Pre-spredears: " + getPreSpreadersList().size() + " cantidad de spreders "  + sprederscont++);
-
-		return pos;
+	return pos;
 	}
 	
 	@Override
@@ -56,8 +50,14 @@ public class PublicTransportAgent extends WorkplaceAgent {
 			InfectionReport.addCumExposedPublicTransport();
 		
 		return ret;
-		
-		
+	}
+	
+	@Override
+	public void limitCapacity(double sqMetersPerHuman) {
+		//setCapacity(ptStill+ ptSeats);
+		setCapacity(ptSeats);
+		//setCapacity(ptStill);
+
 	}
 		
 	public int getPtSeats() {

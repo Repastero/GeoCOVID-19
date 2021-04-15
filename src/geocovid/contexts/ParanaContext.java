@@ -62,13 +62,6 @@ public class ParanaContext extends SubContext {
 
 	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {60, 20};	// Segun Abelardo es 75 y 25%, pero bajamos un poco por la epidemia
-
-	/** % sobre 100 de que use el transporte publico al salir de seccional */
-	public static final int	PUBLIC_TRANSPORT_CHANCE	= 8;
-	/** Cantidad de unidades de transporte publico por seccional */
-	public static final int	PUBLIC_TRANSPORT_UNITS	= 2;
-	/** Cantidad de asientos en cada unidad de transorte publico */
-	public static final int	PUBLIC_TRANSPORT_SEATS	= 20;
 	
 	private static Map<String, PlaceProperty> customPlacesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	private static String currentMonth = null;	// Para distinguir entre cambios de markovs
@@ -103,12 +96,16 @@ public class ParanaContext extends SubContext {
 					"restaurant", "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
-			enablePublicTransport(true);
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, 0);
+//		enablePublicTransport(true);
 			setSocialDistancing(90);
 			setMaskEffectivity(0.25);
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[0]);
 			break;
 		case 182: //  1 julio - solo Parana
-			enablePublicTransport(false); // comienza el paro de choferes
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, 1);
+//			enablePublicTransport(false); // comienza el paro de choferes
+//			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[1]);
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
@@ -122,7 +119,8 @@ public class ParanaContext extends SubContext {
 			break;
 		case 229: // 17 agosto
 			// Nueva normalidad (Fase 5)
-			enablePublicTransport(true); // finaliza el paro de choferes
+//			enablePublicTransport(true); // finaliza el paro de choferes
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[2]);
 			setSocialDistancing(70);
 			break;
 		case 244: // 31 agosto - solo Parana
@@ -130,6 +128,7 @@ public class ParanaContext extends SubContext {
 			setSocialDistancing(50);
 			buildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
 			buildingManager.limitActivitiesCapacity(3d);
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[3]);
 			break;
 		case 254: // 11 septiembre
 			// Nuevas medidas (contacto estrecho)
@@ -149,6 +148,7 @@ public class ParanaContext extends SubContext {
 		case 273: // 1 octubre
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
 			setSocialDistancing(30);
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[4]);
 			break;
 		case 302: // 29 octubre
 			buildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
@@ -156,6 +156,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 310: // 6 noviembre
 			setMaskEffectivity(0.2);
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[5]);
 			break;
 		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
@@ -163,6 +164,7 @@ public class ParanaContext extends SubContext {
 			// Festejos entre jovenes - 1% de la poblacion a 1 cuadrados por persona, mitad afuera y mitad adentro
 			tmp = (int) Math.round(town.getLocalPopulation() * 0.01d);
 			startRepeatingYoungAdultsParty(7, tmp, 1d, true, true);
+			buildingManager.closePlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[6]);
 			break;
 		case 348: // 14 diciembre
 			setSocialDistancing(20);
@@ -296,15 +298,11 @@ public class ParanaContext extends SubContext {
 
 	@Override
 	public int travelOutsideChance(int secType) { return TRAVEL_OUTSIDE_CHANCE[secType]; }
-	@Override
-	public int publicTransportChance() { return PUBLIC_TRANSPORT_CHANCE; }
-	@Override
-	public int publicTransportUnits() { return PUBLIC_TRANSPORT_UNITS; }
-	@Override
-	public int publicTransportSeats() { return PUBLIC_TRANSPORT_SEATS; }
 
 	@Override
 	public int[][][] getIsolatedLocalTMMC(int ageGroup) { return isolatedLocalTMMC[ageGroup]; }
 	@Override
 	public int[][][] getLocalTMMC(int sectoralType, int ageGroup) { return localTMMC[sectoralType][ageGroup]; }
+	
 }
+

@@ -111,10 +111,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public abstract int getHomeBuldingCoveredArea(int secType);
 	
 	public abstract int travelOutsideChance(int secType);
-	public abstract int publicTransportChance();
-	public abstract int publicTransportUnits();
-	public abstract int publicTransportSeats();
-	
+
 	public SubContext(Town contextTown) {
 		super(contextTown.townName);
 		this.town = contextTown;
@@ -153,8 +150,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 			params = ScheduleParameters.createOneTime(phaseDay, 0.9d);
 			schedule.schedule(params, this, "initiateLockdownPhase", phasesStartDay[i]);
 		}
-		//Habilitacion del transporte publico
-		publicTransportQualificationUnitSchedule();
+		
 		
 		// Reinicio estos valores por las dudas
 		publicTransportEnabled = false;
@@ -181,24 +177,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		schoolPlaces.clear();
 		universityPlaces.clear();
 	}
-	/**
-	 * Realiza la habilitación de las cantidades de colectivos
-	 */
 	
-	public void publicTransportQualificationUnitSchedule(){
-		ScheduleParameters params = ScheduleParameters.createOneTime((town.outbreakStartDay - InfectionReport.simulationStartDay) * 24, 0.9d);
-		int qualificationUnit;
-		int[] qualificationUnitDay = town.lockdownPhasesDays;
-		for (int i = 0; i < qualificationUnitDay.length; i++) {
-			qualificationUnit = qualificationUnitDay[i] - InfectionReport.simulationStartDay;
-			params = ScheduleParameters.createOneTime(qualificationUnit, 0.9d);
-			schedule.schedule(params, this, "publicTransportQualificationUnit", qualificationUnitDay[i]);
-		}
-	}
-	public void publicTransportQualificationUnit(int qualificationUnitDay){
-		
-	}
-
 	/**
 	 * Selecciona al azar la cantidad de Humanos locales seteada en los parametros y los infecta.
 	 * @param amount cantidad de infectados iniciales
@@ -573,19 +552,15 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 * Si lo permite la ciudad, habilitar o deshabilitar la opcion de usar transporte publico. 
 	 */
 	protected void enablePublicTransport(boolean enabled) {
-//		if (town.publicTransportAllowed) {
-//			if (enabled && !publicTransportEnabled) {
-//				publicTransportEnabled = true;
-////				PublicTransportAgent pt = new PublicTransportAgent(town.regionIndex, town.sectoralsCount, publicTransportUnits(), publicTransportSeats());
-////				add(pt);
-////				buildingManager.setPublicTransport(pt);
-//			}
-//			else if (!enabled && publicTransportEnabled) {
-//				publicTransportEnabled = false;
-//				remove(buildingManager.getPublicTransport());
-//				buildingManager.setPublicTransport(null);
-//			}
-//		}
+		
+		if(enabled) {
+			buildingManager.openPlaces(new String[] {"bus"});
+		}
+		else {
+			buildingManager.closePlaces(new String[] {"bus"});
+
+		}
+			
 	}
 
 	/**
@@ -790,8 +765,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 		buildingArea = placeProp.getBuildingArea();
 		int remainder = 0;
 		// Buscar la seccional mas cercana para asignar a este Place
+		int unitTransportPerSectorial=Math.round(town.PUBLIC_TRANSPORT_MAX_UNIT/coords.length);
 		for(int i=0; i<coords.length; i++) {
-			for(int j=0; j<DataSet.PUBLIC_TRANSPORT_MAX_UNIT/coords.length; j++) {
+			for(int j=0; j<unitTransportPerSectorial; j++) {
 				coord = coords[i];
 				sectoralIndex = i;
 				sectoralType = town.sectoralsTypes[sectoralIndex];
@@ -808,17 +784,19 @@ public abstract class SubContext extends DefaultContext<Object> {
 				geography.move(tempPublicTransport, geometryFactory.createPoint(tempPublicTransport.getCoordinate()));
 			}
 		}
-		
+		 remainder = town.PUBLIC_TRANSPORT_MAX_UNIT - unitTransportPerSectorial * coords.length;
+		 //remainder = 0;
+
 		for(int j=0; j<remainder; j++) {
-			int i= RandomHelper.nextIntFromTo(0, coords.length);
+			int i= RandomHelper.nextIntFromTo(0, coords.length-1);
 			coord = coords[i];
 			sectoralIndex = i;
 			sectoralType = town.sectoralsTypes[sectoralIndex];
 		
-		// Crear Agente con los atributos el Place
+			// Crear Agente con los atributos el Place
 			PublicTransportAgent tempPublicTransport= new PublicTransportAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type, placeProp.getActivityType(),
 				buildingArea, placeProp.getBuildingCArea(), placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
-		
+			
 			workPlaces.add(tempPublicTransport);
 			// Si es lugar con atencion al publico, se agrega a la lista de actividades
 			buildingManager.addPlace(sectoralIndex, tempPublicTransport, placeProp);
@@ -826,8 +804,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 			add(tempPublicTransport);
 			geography.move(tempPublicTransport, geometryFactory.createPoint(tempPublicTransport.getCoordinate()));
 		}
-			
-		}
+	}
 	
 	
 	/**
