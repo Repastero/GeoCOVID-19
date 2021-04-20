@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -39,6 +40,7 @@ import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedulableAction;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
+import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.gis.Geography;
 
@@ -94,6 +96,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	
 	static final boolean DEBUG_MSG = false;	// Flag para imprimir valores de inicializacion
 	//
+	
 	public abstract int[][][] getIsolatedLocalTMMC(int ageGroup);
 	public abstract int[][][] getLocalTMMC(int sectoralType, int ageGroup);
 	
@@ -176,6 +179,12 @@ public abstract class SubContext extends DefaultContext<Object> {
 		workPlaces.clear();
 		schoolPlaces.clear();
 		universityPlaces.clear();
+	}
+	
+	@ScheduledMethod(start = 0, interval = 1, priority = 0.5)
+	public void switchHumanLocation() {
+		Stream<Object> iteral = getObjectsAsStream(HumanAgent.class);
+		iteral.forEach(h -> ((HumanAgent) h).switchLocation());
 	}
 	
 	/**
@@ -492,7 +501,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 * Detiene la creacion programada de fiestas entre jovenes adultos.
 	 */
 	@SuppressWarnings("unused")
-	private void stopRepeatingYoungAdultsParty() {
+	protected void stopRepeatingYoungAdultsParty() {
 		if (!removeYAPartyAction()) {
 			ScheduleParameters params;
 			params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1d);
@@ -1220,6 +1229,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public double getMaskEffectivity()	{ return maskInfRateReduction; }
 	/** @return <b>true</b> si se utiliza cubrebocas en espacios abiertos */
 	public boolean wearMaskOutdoor()	{ return wearMaskOutdoor; }
+	/** @param wear utilizan cubrebocas entre trabajadores/estudiantes */
+	public void setMaskAtWork(boolean wear) { wearMaskAtWork = wear; }
 	/** @return <b>true</b> si entre trabajadores/estudiantes utilizan cubrebocas */
 	public boolean wearMaskAtWork()		{ return wearMaskAtWork; }
 	/** @return <b>true</b> si clientes de places utilizan cubrebocas */

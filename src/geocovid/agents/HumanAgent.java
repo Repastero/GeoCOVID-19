@@ -70,17 +70,18 @@ public class HumanAgent {
     private Map<Integer, Integer> socialInteractions = new HashMap<>();
 	
     // ESTADOS //
-    public boolean exposed			= false; // Contagiado
-    public boolean asxInfectious	= false; // Infeccioso asintomatico
-    public boolean symInfectious	= false; // Infeccioso sintomatico
-    public boolean hospitalized		= false; // Hospitalizado en UTI
-    public boolean recovered		= false; // Recuperado
+    public boolean exposed;			// Contagiado
+    public boolean asxInfectious;	// Infeccioso asintomatico
+    public boolean symInfectious;	// Infeccioso sintomatico
+    public boolean hospitalized;	// Hospitalizado en UTI
+    public boolean recovered;		// Recuperado
     // Extras
-    public boolean quarantined		= false; // Aislado por sintomatico o cuarentena preventiva
-    public boolean distanced		= false; // Respeta distanciamiento social
+    public boolean quarantined;		// Aislado por sintomatico o cuarentena preventiva
+    public boolean distanced;		// Respeta distanciamiento social
+    public boolean aerosoled;		// Fue afectado por aerosol en parcela actual (o aerosolized?)
     //
-    private boolean inCloseContact	= false; // Si estuvo en contacto estrecho con sintomatico
-    private boolean preInfectious	= false; // Si "contagia" a contactos estrechos
+    private boolean inCloseContact;	// Si estuvo en contacto estrecho con sintomatico
+    private boolean preInfectious;	// Si "contagia" a contactos estrechos
     /////////////
     
 	public HumanAgent(SubContext subContext, int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos) {
@@ -147,6 +148,11 @@ public class HumanAgent {
 	/** @return {@link HumanAgent#currentPosition} */
 	public int[] getCurrentPosition() {
 		return currentPosition;
+	}
+	
+	/** @return {@link HumanAgent#currentBuilding} */ 
+	public BuildingAgent getCurrentBuilding() {
+		return currentBuilding;
 	}
 	
 	/** @return {@link HumanAgent#currentActivity} */
@@ -345,6 +351,7 @@ public class HumanAgent {
 				// Mover a ICU hasta que se cure o muera
 				hospitalized = true;
 				InfectionReport.modifyHospitalizedCount(ageGroup, 1);
+				removeFromContext();
 			}
 			else {
 				// Se aisla por tiempo prolongado si no va a ICU
@@ -499,16 +506,10 @@ public class HumanAgent {
     /**
      * Cambia la actividad y parcela segun TMMC (Timed mobility markov chains).
      */
-	@ScheduledMethod(start = 0d, interval = 1d, priority = 0.6d)
     public void switchLocation() {
 		// Resta ticks de duracion de actividad programada
     	if (ticksDelay > 0) {
     		--ticksDelay;
-    		return;
-    	}
-    	// No se mueve si esta internado
-    	if (hospitalized) {
-    		removeFromContext();
     		return;
     	}
     	// Si debe, inicia actividad programada

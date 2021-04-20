@@ -10,9 +10,9 @@ public final class DataSet {
 	public static final int SPACE_BETWEEN_WORKERS	= 3;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
 	
 	/** Porcentaje del area construida ocupable en casas (minimo .1) */
-	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
+	public static final double BUILDING_AVAILABLE_AREA	= 0.5;
 	/** Porcentaje del area construida ocupable en places (minimo .1) */
-	public static final double WORKPLACE_AVAILABLE_AREA	= 0.85;
+	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;
 	
 	/** Limite de aforo en Places por defecto durante cuarentena (valor minimo variable segun HUMANS_PER_SQUARE_METER) */ 
 	public static final double DEFAULT_PLACES_CAP_LIMIT		= 4d;	// metros cuadrados de superficie util, por persona
@@ -20,17 +20,32 @@ public final class DataSet {
 	public static final double ENTERTAINMENT_CAP_LIMIT_MOD	= 2d;
 	
 	/** Valor por cual se multiplica beta para obtener la chance de contagio al realizar una actividad fuera del contexto */
-	public static final int OOC_CONTAGION_VALUE = 1500;	// aumentar para incrementar el contagio fuera del contexto
+	public static final int OOC_CONTAGION_VALUE = 16000;	// aumentar para incrementar el contagio fuera del contexto
 	
-	/** Modificador de chance de contagio en lugares al aire libre */
-	public static final double INFECTION_RATE_OUTSIDE_MOD = 0.5d; // 0.5 = 50% de adentro | 1 = sin modificar
-	/** Modificador de chance de contagio por aerosol en lugares ventilados */
-	public static final double INFECTION_RATE_VENTILATED_MOD = 0.5d; // 0.5 = 50% ventilados | 1 = sin ventilar
+	/** Modificador beta de droplets en lugares al aire libre */
+	public static final double DROPLET_OUTSIDE_MOD		= 0.4d;
+	/** Modificador beta de droplet en lugares ventilados */
+	public static final double DROPLET_VENTILATED_MOD	= 0.85d;
+	
+	/** Modificador beta de fomites en base a droplets */
+	public static final double FOMITE_IR_MOD			= 0.5d;
+	/** Modificador beta de fomites en lugares al aire libre */
+	public static final double FOMITE_OUTSIDE_MOD		= 0.5d;
+	
+	/** Modificador beta de aerosol en base a droplets */
+	public static final double AEROSOL_IR_MOD			= 0.05d;
+	/** Modificador beta de aerosol en lugares al aire libre */
+	public static final double AEROSOL_OUTSIDE_MOD		= 0.125d;
+	/** Modificador beta de aerosol en lugares ventilados */
+	public static final double AEROSOL_VENTILATED_MOD	= 0.5d;
+	
 	/** Modificador de chance de contagio en parcelas tipo seccional 11 */
 	public static final double INFECTION_RATE_SEC11_MOD	  = 0.9d; // 0.9 = 90% del valor comun | 1 = sin modificar
 	
-	/** Radio que puede contagiar un infectado */
-	public static final int	INFECTION_RADIUS			= 3;	// Radio en metros = (INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
+	/** Radio que puede contagiar un infectado directamente por droplets */
+	public static final int	DROPLET_INFECTION_RADIUS	= 3;	// Radio en metros = (DROPLET_INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
+	/** Radio que puede contagiar un infectado via aerea por aerosol */
+	public static final int	AEROSOL_INFECTION_RADIUS	= 5;	// Radio en metros = (AEROSOL_INFECTION_RADIUS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** Tiempo de contacto que debe tener un infectado para contagiar */
 	public static final double INFECTION_EXPOSURE_TIME	= 0.375d;	// 15 min en ticks (1 tick = 40 min)
 	
@@ -43,11 +58,10 @@ public final class DataSet {
 	public static final int	PREVENTIVE_QUARANTINE_TIME		= 14*24;	// en ticks (14 dias)
 	
 	/** Cantidad de droplets recibidos segun actividad y cercania fisica */
-	public static final double[] ACTIVITY_DROPLET_VOLUME = {1d, 0.5d, 0.8d, 0.25d};	// TODO a revisar
-	/** % inicial de contagio al estar en contacto con una superficie contaminada */
-	public static final int	CS_INFECTION_RATE			= 26;	// sobre 100
+	public static final double[] ACTIVITY_DROPLET_VOLUME = {1d, 0.5d, 0.7d, 0.2d};	// TODO a revisar
+	
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
-	public static final int	CS_MIN_INFECTION_RATE		= 12;	// sobre 100
+	public static final int	CS_MIN_INFECTION_RATE		= 7;	// sobre 100
 	
 	/** Duracion de periodo de incubacion */
 	public static final int EXPOSED_PERIOD_MEAN			= 5*24;	// 5 dias
