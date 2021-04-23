@@ -87,7 +87,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 	
 	private boolean closeContactsEnabled;	// Habilitada la "pre infeccion" de contactos estrechos y cuarentena preventiva de los mismos
 	private boolean prevQuarantineEnabled;	// Habilitada la cuarentena preventiva para las personas que conviven con un sintomatico
-	private boolean publicTransportEnabled;	// Habilitado el trabsoirte publico
 	
 	private boolean outbreakStarted;		// Indica que ya se infectaron locales
 	
@@ -151,10 +150,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 			schedule.schedule(params, this, "initiateLockdownPhase", phasesStartDay[i]);
 		}
 		
-		
-		// Reinicio estos valores por las dudas
-		publicTransportEnabled = false;
-		
+				
 		// Crea BuildingManager para esta ciudad
 		buildingManager = new BuildingManager(this, town.sectoralsCount);
 		
@@ -763,14 +759,13 @@ public abstract class SubContext extends DefaultContext<Object> {
 			System.out.println("Type de Place desconocido: " + type);
 		}
 		buildingArea = placeProp.getBuildingArea();
-		int remainder = 0;
 		// Buscar la seccional mas cercana para asignar a este Place
-		int unitTransportPerSectorial=Math.round(town.PUBLIC_TRANSPORT_MAX_UNIT/coords.length);
+		int unitTransportPerSectorial=Math.round(this.town.publicTransportAmount/coords.length);
 		for(int i=0; i<coords.length; i++) {
 			for(int j=0; j<unitTransportPerSectorial; j++) {
 				coord = coords[i];
 				sectoralIndex = i;
-				sectoralType = town.sectoralsTypes[sectoralIndex];
+				sectoralType = this.town.sectoralsTypes[sectoralIndex];
 			
 			// Crear Agente con los atributos el Place
 				PublicTransportAgent tempPublicTransport= new PublicTransportAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type, placeProp.getActivityType(),
@@ -784,8 +779,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 				geography.move(tempPublicTransport, geometryFactory.createPoint(tempPublicTransport.getCoordinate()));
 			}
 		}
-		 remainder = town.PUBLIC_TRANSPORT_MAX_UNIT - unitTransportPerSectorial * coords.length;
-		 //remainder = 0;
+		int remainder = 0;
+		remainder = this.town.publicTransportAmount - unitTransportPerSectorial * coords.length;
 
 		for(int j=0; j<remainder; j++) {
 			int i= RandomHelper.nextIntFromTo(0, coords.length-1);

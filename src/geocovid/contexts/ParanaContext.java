@@ -97,15 +97,14 @@ public class ParanaContext extends SubContext {
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
 			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, 0);
-//		enablePublicTransport(true);
+//			enablePublicTransport(true);
 			setSocialDistancing(90);
 			setMaskEffectivity(0.25);
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[0]);
+//			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[0]);
 			break;
 		case 182: //  1 julio - solo Parana
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, 1);
-//			enablePublicTransport(false); // comienza el paro de choferes
-//			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[1]);
+			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, 1); // comienza el paro de choferes
+//			enablePublicTransport(false); 
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
@@ -120,10 +119,12 @@ public class ParanaContext extends SubContext {
 		case 229: // 17 agosto
 			// Nueva normalidad (Fase 5)
 //			enablePublicTransport(true); // finaliza el paro de choferes
+			System.out.println("entro ");
 			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[2]);
 			setSocialDistancing(70);
 			break;
 		case 244: // 31 agosto - solo Parana
+			System.out.println("sigue ");
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
 			setSocialDistancing(50);
 			buildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});

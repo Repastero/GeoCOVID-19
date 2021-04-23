@@ -1,0 +1,14 @@
+<repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.8.0">
+  <name>TransportePublico</name>
+  <dataSet>TransportePublic</dataSet>
+  <delimiter>,</delimiter>
+  <format>TABULAR</format>
+  <sourceIds class="linked-hash-set">
+    <string>TicketColes</string>
+    <string>InfectedTransport</string>
+    <string>TicketDiarios</string>
+    <string>tick</string>
+  </sourceIds>
+  <fileName>ReporteTransportePublico</fileName>
+  <addTimeStamp>true</addTimeStamp>
+</repast.simphony.data2.engine.FileSinkDescriptor>

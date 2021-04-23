@@ -215,11 +215,12 @@ public final class BuildingManager {
 	/**
 	 * Cierra una cantidad de los lugares de trabajo/estudio y las actividades dadas.
 	 * @param typesToClose tipos de Places
-	 * @param percentagePlace rango de 0-1, donde 1 quiere decir que se cierran todolos lugares y 0 todos los lugares abiertos
+	 * @param percentagePlace rango de 0-1, donde 1 quiere decir que se abren todos los lugares y 0 que se cierran todos 
 	 */
 	public void closePlaces(String[] typesToClose, 	double percentagePlace) {
 			for (String type : typesToClose) {
 				long amountPlaceTotal = Math.round(percentagePlace * (double) placesTotal.get(type));
+				System.out.println("closePlaces - percentagePlace: " + percentagePlace);
 				if(percentagePlace>1) {
 					System.err.printf("La cantidad de places total son %d, y usted quiere cerrar %d places, debe ingresar un numero menor", placesTotal.get(type), placesTotal.get(type)*percentagePlace);
 					closePlaces(new String[] {type});
@@ -241,23 +242,30 @@ public final class BuildingManager {
 				for(int i=0; i<sectoralsCount; i++) {
 					for(int j=0; j<Math.round(amountPlaceTotal/sectoralsCount); j++) { 
 						WorkplaceAgent tempWorkPlace = placesMap.get(type).get(i).get(j);
+						//DEBUG
+						//System.out.println("closePlaces - percentagePlace: for " + percentagePlace);
 						tempWorkPlace.close();
 						closedPlacesSeccional.get(type).get(i).add(tempWorkPlace);	
 					}
 				}
 				
-				int remantent =Math.round(amountPlaceTotal -((Math.round(amountPlaceTotal/sectoralsCount)) * sectoralsCount));
+				int remantent = Math.round(amountPlaceTotal -((Math.round(amountPlaceTotal/sectoralsCount)) * sectoralsCount));
 				if(remantent != 0) 
 					for(int j=0; j<remantent; j++) {
 						int i;
 						do {
 							i = RandomHelper.nextIntFromTo(0, sectoralsCount-1);
 						}while(placesMap.get(type).get(i).isEmpty());
-						
+						WorkplaceAgent tempWorkPlace;
+						do {
 						int elementListSectorial= RandomHelper.nextIntFromTo(0, placesMap.get(type).get(i).size()-1);
-						WorkplaceAgent tempWorkPlace = placesMap.get(type).get(i).get(elementListSectorial);
+						tempWorkPlace = placesMap.get(type).get(i).get(elementListSectorial);
+						}while(closedPlacesSeccional.get(type).get(i).contains(tempWorkPlace));
 						tempWorkPlace.close();
-						closedPlacesSeccional.get(type).get(i).add(tempWorkPlace);	
+						closedPlacesSeccional.get(type).get(i).add(tempWorkPlace);
+						//DEBUG
+						//System.out.println("closePlaces - remantent: for " + remantent + " " + i);
+						
 					}
 
 			}
@@ -291,39 +299,50 @@ public final class BuildingManager {
 	/**
 	 * Abre una cantidad de los lugares de trabajo/estudio y las actividades dadas.
 	 * @param typesToOpen tipos de Places
-	 * @param percentagePlace rango de 0-1, donde 1 quiere decir que se cierran todolos lugares y 0 todos los lugares abiertos
+	 * @param percentagePlace rango de 0-1, donde 1 quiere decir que se abre todo los lugares y 0 todos los lugares se cierran.
 	 */
 	public void openPlaces(String[] typesToOpen, double percentagePlace) {
+		System.out.println("openPlaces - percentagePlace: " + percentagePlace);
 		for (String type : typesToOpen) {
 			long amountPlaceTotal = Math.round(percentagePlace * (double) placesTotal.get(type));
+			if(amountPlaceTotal>placesTotal.get(type))
+				amountPlaceTotal=placesTotal.get(type);
+			
 			if (closedPlaces.contains(type)) { // Ya esta cerrado
 				closedPlaces.remove(type);
 			}
 			
 			if(!closedPlacesSeccional.containsKey(type)) {
-				System.err.printf("La cantidad de places total son %d, y usted quiere cerrar %d places, debe ingresar un numero menor", placesTotal.get(type), placesTotal.get(type)*percentagePlace);
+				// Crear una lista del nuevo tipo de Place, para cada seccional
+				List<List<WorkplaceAgent>> buildList = new ArrayList<List<WorkplaceAgent>>(sectoralsCount);
+				for (int i = 0; i < sectoralsCount; i++) 
+					buildList.add(new ArrayList<WorkplaceAgent>());
+				closedPlacesSeccional.put(type, buildList);
 			}
-			System.err.println("Math.round(amountPlaceTotal/sectoralsCount) "+ Math.round(amountPlaceTotal/sectoralsCount));
+			
 			for(int i=0; i<sectoralsCount; i++) {
-				for(int j=0; j<Math.round(amountPlaceTotal/sectoralsCount); j++) { 
-					closedPlacesSeccional.get(type).get(i).get(j).open();
-					closedPlacesSeccional.get(type).get(i).remove(j);						
+				int amountPerSectorial=Math.round(amountPlaceTotal/sectoralsCount);
+
+				for(int j=0; j<amountPerSectorial; j++){ 
+					if(!closedPlacesSeccional.get(type).get(i).isEmpty()){
+						closedPlacesSeccional.get(type).get(i).get(0).open();
+						closedPlacesSeccional.get(type).get(i).remove(0);		
+					}
+					else
+						break;
 				}
 			}
 			
 			int remantent =Math.round(amountPlaceTotal -((Math.round(amountPlaceTotal/sectoralsCount)) * sectoralsCount));
-			System.err.println("remantent "+ remantent + " amountPlace/sectoralsCount " + amountPlaceTotal/sectoralsCount);
 			if(remantent != 0) 
 				for(int j=0; j<remantent; j++) {
-					int i;
+					int i=0;
 					do {
-						i = RandomHelper.nextIntFromTo(0, sectoralsCount-1);
-					}while(placesMap.get(type).get(i).isEmpty());
-					System.out.println("i " + i);
-					WorkplaceAgent tempWorkPlace = placesMap.get(type).get(i).get(i);
+						i++;
+					}while(closedPlacesSeccional.get(type).get(i).isEmpty());
+					WorkplaceAgent tempWorkPlace = placesMap.get(type).get(i).get(0);
 					tempWorkPlace.open();
 					closedPlacesSeccional.get(type).get(i).remove(tempWorkPlace);
-;	
 				}
 		}
 	}
@@ -334,24 +353,30 @@ public final class BuildingManager {
 	 * TODO revisar
 	 * */
 	public void closeOrOpenPlaces(String[] typesOpenOrCLose, double percentagePlace) {
+		System.out.println("closeOrOpenPlaces percentagePlace " + percentagePlace);
 		for (String type : typesOpenOrCLose) {
 			if(!closedPercentPlaces.containsKey(type)) {
-				
+				System.out.println("closeOrOpenPlaces percentagePlace " + percentagePlace + " tipo " + type);
 				closedPercentPlaces.put(type, percentagePlace);
 				closePlaces(new String[] {type}, percentagePlace);
-				break;
+				continue;
 			}
+			
 			if(closedPercentPlaces.containsKey(type)) {
-				double percentageActual= closedPercentPlaces.get(type);
-				if(percentageActual>percentagePlace) {
-						openPlaces(new String[] {type}, (percentageActual - percentagePlace));
-						closedPercentPlaces.remove(type, percentageActual);
+				double percentagePrevius= closedPercentPlaces.get(type);
+				if(percentagePrevius-percentagePlace>0) {
+					//DEBUG
+					//	System.out.println("Llego openPlaces " + type);
+						openPlaces(new String[] {type}, (percentagePrevius - percentagePlace));
+						closedPercentPlaces.remove(type, percentagePrevius);
 						closedPercentPlaces.put(type, percentagePlace);
 	
 				}
 				else {
-					closePlaces(new String[] {type}, (percentagePlace-percentageActual));
-					closedPercentPlaces.remove(type, percentageActual);
+					closePlaces(new String[] {type}, (percentagePlace - percentagePrevius));
+					//DEBUG
+					//System.out.println("Llego closePlaces " + type);
+					closedPercentPlaces.remove(type, percentagePrevius);
 					closedPercentPlaces.put(type, percentagePlace);
 				}
 			}
@@ -359,15 +384,19 @@ public final class BuildingManager {
 	}
 	
 	/**
-	 * Limpia el mapa eliminando de la lista todos los workplace cerrados del mapa closedPlacesSeccional
+	 * Limpia el mapa eliminando de la lista todos los workplace cerrados del mapa closedPlacesSeccional, 
+	 * los lugares ya son cerrados en open places
 	 */
 	private void clearClosedPlacesSeccional(String type){
 		if(closedPlacesSeccional.containsKey(type)) {
-			for(int i=0; i<closedPlacesSeccional.get(type).size(); i++) 
-				for (int j=0;j<closedPlacesSeccional.get(type).get(i).size(); j++) {
-					//No es necesario abrir los lugares ya que la función openPlaces los abre
-					closedPlacesSeccional.get(type).get(i).remove(j);
+			closedPlacesSeccional.get(type).forEach(sect -> {
+				for(int i=0; i<sect.size(); i++) {
+					sect.remove(i);
+					System.err.println("clearClosedPlacesSeccional");			
+
 				}
+			});
+			
 		}
 		else {
 			System.err.println("El" + type + " no se encuentra en la lista closedPlacesSeccional");			
@@ -401,10 +430,10 @@ public final class BuildingManager {
 					}
 				}
 				else
-					System.out.println("placesCount.containsKey(type) " + type);
+					System.out.println("placesCount.containsKey(type) no contiene le siguiente type: " + type);
 			}
 			else {
-				System.err.printf("El type %s no se encuentra en la lista closedPlacesSeccional. ", type);
+				System.out.printf("El type %s no se encuentra en la lista closedPlacesSeccional. ", type);
 			}
 		}
 		

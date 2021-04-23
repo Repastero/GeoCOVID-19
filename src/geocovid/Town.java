@@ -22,11 +22,11 @@ public final class Town {
 	public final double[] PUBLIC_TRANSPORT_QUALIFICATION		= {0.22, 0.28, 0.34, 0.4, 0.45, 0.51, 0.75};
 	
 	/** Cantidad maxima de transporte en Parana del municipio a simular */
-	public static final int	PUBLIC_TRANSPORT_MAX_UNIT				= 140;	// Parana
+	
 
 	/** Nombre del municipio a simular */
 	public String townName;
-	
+
 	/** Tipo de ciudad (0 parana, 1 gchu o 2 concord) */ 
 	public int regionType;
 	/** Indice de region de la ciudad (0 sur, 1 centro o 2 norte) */ 
@@ -54,16 +54,16 @@ public final class Town {
 	/** Dias desde el 01-01-2020 que ingresa el primer infectado */
 	public int outbreakStartDay;
 	
-	/** Si existe transporte publico en ciudad (colectivo) */
-	public boolean publicTransportAllowed;
 	/** Si la ciudad tiene una temporada turistica */
 	public boolean touristSeasonAllowed;
+	/** cantidad de colectivos maximos que presenta cada ciudad */
+	public int publicTransportAmount;
 	
 	public Town(String name) {
 		this.setTown(name);
 	}
 	
-	private void setTownData(int regionTyp, int regionIdx, int locals, int travelers, int foreign, int[] secTypes, double[] secPop, int[] phasesDays, int obStartDay, boolean pubTransAllowed, boolean tourSeasonAllowed) {
+	private void setTownData(int regionTyp, int regionIdx, int locals, int travelers, int foreign, int[] secTypes, double[] secPop, int[] phasesDays, int obStartDay, int pubTransAllowed, boolean tourSeasonAllowed) {
 		regionType = regionTyp;
 		regionIndex = regionIdx;
 		//
@@ -78,8 +78,9 @@ public final class Town {
 		lockdownPhasesDays = phasesDays;
 		outbreakStartDay = obStartDay + outbreakStartDelay;
 		//
-		publicTransportAllowed = pubTransAllowed;
+		publicTransportAmount = pubTransAllowed;
 		touristSeasonAllowed = tourSeasonAllowed;
+		
 	}
 	
 	public int getLocalPopulation() {
@@ -133,7 +134,7 @@ public final class Town {
 				new double[] {6.6, 5.5, 3.8, 6.3, 5.1, 1.9, 1.0, 11.9, 2.2, 3.0, 6.1, 9.5, 10.5, 1.0, 8.3, 6.5, 8.6, 2.2},
 				new int[] {163,182,201,215,229,244,254,257,264,273,302,310,343,348,358,359,365,366,388,411,425,435},
 				182,
-				true,
+				140,
 				false);
 			break;
 		case "gualeguay": // 45280
@@ -146,7 +147,7 @@ public final class Town {
 				new double[] {26.12, 23.88, 26.08, 23.92},
 				DEFAULT_PHASES_DAYS[0],
 				216,
-				false,
+				0,
 				false);
 			break;
 		case "diamante": // 20640
@@ -159,7 +160,7 @@ public final class Town {
 				new double[] {50.00, 24.04, 25.96},
 				DEFAULT_PHASES_DAYS[0],
 				190,
-				false,
+				0,
 				false);
 			break;
 		case "nogoya": // 23554
@@ -172,7 +173,7 @@ public final class Town {
 				new double[] {50.00, 25.00, 25.00},
 				DEFAULT_PHASES_DAYS[0],
 				194,
-				false,
+				0,
 				false);
 			break;
 		case "victoria": // 32995
@@ -185,7 +186,7 @@ public final class Town {
 				new double[] {27.39, 22.61, 24.45, 25.55},
 				DEFAULT_PHASES_DAYS[0],
 				191,
-				false,
+				0,
 				false);
 			break;
 		case "sansalvador": // 14060
@@ -198,7 +199,7 @@ public final class Town {
 				new double[] {50.00, 24.025, 25.975},
 				DEFAULT_PHASES_DAYS[0],
 				221,
-				false,
+				0,
 				false);
 			break;
 		// Tipos Gualeguaychu
@@ -212,7 +213,7 @@ public final class Town {
 				new double[] {14.056, 15.25, 20.261, 18.111, 12.241, 8.93, 11.151},
 				new int[] {163,201,215,229,244,254,257,264,273,302,310,343,348,358,359,365,366,388,425},
 				182,
-				true,
+				0, // Carlos dijo que por el momento no se tenga en cuenta
 				true);
 			break;
 		case "uruguay": // 77290
@@ -225,7 +226,7 @@ public final class Town {
 				new double[] {12.86, 14.20, 12.925, 19.665, 40.35},
 				DEFAULT_PHASES_DAYS[1],
 				182,
-				true,
+				0,
 				false);
 			break;
 		case "federacion": // 39120 - en realidad es Chajari
@@ -238,7 +239,7 @@ public final class Town {
 				new double[] {30.65, 22.50, 22.70, 24.15},
 				DEFAULT_PHASES_DAYS[1],
 				182,
-				false,
+				0, // Carlos dijo que por el momento no se tenga en cuenta
 				true);
 			break;
 		case "colon": // 28432
@@ -251,7 +252,7 @@ public final class Town {
 				new double[] {20.00, 14.18, 38.785, 27.035},
 				DEFAULT_PHASES_DAYS[1],
 				182,
-				false,
+				0, // Carlos dijo que por el momento no se tenga en cuenta
 				true);
 			break;
 		case "ibicuy": // 5086
@@ -264,7 +265,7 @@ public final class Town {
 				new double[] {100},
 				DEFAULT_PHASES_DAYS[1],
 				182,
-				false,
+				0, // Carlos dijo que por el momento no se tenga en cuenta
 				true);
 			break;
 		// Tipos Concordia
@@ -278,7 +279,7 @@ public final class Town {
 				new double[] { 3.39, 13.09, 16.71, 5.275, 5.6625, 19.26, 13.31, 6.8425, 13.17, 3.29},
 				DEFAULT_PHASES_DAYS[2],
 				195,
-				true,
+				0, // Carlos dijo que por el momento no se tenga en cuenta
 				false);
 			break;
 		case "lapaz": // 26054
@@ -291,7 +292,7 @@ public final class Town {
 				new double[] {23.18, 28.61, 48.21},
 				DEFAULT_PHASES_DAYS[2],
 				193,
-				true,
+				0,
 				false);
 			break;
 		case "villaguay": // 34922
@@ -304,7 +305,7 @@ public final class Town {
 				new double[] {22.45, 22.02, 19.12, 15.38, 21.03},
 				DEFAULT_PHASES_DAYS[2],
 				225,
-				false,
+				0,
 				false);
 			break;
 		case "federal": // 18380
@@ -317,7 +318,7 @@ public final class Town {
 				new double[] {22.45, 21.78, 16.94, 16.28, 22.55},
 				DEFAULT_PHASES_DAYS[2],
 				213,
-				false,
+				0,
 				false);
 			break;
 		case "tala": // 13410
@@ -330,7 +331,7 @@ public final class Town {
 				new double[] {22.00, 40.65, 37.35},
 				DEFAULT_PHASES_DAYS[2],
 				235,
-				false,
+				0,
 				false);
 			break;
 		case "feliciano": // 12350
@@ -343,12 +344,20 @@ public final class Town {
 				new double[] {22.00, 43.25, 34.75},
 				DEFAULT_PHASES_DAYS[2],
 				244,
-				false,
+				0,
 				false);
 			break;
 		default:
 			throw new InvalidParameterException("Ciudad erronea: " + townName);
 		}
 		return true;
+	}
+	
+	public String getTownName() {
+		return townName;
+	}
+
+	public void setTownName(String townName) {
+		this.townName = townName;
 	}
 }
