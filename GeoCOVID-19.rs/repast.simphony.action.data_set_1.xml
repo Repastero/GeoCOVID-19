@@ -1,29 +1,94 @@
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
-  <name>Humanos</name>
+  <name>Reporte</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
-  <inclRandomSeed>false</inclRandomSeed>
+  <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
     <start>0.0</start>
-    <interval>1.0</interval>
+    <interval>24.0</interval>
     <priority>-Infinity</priority>
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-614267772</hashCode>
+    <hashCode>355055598</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
-  <methodDataSources class="linked-hash-map"/>
-  <countSources class="linked-hash-map">
+  <methodDataSources class="linked-hash-map">
     <entry>
-      <string>Cantidad</string>
-      <repast.simphony.data2.engine.CountSourceDefinition>
-        <typeName>geocovid.agents.HumanAgent</typeName>
-        <id>Cantidad</id>
-      </repast.simphony.data2.engine.CountSourceDefinition>
+      <string>Expuestos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Expuestos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumExposed</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
-  </countSources>
+    <entry>
+      <string>Asintomaticos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Asintomaticos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsASXInfectious</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Sintomaticos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Sintomaticos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsSYMInfectious</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Infecciosos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Infecciosos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsInfectious</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Camas</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Camas</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsHospitalized</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Recuperados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Recuperados</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumRecovered</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Muertos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Muertos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumDeaths</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Hospitalizados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Hospitalizados</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumHospitalized</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+  </methodDataSources>
+  <countSources class="linked-hash-map"/>
   <customNADataSources class="linked-hash-map"/>
   <customAggDataSources class="linked-hash-map"/>
 </repast.simphony.data2.engine.DataSetDescriptor>

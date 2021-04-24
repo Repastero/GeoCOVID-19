@@ -14,6 +14,7 @@ bar,bar,2,110,80,0,20,8,16,14,10,8
 beauty_salon,beauty_salon,2,100,80,0,20,1,6,8,4,2
 beautician,beauty_salon,,,,,,,,,,
 tanning_studio,beauty_salon,,,,,,,,,,
+bus,bus,3,40,100,1,0,60,40,25,18,10
 bicycle_store,bicycle_store,3,100,90,0,40,10,8,4,2,0
 bicycle_repair_shop,bicycle_store,,60,90,,,,,,,
 book_store,book_store,3,80,90,3,0,12,10,6,4,2

@@ -1,9 +1,9 @@
 <repast.simphony.chart2.engine.TimeSeriesChartDescriptor simphonyVersion="2.8.0">
-  <name>Reporte</name>
-  <dataSet>Reporte</dataSet>
+  <name>Actividades</name>
+  <dataSet>Actividades</dataSet>
   <xAxisLabel>Tick Count</xAxisLabel>
-  <yAxisLabel>Cantidad</yAxisLabel>
-  <chartTitle>Reporte</chartTitle>
+  <yAxisLabel>Porcentaje</yAxisLabel>
+  <chartTitle>Actividades diarias</chartTitle>
   <type>TIME_SERIES</type>
   <background>
     <red>192</red>
@@ -21,33 +21,9 @@
   <showLegend>true</showLegend>
   <seriesIds>
     <entry>
-      <string>Infecciosos</string>
+      <string>Hogar</string>
       <SeriesData>
-        <label>Infecciosos</label>
-        <color>
-          <red>255</red>
-          <green>0</green>
-          <blue>0</blue>
-          <alpha>255</alpha>
-        </color>
-      </SeriesData>
-    </entry>
-    <entry>
-      <string>Muertos</string>
-      <SeriesData>
-        <label>Muertos</label>
-        <color>
-          <red>102</red>
-          <green>0</green>
-          <blue>0</blue>
-          <alpha>255</alpha>
-        </color>
-      </SeriesData>
-    </entry>
-    <entry>
-      <string>Camas</string>
-      <SeriesData>
-        <label>Camas</label>
+        <label>Hogar</label>
         <color>
           <red>0</red>
           <green>0</green>
@@ -57,12 +33,36 @@
       </SeriesData>
     </entry>
     <entry>
-      <string>Recuperados</string>
+      <string>Otros</string>
       <SeriesData>
-        <label>Recuperados</label>
+        <label>Otros</label>
         <color>
-          <red>0</red>
-          <green>153</green>
+          <red>255</red>
+          <green>216</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Ocio</string>
+      <SeriesData>
+        <label>Ocio</label>
+        <color>
+          <red>38</red>
+          <green>127</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
+      <string>Trabajo</string>
+      <SeriesData>
+        <label>Trabajo/Estudio</label>
+        <color>
+          <red>255</red>
+          <green>0</green>
           <blue>0</blue>
           <alpha>255</alpha>
         </color>

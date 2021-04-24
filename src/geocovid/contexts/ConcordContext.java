@@ -103,7 +103,6 @@ public class ConcordContext extends SubContext {
 					"stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
-			enablePublicTransport(true);
 			setSocialDistancing(95);
 			setMaskEffectivity(0.30);
 			break;
@@ -277,12 +276,6 @@ public class ConcordContext extends SubContext {
 
 	@Override
 	public int travelOutsideChance(int secType) { return TRAVEL_OUTSIDE_CHANCE[secType]; }
-	@Override
-	public int publicTransportChance() { return PUBLIC_TRANSPORT_CHANCE; }
-	@Override
-	public int publicTransportUnits() { return PUBLIC_TRANSPORT_UNITS; }
-	@Override
-	public int publicTransportSeats() { return PUBLIC_TRANSPORT_SEATS; }
 
 	@Override
 	public int[][][] getIsolatedLocalTMMC(int ageGroup) { return isolatedLocalTMMC[ageGroup]; }
