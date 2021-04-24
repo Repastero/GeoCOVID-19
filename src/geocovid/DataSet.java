@@ -93,4 +93,13 @@ public final class DataSet {
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 65d;	// sobre 100
 	
+	/** Cantidad maxima de asientos;
+	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
+	 * */
+	public static final int	PUBLIC_TRANSPORT_MAX_SEAT				= 24;	// 
+	
+	/** Cantidad maxima de gente parada;
+	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
+	 * */
+	public static final int	PUBLIC_TRANSPORT_MAX_STILL				= 10;	// 
 }

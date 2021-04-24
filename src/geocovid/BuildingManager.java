@@ -34,13 +34,12 @@ public final class BuildingManager {
 	/** Coordenadas del centro de cada seccional */
 	private Coordinate[] sectoralsCentre;
 	
+	private int[] sectoralsPTUnits;
+	
 	private static Context<Object> mainContext; // Para agregar indicador de humano infectado
 	private static Geography<Object> geography; // Para agregar indicador de humano infectado en mapa
 	private static GeometryFactory geometryFactory = new GeometryFactory(); // Para crear punto al azar
-	
-	/** Puntero al objeto que controla el transporte publico */
-	private PublicTransportAgent publicTransport;
-	
+		
 	/** Lugares de entretenimiento / otros, separados por seccional */
 	private Map<String, List<List<WorkplaceAgent>>> placesMap = new HashMap<>();
 	/** Lugares unicamente de trabajo */
@@ -78,6 +77,9 @@ public final class BuildingManager {
 	/** Ultimo limite de aforo en Places */
 	private double activitiesCapacityLimit = 0d;
 	
+	/** Ultimas unidades de transporte publico habilitadas */
+	private int pTWorkingUnits = 0;
+	
 	private SubContext context; // Puntero
 	private int sectoralsCount; // Puntero
 	
@@ -87,8 +89,8 @@ public final class BuildingManager {
 	 * @param sectorals cantidad de seccionales en municipio
 	 */
 	public BuildingManager(SubContext subContext, int sectorals) {
-		publicTransport = null;
 		activitiesCapacityLimit = 0d;
+		pTWorkingUnits = 0;
 		//
 		placesMap.clear(); // Por si cambio el SHP entre corridas
 		workplacesMap.clear(); // Por si cambio el SHP entre corridas
@@ -102,6 +104,8 @@ public final class BuildingManager {
 		placesCount.clear(); // Por las dudas
 		placesTotal.clear(); // Por las dudas
 		//
+		sectoralsPTUnits = new int[sectorals];
+		//
 		this.context = subContext; 
 		this.sectoralsCount = sectorals;
 	}
@@ -109,21 +113,6 @@ public final class BuildingManager {
 	public static void setMainContextAndGeography(Context<Object> con, Geography<Object> geo) {
 		mainContext = con;
 		geography = geo;
-	}
-	
-	/**
-	 * {@link BuildingManager#publicTransport}
-	 * @param ptAgent instancia de PublicTransportAgent
-	 */
-	public void setPublicTransport(PublicTransportAgent ptAgent) {
-		publicTransport = ptAgent;
-	}
-	
-	/**
-	 * @return {@link BuildingManager#publicTransport}
-	 */
-	public PublicTransportAgent getPublicTransport() {
-		return publicTransport;
 	}
 	
 	/**
@@ -223,6 +212,51 @@ public final class BuildingManager {
 				closedPlaces.add(type);
 			}
 		}
+	}
+	
+	public void setDefaultPTUnits(int maxUnits, int[] sectoralUnits) {
+		pTWorkingUnits = maxUnits;
+		sectoralsPTUnits = sectoralUnits;
+	}
+	
+	public void setPTUnits(int units) {
+		if (units == pTWorkingUnits)
+			return;
+		// Buscar la seccional mas cercana para asignar a este Place
+		double doubleP = units / (double) sectoralsCount;
+		double decimalRest = 0d;
+		int integerP;
+		String type = "bus";
+		List<List<WorkplaceAgent>> busSectorals = placesMap.get(type); // buses en todas las seccionales
+		for (int sI = 0; sI < sectoralsCount; sI++) {
+			List<WorkplaceAgent> ptUnits = busSectorals.get(sI); // buses en seccional sI
+	    	// Separo la parte entera
+	    	integerP = (int) doubleP;
+	    	// Sumo la parte decimal que sobra 
+	    	decimalRest += doubleP - integerP;
+	    	// Si los restos decimales suman 1 o mas, se suma un entero
+	    	if (decimalRest >= 1d) {
+	    		decimalRest -= 0.99d;
+	    		++integerP;
+	    	}
+	    	// Por las dudas
+	    	if (integerP > ptUnits.size())
+	    		integerP = ptUnits.size();
+	    	// Abrieron mas
+	    	if (sectoralsPTUnits[sI] < integerP) {
+	    		for (int i = sectoralsPTUnits[sI]; i < integerP; i++) {
+	    			ptUnits.get(i).open();
+				}
+	    	}
+	    	// Cerraron
+	    	else if (sectoralsPTUnits[sI] > integerP) {
+	    		for (int i = integerP; i < sectoralsPTUnits[sI]; i++) {
+	    			ptUnits.get(i).close();
+				}
+	    	}
+	    	sectoralsPTUnits[sI] = integerP;
+		}
+		pTWorkingUnits = units;
 	}
 	
 	/**
@@ -406,11 +440,6 @@ public final class BuildingManager {
     		if (atHome) {
 				// Si se va fuera del barrio
 				if (RandomHelper.nextIntFromTo(1, 100) <= context.travelOutsideChance(secType)) {
-					// Si funciona el transporte publico
-					if (publicTransport != null) {
-						if (RandomHelper.nextIntFromTo(1, 100) <= context.publicTransportChance())
-							publicTransport.jumpAboard(human, secIndex);
-					}
 					getOut = true;
 				}
     		}

@@ -1,72 +1,57 @@
 package geocovid.agents;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
+import geocovid.DataSet;
 import geocovid.InfectionReport;
-import repast.simphony.engine.schedule.ScheduleParameters;
-import repast.simphony.engine.schedule.ScheduledMethod;
-import repast.simphony.random.RandomHelper;
+import geocovid.PlaceProperty;
+import geocovid.contexts.SubContext;
 
 /**
  * Representa las unidades de transporte publico.
  */
-public class PublicTransportAgent {
-	private int region;
-	private SurfaceAgent seats[][][];
-	private int ptUnits;
-	private int ptSeats;
+public class PublicTransportAgent extends WorkplaceAgent {
+	private static int ptSeats = DataSet.PUBLIC_TRANSPORT_MAX_SEAT;
 	
-	public PublicTransportAgent(int regionIdx, int sectorals, int tranUnits, int tranSeats) {
-		this.region = regionIdx;
-		this.ptUnits = tranUnits;
-		this.ptSeats = tranSeats;
-		this.seats = new SurfaceAgent[sectorals][tranUnits][tranSeats];
+	public PublicTransportAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, PlaceProperty pp) {
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, pp.getActivityType(), pp.getBuildingArea(), pp.getBuildingCArea(), pp.getWorkersPerPlace(), pp.getWorkersPerArea());
 	}
 	
-	public void jumpAboard(HumanAgent human, int sectoral) {
-		int unit = RandomHelper.nextIntFromTo(0, ptUnits - 1);
-		int seat = RandomHelper.nextIntFromTo(0, ptSeats - 1);
-		
-		if (!human.wasExposed())
-			checkIfSurfaceContaminated(human, seats[sectoral][unit][seat]);
-		else if (human.isContagious())
-			seats[sectoral][unit][seat] = removeSpreader(seats[sectoral][unit][seat]);
+	@Override
+	public int[] insertHuman(HumanAgent human) {
+		int[] pos = super.insertHuman(human);
+		if (pos != null) {
+			InfectionReport.addCumTicketTransportPublic();
+		}
+		return pos;
 	}
 	
-	private void checkIfSurfaceContaminated(HumanAgent human, SurfaceAgent surface) {
-		if (surface != null) {
-			// Si en el ultimo checkeo la superficie seguia contaminada
-			if (surface.isContaminated()) {
-				if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
-					human.setExposed();
-					InfectionReport.addExposedToCS();
-				}
-			}
+	@Override
+	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
+		if (super.checkContagion(spreader, prey)) { 
+			InfectionReport.addCumExposedPublicTransport();
+			return true;
 		}
+		return false;
 	}
 	
-	private SurfaceAgent removeSpreader(SurfaceAgent surface) {
-		if (surface == null) {
-			// Se crea una superficie con la posicion como ID
-			surface = new SurfaceAgent(region, true); // Se crea como superficie al exterior
-		}
-		else {
-			// Si la superficie ya estaba contaminada, se 'renueva' el virus
-			surface.updateLifespan();
-		}
-		return surface;
+	@Override
+	public void limitCapacity(double sqMetersPerHuman) {
+		/*
+		 * Por ahora se deja el aforo por defecto (el de hogares):
+		 * Con un area de 40 y un modificador de 0.85 = 34 metros cuadrados
+		 * Area modificada por 4 personas por metro cuadrado = 136 posiciones
+		 * Con 136 el tamano de parcela es = 8 x 17 posiciones
+		 * Menos una fila del puesto de trabajo = 128 posiciones
+		 * Posiciones divididas por 4 personas por m2 = 32 capacidad
+		 */
 	}
 	
-	/**
-	 * Cada cambio de turno se desinfectan los asientos.
-	 */
-	@ScheduledMethod(start = 6d, interval = 6d, priority = ScheduleParameters.FIRST_PRIORITY)
-	public void cleanUpSeats() {
-		for (int i = 0; i < seats.length; i++) {
-			for (int j = 0; j < seats[i].length; j++) {
-				for (int k = 0; k < seats[i][j].length; k++) {
-					if (seats[i][j][k] != null)
-						seats[i][j][k].cleanUpSurface();
-				}
-			}
-		}
+	public static int getPtSeats() {
+		return ptSeats;
+	}
+	
+	public static void setPtSeats(int ptSeatsChange) {
+		ptSeats = ptSeatsChange;
 	}
 }

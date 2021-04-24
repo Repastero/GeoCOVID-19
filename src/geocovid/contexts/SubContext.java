@@ -87,7 +87,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 	
 	private boolean closeContactsEnabled;	// Habilitada la "pre infeccion" de contactos estrechos y cuarentena preventiva de los mismos
 	private boolean prevQuarantineEnabled;	// Habilitada la cuarentena preventiva para las personas que conviven con un sintomatico
-	private boolean publicTransportEnabled;	// Habilitado el trabsoirte publico
 	
 	private boolean outbreakStarted;		// Indica que ya se infectaron locales
 	
@@ -111,10 +110,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public abstract int getHomeBuldingCoveredArea(int secType);
 	
 	public abstract int travelOutsideChance(int secType);
-	public abstract int publicTransportChance();
-	public abstract int publicTransportUnits();
-	public abstract int publicTransportSeats();
-	
+
 	public SubContext(Town contextTown) {
 		super(contextTown.townName);
 		this.town = contextTown;
@@ -154,9 +150,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 			schedule.schedule(params, this, "initiateLockdownPhase", phasesStartDay[i]);
 		}
 		
-		// Reinicio estos valores por las dudas
-		publicTransportEnabled = false;
-		
+				
 		// Crea BuildingManager para esta ciudad
 		buildingManager = new BuildingManager(this, town.sectoralsCount);
 		
@@ -165,6 +159,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 		loadParcelsShapefile();
 		// Lee y carga en BuildingManager los places
 		loadPlacesShapefile();
+		// Creacion de colectivos
+		createPublicTransportUnits();
+		
 		buildingManager.createActivitiesChances();
 		
 		// Por ultimo crea agentes humanos, les asigna trabajo/estudio y los distribuye en hogares
@@ -546,25 +543,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 			} while (toAdd != 0);
 		}
 	}
-	
-	/**
-	 * Si lo permite la ciudad, habilitar o deshabilitar la opcion de usar transporte publico. 
-	 */
-	protected void enablePublicTransport(boolean enabled) {
-		if (town.publicTransportAllowed) {
-			if (enabled && !publicTransportEnabled) {
-				publicTransportEnabled = true;
-				PublicTransportAgent pt = new PublicTransportAgent(town.regionIndex, town.sectoralsCount, publicTransportUnits(), publicTransportSeats());
-				add(pt);
-				buildingManager.setPublicTransport(pt);
-			}
-			else if (!enabled && publicTransportEnabled) {
-				publicTransportEnabled = false;
-				remove(buildingManager.getPublicTransport());
-				buildingManager.setPublicTransport(null);
-			}
-		}
-	}
 
 	/**
 	 * Toma las parcelas del shapefile, crea los hogares y los posiciona en el mapa.
@@ -749,6 +727,56 @@ public abstract class SubContext extends DefaultContext<Object> {
 			System.out.println("CUPO TRABAJADORES: " + workVacancies);
 		}
 	}
+	
+	private void createPublicTransportUnits() {
+		if (town.publicTransportUnits == 0)
+			return;
+		// Variables temporales
+		GeometryFactory geometryFactory = new GeometryFactory();
+		String type = "bus";
+		Coordinate secCoord;
+		Coordinate[] secCoords = buildingManager.getSectoralsCentre();
+		int sectoralType;
+		int[] sectoralsPTUnits = new int[town.sectoralsCount];
+		// Separar types y tomar el primero
+		PlaceProperty placeProp = placesProperty.get(type);
+		if (placeProp == null) {
+			System.out.println("Type de Place desconocido: " + type);
+		}
+		
+		// Buscar la seccional mas cercana para asignar a este Place
+		int ptUnits = 0;
+		double doubleP = town.publicTransportUnits / (double)town.sectoralsCount;
+		double decimalRest = 0d;
+		int integerP;
+		for (int sI = 0; sI < town.sectoralsCount; sI++) {
+			sectoralType = town.sectoralsTypes[sI];
+			secCoord = secCoords[sI];
+	    	// Separo la parte entera
+	    	integerP = (int) doubleP;
+	    	// Sumo la parte decimal que sobra 
+	    	decimalRest += doubleP - integerP;
+	    	// Si los restos decimales suman 1 o mas, se suma un entero
+	    	if (decimalRest >= 1d) {
+	    		decimalRest -= 0.99d;
+	    		++integerP;
+	    	}
+	    	for (int j = 0; j < integerP; j++) {
+				// Crear Agente con los atributos el Place
+				PublicTransportAgent tempPublicTransport = new PublicTransportAgent(this, sectoralType, sI, secCoord, ++lastHomeId, type, placeProp);
+				workPlaces.add(tempPublicTransport);
+				// Si es lugar con atencion al publico, se agrega a la lista de actividades
+				buildingManager.addPlace(sI, tempPublicTransport, placeProp);
+				// Agregar al contexto
+				add(tempPublicTransport);
+				geography.move(tempPublicTransport, geometryFactory.createPoint(secCoord));
+			}
+	    	sectoralsPTUnits[sI] = integerP;
+	    	ptUnits += integerP;
+		}
+		buildingManager.setDefaultPTUnits(ptUnits, sectoralsPTUnits);
+	}
+	
 	
 	/**
 	 * Lee el archivo GIS y retorna sus items en una lista.

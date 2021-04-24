@@ -142,6 +142,14 @@ public class WorkplaceAgent extends BuildingAgent {
 		closed = false;
 	}
 	
+	public int getWorkPositionsCount() {
+		return workPositionsCount;
+	}
+
+	public void setWorkPositionsCount(int workPositionsCount) {
+		this.workPositionsCount = workPositionsCount;
+	}
+	
 	@Override
 	public int[] insertHuman(HumanAgent human, int[] pos) {
 		// Prevenir que ingresen cuando esta cerrado

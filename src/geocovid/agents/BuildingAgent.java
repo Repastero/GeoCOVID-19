@@ -343,7 +343,7 @@ public class BuildingAgent {
 	 * @param prey
 	 * @return <b>true</b> si hubo contagio
 	 */
-	private boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
+	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
 		double infectionRate = Temperature.getInfectionRate(context.getTownRegion(), outdoor, sectoralType);
 		if (Math.abs(spreader.getRelocationTime() - prey.getRelocationTime()) >= DataSet.INFECTION_EXPOSURE_TIME) {
 			// Si es un lugar de trabajo se chequea si respetan distanciamiento y usan cubreboca
@@ -570,5 +570,21 @@ public class BuildingAgent {
 	
 	public boolean isOutdoor() {
 		return outdoor;
+	}
+	
+	public List<HumanAgent> getSpreadersList() {
+		return spreadersList;
+	}
+	
+	public void setSpreadersList(List<HumanAgent> spreadersList) {
+		this.spreadersList = spreadersList;
+	}
+	
+	public List<HumanAgent> getPreSpreadersList() {
+		return preSpreadersList;
+	}
+	
+	public void setPreSpreadersList(List<HumanAgent> preSpreadersList) {
+		this.preSpreadersList = preSpreadersList;
 	}
 }
