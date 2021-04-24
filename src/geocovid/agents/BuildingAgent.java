@@ -394,7 +394,7 @@ public class BuildingAgent {
 	 * @param direct contagio por droplet o aerosol
 	 * @return <b>true</b> si hubo contagio
 	 */
-	private boolean checkContagion(HumanAgent spreader, HumanAgent prey, boolean direct) {
+	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey, boolean direct) {
 		double infectionRate = 0d;
 		if (direct)
 			infectionRate = Temperature.getInfectionRate(context.getTownRegion(), sectoralType, outdoor, ventilated);
