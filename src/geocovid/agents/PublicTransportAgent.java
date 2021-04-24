@@ -27,8 +27,8 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	}
 	
 	@Override
-	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey) {
-		if (super.checkContagion(spreader, prey)) { 
+	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey, boolean direct) {
+		if (super.checkContagion(spreader, prey, direct)) { 
 			InfectionReport.addCumExposedPublicTransport();
 			return true;
 		}
