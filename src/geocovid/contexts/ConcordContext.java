@@ -104,7 +104,7 @@ public class ConcordContext extends SubContext {
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
 			setSocialDistancing(95);
-			setMaskEffectivity(0.25);
+			setMaskEffectivity(0.30);
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
@@ -134,7 +134,7 @@ public class ConcordContext extends SubContext {
 		case 302: // 29 octubre
 			buildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
 			buildingManager.limitActivitiesCapacity(1.5d);
-			setMaskEffectivity(0.2);
+			setMaskEffectivity(0.25);
 			setSocialDistancing(40);
 			break;
 		case 310: // 6 noviembre
@@ -152,7 +152,7 @@ public class ConcordContext extends SubContext {
 			break;
 		case 358: // 24 diciembre
 			buildingManager.limitActivitiesCapacity(1d);
-			setMaskEffectivity(0.1);
+			setMaskEffectivity(0.15);
 		case 365: // 31 diciembre
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
 			tmp = (int) Math.round(town.getLocalPopulation() / 15 * 0.8d);
@@ -189,7 +189,7 @@ public class ConcordContext extends SubContext {
 	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
 	 */
 	public void setDefaultValues() {
-		setMaskValues(0, false, false);
+		setMaskValues(0, false, false, true);
 		setSDValues(0, true, false);
 		disableCloseContacts();
 		disablePrevQuarantine();

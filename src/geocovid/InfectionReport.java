@@ -14,6 +14,7 @@ public class InfectionReport {
 	//
 	private static int cumExposedAll;		// Acumulado
 	private static int cumExposedToCSAll;	// Acumulado
+	private static int cumExposedToAeroAll;	// Acumulado
 	private static int insAsxInfectiousAll;	// Instantaneo
 	private static int insSymInfectiousAll;	// Instantaneo
 	private static int insHospitalizedAll;	// Instantaneo
@@ -46,6 +47,7 @@ public class InfectionReport {
 		
 		cumExposedAll		= 0;
 		cumExposedToCSAll	= 0;
+		cumExposedToAeroAll = 0;
 		insAsxInfectiousAll	= 0;
 		insSymInfectiousAll	= 0;
 		insHospitalizedAll	= 0;
@@ -109,6 +111,11 @@ public class InfectionReport {
 	public static void addExposedToCS() {
 		// Acumulado
 		++cumExposedToCSAll;
+	}
+	
+	public static void addExposedToAero() {
+		// Acumulado
+		++cumExposedToAeroAll;
 	}
 	
 	public static void addExposed(int agIndex) {
@@ -180,6 +187,7 @@ public class InfectionReport {
 	// Getters para usar en reportes de Repast Simphony
 	public static int getCumExposed()		{ return cumExposedAll; }
 	public static int getCumExposedToCS()	{ return cumExposedToCSAll; }
+	public static int getCumExposedToAero()	{ return cumExposedToAeroAll; }
 	public static int getInsASXInfectious()	{ return insAsxInfectiousAll; }
 	public static int getInsSYMInfectious()	{ return insSymInfectiousAll; }
 	public static int getInsInfectious()	{ return insAsxInfectiousAll + insSymInfectiousAll; }

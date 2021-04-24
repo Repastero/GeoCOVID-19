@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -14,9 +15,9 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import geocovid.agents.BuildingAgent;
+import geocovid.agents.HomeAgent;
 import geocovid.agents.HumanAgent;
 import geocovid.agents.InfectiousHumanAgent;
-import geocovid.agents.PublicTransportAgent;
 import geocovid.agents.WorkplaceAgent;
 import geocovid.contexts.SubContext;
 import repast.simphony.context.Context;
@@ -89,7 +90,7 @@ public final class BuildingManager {
 	 * @param sectorals cantidad de seccionales en municipio
 	 */
 	public BuildingManager(SubContext subContext, int sectorals) {
-		activitiesCapacityLimit = 0d;
+		activitiesCapacityLimit = 1d;
 		pTWorkingUnits = 0;
 		//
 		placesMap.clear(); // Por si cambio el SHP entre corridas
@@ -282,6 +283,45 @@ public final class BuildingManager {
 	}
 	
 	/**
+	 * Ventilar o no hogares.
+	 * @param ventilate
+	 */
+	public void ventilateHomes(boolean ventilate) {
+		Stream<Object> iteral = context.getObjectsAsStream(HomeAgent.class);
+		iteral.forEach(home -> ((HomeAgent) home).setVentilated(ventilate));
+	}
+	
+	/**
+	 * Ventilar o no places de trabajo, escuelas y universidades.
+	 * @param ventilate
+	 */
+	public void ventilateWorkplaces(boolean ventilate) {
+		for (List<WorkplaceAgent> workplaces : workplacesMap.values()) {
+			workplaces.forEach(work -> work.setVentilated(ventilate));
+		}
+	}
+	
+	/**
+	 * Ventilar o no places tipo otros.
+	 * @param ventilate
+	 */
+	public void ventilateOtherPlaces(boolean ventilate) {
+		for (String type : otherTypes) {
+			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.setVentilated(ventilate)));
+		}
+	}
+	
+	/**
+	 * Ventilar o no places tipo ocio.
+	 * @param ventilate
+	 */
+	public void ventilateEntertainmentPlaces(boolean ventilate) {
+		for (String type : entertainmentTypes) {
+			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.setVentilated(ventilate)));
+		}
+	}
+	
+	/**
 	 * Retorna los places de trabajo que corresponden al tipo dado.
 	 * @param type tipo de Workplace
 	 * @return lista de <b>WorkplaceAgent</b>
@@ -464,7 +504,6 @@ public final class BuildingManager {
     		// Busca un lugar aleatorio en la seccional donde esta
     		rndPlaceIndex = RandomHelper.nextIntFromTo(0, placeSecCount[secIndex] - 1);
     	}
-		
         return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
 	}
 	

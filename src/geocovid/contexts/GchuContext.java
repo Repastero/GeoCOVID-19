@@ -104,7 +104,7 @@ public class GchuContext extends SubContext {
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(3d);
 			setSocialDistancing(80);
-			setMaskEffectivity(0.25);
+			setMaskEffectivity(0.30);
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
@@ -148,7 +148,7 @@ public class GchuContext extends SubContext {
 			setSocialDistancing(25);
 			break;
 		case 310: // 6 noviembre
-			setMaskEffectivity(0.2);
+			setMaskEffectivity(0.25);
 			break;
 		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
@@ -164,7 +164,7 @@ public class GchuContext extends SubContext {
 		case 358: // 24 diciembre
 			setSocialDistancing(10);
 			buildingManager.limitActivitiesCapacity(1d);
-			setMaskEffectivity(0.1);
+			setMaskEffectivity(0.15);
 		case 365: // 31 diciembre
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
 			tmp = (int) Math.round(town.getLocalPopulation() / 15 * 0.8d);
@@ -204,7 +204,7 @@ public class GchuContext extends SubContext {
 	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
 	 */
 	public void setDefaultValues() {
-		setMaskValues(0, false, false);
+		setMaskValues(0, false, false, true);
 		setSDValues(0, true, false);
 		disableCloseContacts();
 		disablePrevQuarantine();

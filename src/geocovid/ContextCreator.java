@@ -108,9 +108,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 				simulationRun, RandomHelper.getSeed(), (simTime / (double)(1000*60)));
 		System.out.printf("Dias epidemia: %5d%n",
 				(int) (schedule.getTickCount()) / 24 - obStartDelayDays);
-		System.out.printf("Susceptibles: %6d | Infectados: %d | Infectados por estela: %d%n",
+		System.out.printf("Susceptibles: %6d | Infectados: %d | Infectados por aerosol: %d | Infectados por estela: %d%n",
 				humansCount,
 				InfectionReport.getCumExposed(),
+				InfectionReport.getCumExposedToAero(),
 				InfectionReport.getCumExposedToCS());
 		System.out.printf("Recuperados:  %6d | Muertos: %d%n",
 				InfectionReport.getCumRecovered(),
@@ -185,6 +186,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 		params = ScheduleParameters.createRepeating(weekendStartTick, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", true);
 		params = ScheduleParameters.createRepeating(weekendStartTick + WEEKEND_TICKS, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(params, subContext, "setHumansWeekendTMMC", false);
+		// Por si finaliza simulacion un fin de semana, reiniciar markov 
+		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", false);
 	}
 	

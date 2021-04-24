@@ -18,8 +18,6 @@ public class WorkplaceAgent extends BuildingAgent {
 	private int vacancies = 4;
 	/** Capacidad maxima (metros util * humanos por metro cuadrado) */
 	private int maximumCapacity;
-	/** Capacidad por defecto (maximumCapacity / humanos por metro cuadrado) */
-	private int defaultCapacity;
 	private boolean closed = false;
 	
 	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
@@ -36,8 +34,12 @@ public class WorkplaceAgent extends BuildingAgent {
 		createWorkPositions();
 	}
 	
+	/**
+	 * Calcula y setea la capacidad total del place.
+	 * @param sqMetersPerHuman metros cuadrados por persona
+	 */
 	public void limitCapacity(double sqMetersPerHuman) {
-		int cap = defaultCapacity;
+		int cap;
 		// Para calcular el maximo aforo teorico de un local comercial:
 		// dividir la superficie util transitable entre 4
 		if (sqMetersPerHuman > 0d) {
@@ -50,8 +52,12 @@ public class WorkplaceAgent extends BuildingAgent {
 				cap = workPositionsCount + 1; // permitir al menos un cliente
 			}
 		}
+		else {
+			cap = maximumCapacity;
+		}
+		
 		// Que no supere la capacidad por defecto
-		if (cap <= defaultCapacity)
+		if (cap <= maximumCapacity)
 			setCapacity(cap);
 	}
 	
@@ -105,10 +111,10 @@ public class WorkplaceAgent extends BuildingAgent {
 				++row;
 			setStartingRow(row);
 		}
+		
 		maximumCapacity = getCapacity();
-		defaultCapacity = maximumCapacity / DataSet.HUMANS_PER_SQUARE_METER;
 		// Por defecto la capacidad maxima es de 1 humano por metro cuadrado
-		setCapacity(defaultCapacity);
+		limitCapacity(1d);
 	}
 	
 	/**
@@ -140,14 +146,6 @@ public class WorkplaceAgent extends BuildingAgent {
 	
 	public void open() {
 		closed = false;
-	}
-	
-	public int getWorkPositionsCount() {
-		return workPositionsCount;
-	}
-
-	public void setWorkPositionsCount(int workPositionsCount) {
-		this.workPositionsCount = workPositionsCount;
 	}
 	
 	@Override
