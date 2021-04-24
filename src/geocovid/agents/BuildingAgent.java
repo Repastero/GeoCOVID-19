@@ -33,7 +33,6 @@ public class BuildingAgent {
 	private int startingRow = 0; // indice de fila inicial para no trabajadores 
 	private int size[] = {0,0}; // ancho x largo
 	private boolean outdoor;
-	protected boolean ventilated;
 	// Atributos staticos para checkear el radio de infeccion
 	private static int infCircleRadius;
 	private static int xShiftsInf[];
@@ -576,15 +575,15 @@ public class BuildingAgent {
 	public List<HumanAgent> getSpreadersList() {
 		return spreadersList;
 	}
-
+	
 	public void setSpreadersList(List<HumanAgent> spreadersList) {
 		this.spreadersList = spreadersList;
 	}
-
+	
 	public List<HumanAgent> getPreSpreadersList() {
 		return preSpreadersList;
 	}
-
+	
 	public void setPreSpreadersList(List<HumanAgent> preSpreadersList) {
 		this.preSpreadersList = preSpreadersList;
 	}

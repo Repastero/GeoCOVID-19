@@ -16,17 +16,14 @@ public final class Town {
 		{163,201,215,229,254,257,264,273,302,310,343,348,358,359,365,366,388,411,425},		// gchu
 		{163,201,215,    254,257,264,281,302,310,343,348,358,359,365,366,388,411,425}		// concord
 	};
+	
 	/** Dias por defecto de los cambios de unidades de transporte publico
 	 * [enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre - 2020] */
-
-	public final double[] PUBLIC_TRANSPORT_QUALIFICATION		= {0.22, 0.28, 0.34, 0.4, 0.45, 0.51, 0.75};
+	private final double[] PUBLIC_TRANSPORT_QUANTIFICATION	= {0.22, 0.28, 0.34, 0.4, 0.45, 0.51, 0.75};
 	
-	/** Cantidad maxima de transporte en Parana del municipio a simular */
-	
-
 	/** Nombre del municipio a simular */
 	public String townName;
-
+	
 	/** Tipo de ciudad (0 parana, 1 gchu o 2 concord) */ 
 	public int regionType;
 	/** Indice de region de la ciudad (0 sur, 1 centro o 2 norte) */ 
@@ -54,16 +51,16 @@ public final class Town {
 	/** Dias desde el 01-01-2020 que ingresa el primer infectado */
 	public int outbreakStartDay;
 	
+	/** Cantidad de colectivos maximos que presenta cada ciudad */
+	public int publicTransportUnits;
 	/** Si la ciudad tiene una temporada turistica */
 	public boolean touristSeasonAllowed;
-	/** cantidad de colectivos maximos que presenta cada ciudad */
-	public int publicTransportAmount;
 	
 	public Town(String name) {
 		this.setTown(name);
 	}
 	
-	private void setTownData(int regionTyp, int regionIdx, int locals, int travelers, int foreign, int[] secTypes, double[] secPop, int[] phasesDays, int obStartDay, int pubTransAllowed, boolean tourSeasonAllowed) {
+	private void setTownData(int regionTyp, int regionIdx, int locals, int travelers, int foreign, int[] secTypes, double[] secPop, int[] phasesDays, int obStartDay, int pubTransUnit, boolean tourSeasonAllowed) {
 		regionType = regionTyp;
 		regionIndex = regionIdx;
 		//
@@ -78,9 +75,8 @@ public final class Town {
 		lockdownPhasesDays = phasesDays;
 		outbreakStartDay = obStartDay + outbreakStartDelay;
 		//
-		publicTransportAmount = pubTransAllowed;
+		publicTransportUnits = pubTransUnit;
 		touristSeasonAllowed = tourSeasonAllowed;
-		
 	}
 	
 	public int getLocalPopulation() {
@@ -359,5 +355,18 @@ public final class Town {
 
 	public void setTownName(String townName) {
 		this.townName = townName;
+	}
+	
+	public int getPTPhaseUnits(int phase) {
+		if (publicTransportUnits == 0)
+			return 0;
+		else if (phase > PUBLIC_TRANSPORT_QUANTIFICATION.length)
+			return publicTransportUnits;
+		else {
+			int units = (int) Math.round(publicTransportUnits * PUBLIC_TRANSPORT_QUANTIFICATION[phase]);
+			if (units > publicTransportUnits)
+				units = publicTransportUnits;
+			return units;
+		} 
 	}
 }

@@ -96,15 +96,12 @@ public class ParanaContext extends SubContext {
 					"restaurant", "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, 0);
-//			enablePublicTransport(true);
+			buildingManager.setPTUnits(town.getPTPhaseUnits(1));
 			setSocialDistancing(90);
 			setMaskEffectivity(0.25);
-//			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[0]);
 			break;
 		case 182: //  1 julio - solo Parana
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, 1); // comienza el paro de choferes
-//			enablePublicTransport(false); 
+			buildingManager.setPTUnits(0); // comienza el paro de choferes
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
@@ -118,18 +115,15 @@ public class ParanaContext extends SubContext {
 			break;
 		case 229: // 17 agosto
 			// Nueva normalidad (Fase 5)
-//			enablePublicTransport(true); // finaliza el paro de choferes
-			System.out.println("entro ");
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[2]);
+			buildingManager.setPTUnits(town.getPTPhaseUnits(2));
 			setSocialDistancing(70);
 			break;
 		case 244: // 31 agosto - solo Parana
-			System.out.println("sigue ");
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
 			setSocialDistancing(50);
 			buildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
 			buildingManager.limitActivitiesCapacity(3d);
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[3]);
+			buildingManager.setPTUnits(town.getPTPhaseUnits(3));
 			break;
 		case 254: // 11 septiembre
 			// Nuevas medidas (contacto estrecho)
@@ -149,7 +143,7 @@ public class ParanaContext extends SubContext {
 		case 273: // 1 octubre
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
 			setSocialDistancing(30);
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[4]);
+			buildingManager.setPTUnits(town.getPTPhaseUnits(4));
 			break;
 		case 302: // 29 octubre
 			buildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
@@ -157,7 +151,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 310: // 6 noviembre
 			setMaskEffectivity(0.2);
-			buildingManager.closeOrOpenPlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[5]);
+			buildingManager.setPTUnits(town.getPTPhaseUnits(5));
 			break;
 		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
@@ -165,7 +159,7 @@ public class ParanaContext extends SubContext {
 			// Festejos entre jovenes - 1% de la poblacion a 1 cuadrados por persona, mitad afuera y mitad adentro
 			tmp = (int) Math.round(town.getLocalPopulation() * 0.01d);
 			startRepeatingYoungAdultsParty(7, tmp, 1d, true, true);
-			buildingManager.closePlaces(new String[] {"bus"}, town.PUBLIC_TRANSPORT_QUALIFICATION[6]);
+			buildingManager.setPTUnits(town.getPTPhaseUnits(6));
 			break;
 		case 348: // 14 diciembre
 			setSocialDistancing(20);
@@ -304,6 +298,4 @@ public class ParanaContext extends SubContext {
 	public int[][][] getIsolatedLocalTMMC(int ageGroup) { return isolatedLocalTMMC[ageGroup]; }
 	@Override
 	public int[][][] getLocalTMMC(int sectoralType, int ageGroup) { return localTMMC[sectoralType][ageGroup]; }
-	
 }
-

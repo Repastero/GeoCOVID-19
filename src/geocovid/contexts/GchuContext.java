@@ -103,7 +103,6 @@ public class GchuContext extends SubContext {
 					"restaurant", "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(3d);
-			enablePublicTransport(true);
 			setSocialDistancing(80);
 			setMaskEffectivity(0.25);
 			break;

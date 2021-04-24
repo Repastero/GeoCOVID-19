@@ -1,6 +1,6 @@
 <repast.simphony.chart2.engine.TimeSeriesChartDescriptor simphonyVersion="2.8.0">
-  <name>TransportePublico</name>
-  <dataSet>TransportePublic</dataSet>
+  <name>Transporte Publico</name>
+  <dataSet>Transporte Publico</dataSet>
   <xAxisLabel>Tick Count</xAxisLabel>
   <yAxisLabel></yAxisLabel>
   <chartTitle>Transporte Publico</chartTitle>
@@ -21,9 +21,9 @@
   <showLegend>true</showLegend>
   <seriesIds>
     <entry>
-      <string>InfectedTransport</string>
+      <string>Infectados</string>
       <SeriesData>
-        <label>InfectedTransport</label>
+        <label>Infectados Totales</label>
         <color>
           <red>0</red>
           <green>0</green>
@@ -33,9 +33,9 @@
       </SeriesData>
     </entry>
     <entry>
-      <string>TicketColes</string>
+      <string>Tickets</string>
       <SeriesData>
-        <label>TicketColes</label>
+        <label>Tickets Totales</label>
         <color>
           <red>255</red>
           <green>0</green>

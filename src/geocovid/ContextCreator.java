@@ -49,11 +49,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	/** Lista de municipios a simular */
 	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
-			"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
-			"gualeguaychu","uruguay","federacion","colon","ibicuy",
-			"concordia","lapaz","villaguay","federal","tala","feliciano"
-		};
-		
+		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
+		"gualeguaychu","uruguay","federacion","colon","ibicuy",
+		"concordia","lapaz","villaguay","federal","tala","feliciano"
+	};
+	
 	public ContextCreator() {
 		// Para corridas en batch imprime fecha de compilacion
 		printJarVersion(this.getClass());
@@ -104,7 +104,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	public void printSimulationDuration() {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
 		
-		System.out.printf("Simulacion N°: %5d | Seed: %d | Tiempo: %.2f minutos%n",
+		System.out.printf("Simulacion NÂº: %5d | Seed: %d | Tiempo: %.2f minutos%n",
 				simulationRun, RandomHelper.getSeed(), (simTime / (double)(1000*60)));
 		System.out.printf("Dias epidemia: %5d%n",
 				(int) (schedule.getTickCount()) / 24 - obStartDelayDays);
@@ -141,7 +141,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		obStartDelayDays	= ((Integer) params.getValue("diasRetrasoEntradaCaso")).intValue();
 		// Cantidad de corridas para hacer en batch
 		simulationRun		= (Integer) params.getValue("corridas");
-		
 	}
 	
 	/**

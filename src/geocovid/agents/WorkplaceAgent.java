@@ -8,7 +8,6 @@ import repast.simphony.random.RandomHelper;
 
 /**
  * Representa las parcelas donde los Humanos trabajan o estudian.
- * Limita
  */
 public class WorkplaceAgent extends BuildingAgent {
 	private int[][] workPositions;
@@ -112,8 +111,6 @@ public class WorkplaceAgent extends BuildingAgent {
 		setCapacity(defaultCapacity);
 	}
 	
-
-
 	/**
 	 * Selecciona al azar una posicion de la lista de puestos, para el trabajador.
 	 * @return posicion {x, y}

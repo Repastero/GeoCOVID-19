@@ -102,8 +102,4 @@ public final class DataSet {
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
 	 * */
 	public static final int	PUBLIC_TRANSPORT_MAX_STILL				= 10;	// 
-	
-
-
-	
 }

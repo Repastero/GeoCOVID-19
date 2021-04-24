@@ -95,9 +95,6 @@ public class InfectionReport {
 		}
 	}
 	
-	
-	
-	
 	public static void increaseActivityTime(int actIndex) {
 		++dailyActivitiesTicks[actIndex];
 		++totalDailyActTicks;
@@ -155,12 +152,29 @@ public class InfectionReport {
 		++cumDeaths[agIndex];
 	}
 	
-
-	
-	
 	public static String getInfectedReport(int agIndex) {
 		return String.format("%-12s: Infectados %5d | Hospitalizados %4d | Muertos %3d",
 				DataSet.AGE_GROUP_LABELS[agIndex], getCumExposed(agIndex), getCumHospitalized(agIndex), getCumDeaths(agIndex));
+	}
+	
+	public static void addCumExposedPublicTransport() {
+		++cumExposedPublicTransport;
+	}
+	
+	public static void removeCumExposedPublicTransport() {
+		--cumExposedPublicTransport;
+	}
+	
+	public static void addCumTicketTransportPublic() {
+		++cumTicketTransportPublic;
+	}
+	
+	public static void addSeatStill() {
+		++insSpacePublicTransport;
+	}
+	
+	public static void removeSeatStill() {
+		--insSpacePublicTransport;
 	}
 	
 	// Getters para usar en reportes de Repast Simphony
@@ -234,31 +248,7 @@ public class InfectionReport {
 	public static int getDailyOtherTime()			{ return dailyActivitiesTicks[3] * 100 / totalDailyActTicks; }
 	
 	//PUBLIC TRANSPORT
-	
-		public static int getCumExposedPublicTransport() { return cumExposedPublicTransport;  }
-		public static int getCumTicketTransportPublic() { return cumTicketTransportPublic;	}
-		public static int getInsSpacePublicTransport() { return insSpacePublicTransport;	}
-
-		
-		public static void addCumExposedPublicTransport() {
-			++cumExposedPublicTransport;
-		}
-		
-		public static void removeCumExposedPublicTransport() {
-			--cumExposedPublicTransport;
-		}
-		
-		
-		
-		public static void addCumTicketTransportPublic() {
-			++cumTicketTransportPublic;
-		}
-		
-		public static void addSeatStill() {
-			++insSpacePublicTransport;
-		}
-		
-		public static void removeSeatStill() {
-			--insSpacePublicTransport;
-		}
+	public static int getCumExposedPublicTransport(){ return cumExposedPublicTransport; }
+	public static int getCumTicketTransportPublic()	{ return cumTicketTransportPublic; }
+	public static int getInsSpacePublicTransport()	{ return insSpacePublicTransport; }
 }

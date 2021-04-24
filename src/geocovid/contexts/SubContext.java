@@ -159,8 +159,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 		loadParcelsShapefile();
 		// Lee y carga en BuildingManager los places
 		loadPlacesShapefile();
-		//Colectivos creacion de colectivos
-		loadPlacesShapePublicTransport();
+		// Creacion de colectivos
+		createPublicTransportUnits();
 		
 		buildingManager.createActivitiesChances();
 		
@@ -543,21 +543,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 			} while (toAdd != 0);
 		}
 	}
-	
-	/**
-	 * Si lo permite la ciudad, habilitar o deshabilitar la opcion de usar transporte publico. 
-	 */
-	protected void enablePublicTransport(boolean enabled) {
-		
-		if(enabled) {
-			buildingManager.openPlaces(new String[] {"bus"});
-		}
-		else {
-			buildingManager.closePlaces(new String[] {"bus"});
-
-		}
-			
-	}
 
 	/**
 	 * Toma las parcelas del shapefile, crea los hogares y los posiciona en el mapa.
@@ -743,62 +728,53 @@ public abstract class SubContext extends DefaultContext<Object> {
 		}
 	}
 	
-	private void loadPlacesShapePublicTransport(){
+	private void createPublicTransportUnits() {
+		if (town.publicTransportUnits == 0)
+			return;
 		// Variables temporales
 		GeometryFactory geometryFactory = new GeometryFactory();
-		PlaceProperty placeProp;
 		String type = "bus";
-		Coordinate coord;
-		Coordinate[] coords = buildingManager.getSectoralsCentre();
-		int sectoralType, sectoralIndex = 0;
-		int buildingArea;
-		//
+		Coordinate secCoord;
+		Coordinate[] secCoords = buildingManager.getSectoralsCentre();
+		int sectoralType;
+		int[] sectoralsPTUnits = new int[town.sectoralsCount];
 		// Separar types y tomar el primero
-		placeProp = placesProperty.get(type);
+		PlaceProperty placeProp = placesProperty.get(type);
 		if (placeProp == null) {
 			System.out.println("Type de Place desconocido: " + type);
 		}
-		buildingArea = placeProp.getBuildingArea();
+		
 		// Buscar la seccional mas cercana para asignar a este Place
-		int unitTransportPerSectorial=Math.round(this.town.publicTransportAmount/coords.length);
-		for(int i=0; i<coords.length; i++) {
-			for(int j=0; j<unitTransportPerSectorial; j++) {
-				coord = coords[i];
-				sectoralIndex = i;
-				sectoralType = this.town.sectoralsTypes[sectoralIndex];
-			
-			// Crear Agente con los atributos el Place
-				PublicTransportAgent tempPublicTransport= new PublicTransportAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type, placeProp.getActivityType(),
-					buildingArea, placeProp.getBuildingCArea(), placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
-			
+		int ptUnits = 0;
+		double doubleP = town.publicTransportUnits / (double)town.sectoralsCount;
+		double decimalRest = 0d;
+		int integerP;
+		for (int sI = 0; sI < town.sectoralsCount; sI++) {
+			sectoralType = town.sectoralsTypes[sI];
+			secCoord = secCoords[sI];
+	    	// Separo la parte entera
+	    	integerP = (int) doubleP;
+	    	// Sumo la parte decimal que sobra 
+	    	decimalRest += doubleP - integerP;
+	    	// Si los restos decimales suman 1 o mas, se suma un entero
+	    	if (decimalRest >= 1d) {
+	    		decimalRest -= 0.99d;
+	    		++integerP;
+	    	}
+	    	for (int j = 0; j < integerP; j++) {
+				// Crear Agente con los atributos el Place
+				PublicTransportAgent tempPublicTransport = new PublicTransportAgent(this, sectoralType, sI, secCoord, ++lastHomeId, type, placeProp);
 				workPlaces.add(tempPublicTransport);
 				// Si es lugar con atencion al publico, se agrega a la lista de actividades
-				buildingManager.addPlace(sectoralIndex, tempPublicTransport, placeProp);
+				buildingManager.addPlace(sI, tempPublicTransport, placeProp);
 				// Agregar al contexto
 				add(tempPublicTransport);
-				geography.move(tempPublicTransport, geometryFactory.createPoint(tempPublicTransport.getCoordinate()));
+				geography.move(tempPublicTransport, geometryFactory.createPoint(secCoord));
 			}
+	    	sectoralsPTUnits[sI] = integerP;
+	    	ptUnits += integerP;
 		}
-		int remainder = 0;
-		remainder = this.town.publicTransportAmount - unitTransportPerSectorial * coords.length;
-
-		for(int j=0; j<remainder; j++) {
-			int i= RandomHelper.nextIntFromTo(0, coords.length-1);
-			coord = coords[i];
-			sectoralIndex = i;
-			sectoralType = town.sectoralsTypes[sectoralIndex];
-		
-			// Crear Agente con los atributos el Place
-			PublicTransportAgent tempPublicTransport= new PublicTransportAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type, placeProp.getActivityType(),
-				buildingArea, placeProp.getBuildingCArea(), placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
-			
-			workPlaces.add(tempPublicTransport);
-			// Si es lugar con atencion al publico, se agrega a la lista de actividades
-			buildingManager.addPlace(sectoralIndex, tempPublicTransport, placeProp);
-			// Agregar al contexto
-			add(tempPublicTransport);
-			geography.move(tempPublicTransport, geometryFactory.createPoint(tempPublicTransport.getCoordinate()));
-		}
+		buildingManager.setDefaultPTUnits(ptUnits, sectoralsPTUnits);
 	}
 	
 	

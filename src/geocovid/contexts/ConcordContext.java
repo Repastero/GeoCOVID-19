@@ -103,7 +103,6 @@ public class ConcordContext extends SubContext {
 					"stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
-			enablePublicTransport(true);
 			setSocialDistancing(95);
 			setMaskEffectivity(0.25);
 			break;
