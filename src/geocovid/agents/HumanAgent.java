@@ -29,7 +29,7 @@ public class HumanAgent {
 	/** Ubicacion actual dentro de parcela o null si afuera*/ 
 	private int[] currentPosition = {0,0};
 	/** Ubicacion en parcela trabajo o null si en exterior o desempleado */
-	private int[] workplacePosition = {0,0};
+	public int[] workplacePosition = {0,0};
 	
 	/** Indice de tipo de seccional origen */
 	private int sectoralType;
@@ -94,6 +94,8 @@ public class HumanAgent {
 		this.ageGroup = ageGroup;
 	}
     
+	
+
 	public HumanAgent(SubContext subContext, int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign, boolean tourist) {
 		this(subContext, secHome, secHomeIndex, ageGroup, home, work, workPos);
 		this.foreignTraveler = foreign;
@@ -596,5 +598,14 @@ public class HumanAgent {
     		context.getBuildManager().hideInfectiousHuman(agentID);
     	}
     	relocationTime = schedule.getTickCount();
-    }
+   	}
+	
+	public boolean isInCloseContact() {
+		return inCloseContact;
+	}
+
+	public void setInCloseContact(boolean inCloseContact) {
+		this.inCloseContact = inCloseContact;
+	}
 }
+

@@ -33,6 +33,9 @@ public class BuildingAgent {
 	private int capacity;
 	private int startingRow = 0; // indice de fila inicial para no trabajadores 
 	private int size[] = {0,0}; // ancho x largo
+	
+
+
 	private boolean outdoor;
 	private boolean ventilated = true; // por defecto todas las parcelas ventiladas
 	// Atributos staticos para checkear el radio de infeccion
@@ -45,13 +48,13 @@ public class BuildingAgent {
 	private static int yShiftsPD[];
 	//
 	/** Lista de HumanAgent trasmisores */
-	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>();
+	protected List<HumanAgent> spreadersList = new ArrayList<HumanAgent>();
 	/** Lista de HumanAgent pre-trasmisores (sintomaticos) */
-	private List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>();
+	protected List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>();
 	/** Mapa de HumanAgent dentro de parcela <Id Humano, HumanAgent> */
-	private Map<Integer, HumanAgent> humansMap = new HashMap<>();
+	protected Map<Integer, HumanAgent> humansMap = new HashMap<>();
 	/** Mapa de SurfaceAgent dentro de parcela <Id Superficie, SurfaceAgent> */
-	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
+	protected Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
 	
 	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea) {
 		this.context = subContext;
@@ -72,6 +75,7 @@ public class BuildingAgent {
 		setRealArea(areaModifier);
 		setBuildingShape();
 	}
+	
 	
 	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, int realArea, boolean outdoor) {
 		// Constructor Evento
@@ -243,6 +247,7 @@ public class BuildingAgent {
 	 */
 	public void removeHuman(HumanAgent human, int[] pos) {
 		// Si quedo afuera, no se continua
+		
 		if (pos == null)
 			return;
 		int posId = getPosId(pos);
@@ -394,6 +399,7 @@ public class BuildingAgent {
 	 * @param direct contagio por droplet o aerosol
 	 * @return <b>true</b> si hubo contagio
 	 */
+
 	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey, boolean direct) {
 		double infectionRate = 0d;
 		if (direct)
@@ -455,6 +461,7 @@ public class BuildingAgent {
 	 * @param spHuman HumanAgent contagioso
 	 * @param spPos posicion en grilla de spHuman
 	 */
+
 	private void spreadVirus(HumanAgent spreader, int[] spPos) {
 		int[] pos = new int[2];
 		int xShift, yShift;
@@ -488,7 +495,9 @@ public class BuildingAgent {
 	 * @param pos posicion en grilla de human
 	 * @param spreaders lista de HumanAgent contagiosos o pre-contagiosos
 	 */
+
 	private void findNearbySpreaders(HumanAgent prey, int[] pos, List<HumanAgent> spreaders) {
+	
 		int[] spPos = new int[2];
 		int xShift, yShift;
 		double lastTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
@@ -565,7 +574,7 @@ public class BuildingAgent {
 	 * @param human HumanAgent susceptible
 	 * @param pos posicion en grilla de human
 	 */
-	private void checkIfSurfaceContaminated(HumanAgent human, int csId) {
+	protected void checkIfSurfaceContaminated(HumanAgent human, int csId) {
 		SurfaceAgent surface = surfacesMap.get(csId);
 		if (surface != null) {
 			// Si en el ultimo checkeo la superficie seguia contaminada
@@ -584,7 +593,7 @@ public class BuildingAgent {
 	 * @param pos {x, y} de superficie
 	 * @return <b>int</b> id superficie
 	 */
-	private int getPosId(int[] pos) {
+	protected int getPosId(int[] pos) {
 		return (pos[1]*size[0])+pos[0];
 	}
 	

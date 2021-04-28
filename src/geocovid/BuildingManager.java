@@ -72,6 +72,7 @@ public final class BuildingManager {
 	/** Sumatoria de chances por cada grupo etario */
 	private int[] otherChancesSum;
 	
+	
 	/** Listado de types de Places y Workplaces que estan cerrados */ 
 	private final Set<String> closedPlaces = new HashSet<String>();
 	
@@ -84,6 +85,8 @@ public final class BuildingManager {
 	private SubContext context; // Puntero
 	private int sectoralsCount; // Puntero
 	
+
+
 	/**
 	 * Reinicia colecciones de Places, y guarda referencia de SubContext y cantidad de seccionales
 	 * @param subContext sub contexto municipio
@@ -201,6 +204,11 @@ public final class BuildingManager {
 		for (String type : typesToClose) {
 			if (closedPlaces.contains(type)) // Ya esta cerrado
 				continue;
+			// Primero busca entre los lugares de trabajo
+						if (workplacesMap.containsKey(type)) {
+							workplacesMap.get(type).forEach(work -> work.close()); // Cierra el workplace
+							closedPlaces.add(type);
+						}
 			// Primero busca entre los lugares de trabajo
 			if (workplacesMap.containsKey(type)) {
 				workplacesMap.get(type).forEach(work -> work.close()); // Cierra el workplace
@@ -623,4 +631,8 @@ public final class BuildingManager {
 			mainContext.remove(infHuman);
 		}
 	}
+	
+	
+	
+	
 }

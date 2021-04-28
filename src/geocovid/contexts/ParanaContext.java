@@ -208,6 +208,8 @@ public class ParanaContext extends SubContext {
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.openPlaces(new String[] {"library", "school"});
+			//,"primary_school", "secondary_school"
+			//protocolSchool(true);
 			break;
 		case 435: // 11 marzo
 			// Aumenta un poco el ocio 
@@ -222,6 +224,7 @@ public class ParanaContext extends SubContext {
 			// TODO aca vendrian las medidas del 16/04/2021
 			//buildingManager.limitEntertainmentActCap(2.5d);
 			break;
+			
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
 		}
