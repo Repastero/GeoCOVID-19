@@ -23,6 +23,7 @@ public class PublicTransportAgent extends WorkplaceAgent {
 		if (pos != null) {
 			InfectionReport.addCumTicketTransportPublic();
 		}
+		
 		return pos;
 	}
 	
@@ -54,4 +55,6 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	public static void setPtSeats(int ptSeatsChange) {
 		ptSeats = ptSeatsChange;
 	}
+
+	
 }

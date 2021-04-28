@@ -546,6 +546,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 		return schedule.removeAction(youngAdultsPartyAction);
 	}
 	
+	
+	
 	/**
 	 * Setea aleatoriamente a Humanos si respetan el distanciamiento social, segun porcentaje de la poblacion dado.
 	 * @param porc porcentaje que se distancia

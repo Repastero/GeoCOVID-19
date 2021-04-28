@@ -18,6 +18,7 @@ import geocovid.agents.BuildingAgent;
 import geocovid.agents.HomeAgent;
 import geocovid.agents.HumanAgent;
 import geocovid.agents.InfectiousHumanAgent;
+import geocovid.agents.PublicTransportAgent;
 import geocovid.agents.WorkplaceAgent;
 import geocovid.contexts.SubContext;
 import repast.simphony.context.Context;
@@ -632,5 +633,13 @@ public final class BuildingManager {
 			infHuman.setHidden(true);
 			mainContext.remove(infHuman);
 		}
+	}
+	
+	/**
+	 * Setea si los transporte públicos se
+	 * @param ventilated indica si se quiere ventilar o no lo places "bus" 
+	 */
+	public void setVentilatedBusesPlaces(boolean ventilated) {
+		placesMap.get("bus").forEach(sect -> sect.forEach(work -> work.setVentilated(ventilated)));
 	}
 }

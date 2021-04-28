@@ -48,11 +48,15 @@ public class ContextCreator implements ContextBuilder<Object> {
 	static final int WEEKEND_TICKS = 2*24;
 	
 	/** Lista de municipios a simular */
+//	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
+//		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
+//		"gualeguaychu","uruguay","federacion","colon","ibicuy",
+//		"concordia","lapaz","villaguay","federal","tala","feliciano"
+//	};
+	
 	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
-		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
-		"gualeguaychu","uruguay","federacion","colon","ibicuy",
-		"concordia","lapaz","villaguay","federal","tala","feliciano"
-	};
+			"parana"
+		};
 	
 	public ContextCreator() {
 		// Para corridas en batch imprime fecha de compilacion

@@ -129,6 +129,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.setPTUnits(town.getPTPhaseUnits(3));
 			setSocialDistancing(30);
 			buildingManager.limitActivitiesCapacity(2d);
+			
 			break;
 		case 254: // 11 septiembre
 			// Desde Septiembre que termina la fresca vuelven a ventilar hogares
