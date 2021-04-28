@@ -1,62 +1,89 @@
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
-  <name>Contactos</name>
+  <name>Reporte</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
-    <start>24.0</start>
+    <start>0.0</start>
     <interval>24.0</interval>
     <priority>-Infinity</priority>
-    <pType>FIRST</pType>
+    <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-1669922361</hashCode>
+    <hashCode>355055598</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
   <methodDataSources class="linked-hash-map">
     <entry>
-      <string>5-15</string>
+      <string>Expuestos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>5-15</id>
+        <id>Expuestos</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getChildAVGInteractions</methodName>
+        <methodName>getCumExposed</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>16-25</string>
+      <string>Asintomaticos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>16-25</id>
+        <id>Asintomaticos</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getYoungAVGInteractions</methodName>
+        <methodName>getInsASXInfectious</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>26-40</string>
+      <string>Sintomaticos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>26-40</id>
+        <id>Sintomaticos</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getAdultAVGInteractions</methodName>
+        <methodName>getInsSYMInfectious</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>41-64</string>
+      <string>Infecciosos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>41-64</id>
+        <id>Infecciosos</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getElderAVGInteractions</methodName>
+        <methodName>getInsInfectious</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>65+</string>
+      <string>Camas</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>65+</id>
+        <id>Camas</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getHigherAVGInteractions</methodName>
+        <methodName>getInsHospitalized</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Recuperados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Recuperados</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumRecovered</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Muertos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Muertos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumDeaths</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Hospitalizados</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Hospitalizados</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getCumHospitalized</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>

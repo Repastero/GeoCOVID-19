@@ -36,16 +36,16 @@ public class HumanAgent {
 	/** Indice de seccional origen */
 	private int sectoralIndex;
 	/** Indice estado de markov donde esta (0 es la casa, 1 es el trabajo/estudio, 2 es ocio, 3 es otros) */
-	private int currentActivity = 0;
+	private int currentState = 0;
 	/** Indice de franja etaria */
 	private int ageGroup = 0;
 	/** Humano extranjero */
 	private boolean foreignTraveler = false;
 	/** Humano turista */
 	private boolean touristTraveler = false;
-	/** Ultimo tick que cambio actividad */
+	/** Ultimo tick que cambio de building */
 	private double relocationTime = -1d;
-	/** Contador para demorar cambio de actividad */
+	/** Contador para demorar cambio de estado */
 	private int ticksDelay = 0;
 	/** Tick de inicio de periodo infeccioso */
 	private double infectiousStartTime;
@@ -57,7 +57,7 @@ public class HumanAgent {
 	/** Parcela de actividad programada */
 	private BuildingAgent queuedBuilding;
 	/** Indice estado de markov de actividad programada */
-	private int queuedActIndex;
+	private int queuedActivityState;
 	
 	/** Puntero a ISchedule para programar acciones */
 	protected static ISchedule schedule;
@@ -137,7 +137,7 @@ public class HumanAgent {
 	
 	/** @return <b>true</b> si en actividad trabajo */
 	public boolean atWork() {
-		return (currentActivity == 1);
+		return (currentState == 1);
 	}
 	
 	/** @return <b>true</b> si en cuarentena */
@@ -155,9 +155,9 @@ public class HumanAgent {
 		return currentBuilding;
 	}
 	
-	/** @return {@link HumanAgent#currentActivity} */
-	public int getCurrentActivity() {
-		return currentActivity;
+	/** @return {@link HumanAgent#currentState} */
+	public int getCurrentState() {
+		return currentState;
 	}
 	
 	/** @return {@link HumanAgent#relocationTime} */
@@ -220,24 +220,21 @@ public class HumanAgent {
 	}
 	
 	/**
-	 * Informa la cantidad de contactos en el dia (si corresponde) y reinicia el Map.
+	 * Informa la cantidad de contactos en el dia y reinicia el Map.
 	 * @see DataSet#COUNT_UNIQUE_INTERACTIONS
+	 * @return contactos personales diarios
 	 */
-	@ScheduledMethod(start = 23, interval = 24, priority = ScheduleParameters.LAST_PRIORITY)
-	public void newDayBegin() {
-		// Se tiene en cuenta unicamente los que viven en la ciudad
-		if (!foreignTraveler) {
-			int count = 0;
-			if (DataSet.COUNT_UNIQUE_INTERACTIONS) {
-				count = socialInteractions.size();
-			}
-			else {
-				for (Object value : socialInteractions.values())
-					count += (Integer)value;
-			}
-			InfectionReport.updateSocialInteractions(ageGroup, count);
+	public int getSocialInteractions() {
+		int count = 0;
+		if (DataSet.COUNT_UNIQUE_INTERACTIONS) {
+			count = socialInteractions.size();
+		}
+		else {
+			for (Object value : socialInteractions.values())
+				count += (Integer)value;
 		}
 		socialInteractions.clear();
+		return count;
 	}
 	
 	/**
@@ -260,7 +257,7 @@ public class HumanAgent {
 			return;
 		context.add(this);
 		
-		currentActivity = 0;
+		currentState = 0;
 		currentPosition = homePlace.insertHuman(this);
 		currentBuilding = homePlace;
 		switchLocation();
@@ -293,7 +290,7 @@ public class HumanAgent {
 			return;
 		// Se contagia del virus
 		exposed = true;
-		InfectionReport.addExposed(ageGroup);
+		InfectionReport.addExposed(ageGroup, currentState);
 		int mean = DataSet.EXPOSED_PERIOD_MEAN;
 		int std = DataSet.EXPOSED_PERIOD_DEVIATION;
 		double period = RandomHelper.createNormal(mean, std).nextDouble();
@@ -470,12 +467,12 @@ public class HumanAgent {
 	
 	/**
 	 * Setea los parametros de actividad programada.
-	 * @param actIndex indice de actividad (0,1,2,3)
+	 * @param actState indice de estado (0,1,2,3)
 	 * @param building parcela donde realiza actividad
 	 * @param ticksDuration duracion en ticks de actividad
 	 */
-	public void queueActivity(int actIndex, BuildingAgent building, int ticksDuration) {
-		queuedActIndex = actIndex;
+	public void queueActivity(int actState, BuildingAgent building, int ticksDuration) {
+		queuedActivityState = actState;
 		queuedBuilding = building;
 		queuedDuration = ticksDuration;
 		activityQueued = true;
@@ -483,13 +480,13 @@ public class HumanAgent {
 	
 	/**
 	 * Selecciona la parcela donde realizar la nueva actividad.
-	 * @param prevActivityIndex indice de actividad previa
-	 * @param activityIndex indice de nueva actividad
+	 * @param prevStateIndex indice de estado previo
+	 * @param stateIndex indice de nuevo estado
 	 * @return <b>BuildingAgent</b> o <b>null</b>
 	 */
-	public BuildingAgent switchActivity(int prevActivityIndex, int activityIndex) {
+	public BuildingAgent switchActivity(int prevStateIndex, int stateIndex) {
 		BuildingAgent newBuilding;
-        switch (activityIndex) {
+        switch (stateIndex) {
 	    	case 0: // 0 Casa
 	    		newBuilding = homePlace;
 	    		break;
@@ -497,14 +494,14 @@ public class HumanAgent {
 	    		newBuilding = workPlace;
 	    		break;
 	    	default: // 2 Ocio / 3 Otros (supermercados, farmacias, etc)
-	    		newBuilding = context.getBuildManager().findRandomPlace(sectoralType, sectoralIndex, activityIndex, this, currentBuilding, ageGroup);
+	    		newBuilding = context.getBuildManager().findRandomPlace(sectoralType, sectoralIndex, stateIndex, this, currentBuilding, ageGroup);
 	    		break;
         }
         return newBuilding;
 	}
 	
     /**
-     * Cambia la actividad y parcela segun TMMC (Timed mobility markov chains).
+     * Cambia el estado y parcela segun TMMC (Timed mobility markov chains).
      */
     public void switchLocation() {
 		// Resta ticks de duracion de actividad programada
@@ -516,13 +513,13 @@ public class HumanAgent {
     	if (activityQueued) {
     		activityQueued = false;
     		ticksDelay = queuedDuration; // setea contador ticksDelay
-    		relocate(queuedBuilding, queuedActIndex);
+    		relocate(queuedBuilding, queuedActivityState);
     		return;
     	}
     	
     	// Calcula el indice del periodo del dia, segun tick actual
         final int p = ((int)schedule.getTickCount() % 24) / 6;	// 0 1 2 3
-        // Probabilidad aleatoria de 1 a 1000 para elegir actividad en matrices
+        // Probabilidad aleatoria de 1 a 1000 para elegir estado en matrices
         int r = RandomHelper.nextIntFromTo(1, 1000);
         int i = 0;
         
@@ -534,29 +531,29 @@ public class HumanAgent {
         //else
         //	matrixTMMC = (!quarantined ? travelerTMMC : infectedTravelerTMMC);
         
-        // Recorre la matriz correspondiente al periodo del dia y actividad actual
-        while (r > matrixTMMC[p][currentActivity][i]) {
-        	// Avanza el indice de actividad, si es posible restar probabilidad
-        	r -= matrixTMMC[p][currentActivity][i];
+        // Recorre la matriz correspondiente al periodo del dia y estado actual
+        while (r > matrixTMMC[p][currentState][i]) {
+        	// Avanza el indice de estado, si es posible restar probabilidad
+        	r -= matrixTMMC[p][currentState][i];
         	++i;
         }
         
         // Si el nuevo lugar es de distinto tipo, lo cambia
-        if (currentActivity != i) {
-        	BuildingAgent tempBuilding = switchActivity(currentActivity, i);
+        if (currentState != i) {
+        	BuildingAgent tempBuilding = switchActivity(currentState, i);
         	relocate(tempBuilding, i);
         }
         
-        // Incrementa el tiempo de la actividad realizada
-        InfectionReport.increaseActivityTime(i);
+        // Incrementa el tiempo del estado actual
+        InfectionReport.increaseStateTime(i);
     }
     
 	/**
-	 * Cambia la ubicacion del agente e indice de actividad.
+	 * Cambia la ubicacion del agente e indice de estado.
 	 * @param newBuilding nueva parcela o null
-	 * @param newActivity indice nueva actividad
+	 * @param newState indice nuevo estado
 	 */
-	private void relocate(BuildingAgent newBuilding, int newActivity) {
+	private void relocate(BuildingAgent newBuilding, int newState) {
     	// Lo remueve si esta dentro de una parcela
         if (currentBuilding != null) {
         	currentBuilding.removeHuman(this, currentPosition);
@@ -569,7 +566,7 @@ public class HumanAgent {
     			setExposed();
     		}
         }
-        currentActivity = newActivity;
+        currentState = newState;
         
     	// Si el nuevo lugar es una parcela
     	if (newBuilding != null) {
@@ -585,7 +582,7 @@ public class HumanAgent {
     		else
     			currentPosition = newBuilding.insertHuman(this);
     		currentBuilding = newBuilding;
-
+    		
     		if (isContagious() && currentPosition != null) {
 				// Si en periodo de contagio y dentro del edificio, mover el marcador
     			context.getBuildManager().moveInfectiousHuman(agentID, newBuilding.getCoordinate());

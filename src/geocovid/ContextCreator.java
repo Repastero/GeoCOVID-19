@@ -103,22 +103,25 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 */
 	public void printSimulationDuration() {
 		final long simTime = System.currentTimeMillis() - simulationStartTime;
-		
+		final double cumExposed = InfectionReport.getCumExposed();
 		System.out.printf("Simulacion Nº: %5d | Seed: %d | Tiempo: %.2f minutos%n",
 				simulationRun, RandomHelper.getSeed(), (simTime / (double)(1000*60)));
 		System.out.printf("Dias epidemia: %5d%n",
 				(int) (schedule.getTickCount()) / 24 - obStartDelayDays);
-		System.out.printf("Susceptibles: %6d | Infectados: %d | Infectados por aerosol: %d | Infectados por estela: %d%n",
+		System.out.printf("Susceptibles: %6d | Infectados: %d%n",
 				humansCount,
-				InfectionReport.getCumExposed(),
-				InfectionReport.getCumExposedToAero(),
-				InfectionReport.getCumExposedToCS());
-		System.out.printf("Recuperados:  %6d | Muertos: %d%n",
-				InfectionReport.getCumRecovered(),
-				InfectionReport.getCumDeaths());
-		
-		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
-			System.out.println(InfectionReport.getInfectedReport(i));
+				InfectionReport.getCumExposed());
+		if (cumExposed > 0) {
+			System.out.printf("Inf. por aerosol: %.2f%% | Inf. en colectivos: %.2f%% | Inf. por estela: %.2f%%%n",
+					(InfectionReport.getCumExposedToAero() * 100 / cumExposed),
+					(InfectionReport.getCumExposedPublicTransport() * 100 / cumExposed),
+					(InfectionReport.getCumExposedToCS() * 100 / cumExposed));
+			System.out.printf("Recuperados:  %6d | Muertos: %d%n",
+					InfectionReport.getCumRecovered(),
+					InfectionReport.getCumDeaths());
+			for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+				System.out.println(InfectionReport.getInfectedReport(i));
+			}
 		}
 	}
 

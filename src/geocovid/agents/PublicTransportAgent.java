@@ -14,7 +14,7 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	private static int ptSeats = DataSet.PUBLIC_TRANSPORT_MAX_SEAT;
 	
 	public PublicTransportAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, PlaceProperty pp) {
-		super(subContext, sectoralType, sectoralIndex, coord, id, workType, pp.getActivityType(), pp.getBuildingArea(), pp.getBuildingCArea(), pp.getWorkersPerPlace(), pp.getWorkersPerArea());
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, pp.getActivityState(), pp.getBuildingArea(), pp.getBuildingCArea(), pp.getWorkersPerPlace(), pp.getWorkersPerArea());
 	}
 	
 	@Override

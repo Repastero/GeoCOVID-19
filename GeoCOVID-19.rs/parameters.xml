@@ -25,7 +25,7 @@
 									
 		/>
 				<parameter name="diasSimulacion" displayName="Dias maximo de simulacion (0 = ∞)" type="int" 
-						defaultValue="289" 
+						defaultValue="318" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									

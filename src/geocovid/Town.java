@@ -12,9 +12,9 @@ public final class Town {
 	public static int firstInfectedAmount = 1;
 	/** Dias por defecto de cambio de fase */
 	private static final int[][] DEFAULT_PHASES_DAYS = {
-		{163,201,215,229,254,257,264,273,302,310,343,348,358,359,365,366,397,411,425,435,471},	// pna
-		{163,201,215,229,254,257,264,273,302,310,343,348,358,359,365,366,388,411,425,471},		// gchu
-		{163,201,215,    254,257,264,281,302,310,343,348,358,359,365,366,388,411,425,471}		// concord
+		{163,201,215,229,254,257,264,273,302,310,340,343,348,358,359,365,366,367,397,411,425,435,445,459,471},	// pna
+		{163,201,215,229,254,257,264,273,302,310,343,348,358,359,365,366,388,411,425,471},		// gchu TODO completar
+		{163,201,215,    254,257,264,281,302,310,343,348,358,359,365,366,388,411,425,471}		// concord TODO completar
 	};
 	
 	/** Dias por defecto de los cambios de unidades de transporte publico
@@ -128,7 +128,7 @@ public final class Town {
 				0,
 				new int[] {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
 				new double[] {6.6, 5.5, 3.8, 6.3, 5.1, 1.9, 1.0, 11.9, 2.2, 3.0, 6.1, 9.5, 10.5, 1.0, 8.3, 6.5, 8.6, 2.2},
-				new int[] {163,182,201,215,229,244,254,257,264,273,302,310,343,348,358,359,365,366,397,411,425,435,471},
+				new int[] {163,182,201,215,229,244,254,257,264,273,302,310,340,343,348,358,359,365,366,376,397,411,425,435,445,459,471},
 				182,
 				140,
 				false);
@@ -235,7 +235,7 @@ public final class Town {
 				new double[] {30.65, 22.50, 22.70, 24.15},
 				DEFAULT_PHASES_DAYS[1],
 				182,
-				0, // Carlos dijo que por el momento no se tenga en cuenta
+				0,
 				true);
 			break;
 		case "colon": // 28432
@@ -248,7 +248,7 @@ public final class Town {
 				new double[] {20.00, 14.18, 38.785, 27.035},
 				DEFAULT_PHASES_DAYS[1],
 				182,
-				0, // Carlos dijo que por el momento no se tenga en cuenta
+				0,
 				true);
 			break;
 		case "ibicuy": // 5086
@@ -261,7 +261,7 @@ public final class Town {
 				new double[] {100},
 				DEFAULT_PHASES_DAYS[1],
 				182,
-				0, // Carlos dijo que por el momento no se tenga en cuenta
+				0,
 				true);
 			break;
 		// Tipos Concordia
@@ -347,14 +347,6 @@ public final class Town {
 			throw new InvalidParameterException("Ciudad erronea: " + townName);
 		}
 		return true;
-	}
-	
-	public String getTownName() {
-		return townName;
-	}
-
-	public void setTownName(String townName) {
-		this.townName = townName;
 	}
 	
 	public int getPTPhaseUnits(int phase) {
