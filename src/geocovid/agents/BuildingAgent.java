@@ -86,6 +86,7 @@ public class BuildingAgent {
 			this.coveredArea = realArea;
 		//
 		this.outdoor = outdoor;
+		this.realArea = realArea;
 		setBuildingShape();
 	}
 	
@@ -446,8 +447,8 @@ public class BuildingAgent {
 			infectionRate *= 1 - DataSet.ISOLATION_INFECTION_RATE_REDUCTION;
 		}
 		
-		// Se modifica la cantidad de droplets segun actividad
-		infectionRate *= DataSet.ACTIVITY_DROPLET_VOLUME[spreader.getCurrentActivity()];
+		// Se modifica la cantidad de droplets segun estado
+		infectionRate *= DataSet.STATE_DROPLET_VOLUME[spreader.getCurrentState()];
 		
 		if (RandomHelper.nextDoubleFromTo(0d, 100d) <= infectionRate) {
 			prey.setExposed();

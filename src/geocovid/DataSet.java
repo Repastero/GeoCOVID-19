@@ -17,11 +17,10 @@ public final class DataSet {
 	/** Cantidad de alimnos por aula */
 	public static final int VACANCY_CLASSROOM= 30;          // cantidad de bancos por aula
 	/** Porcentaje del area construida ocupable en casas (minimo .1) */
-	public static final double BUILDING_AVAILABLE_AREA	= 0.5;
-	
+	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
 	/** Porcentaje del area construida ocupable en places (minimo .1) */
-	public static final double WORKPLACE_AVAILABLE_AREA	= 0.7;
-			
+	public static final double WORKPLACE_AVAILABLE_AREA	= 0.8;
+
 	/** Limite de aforo en Places por defecto durante cuarentena (valor minimo variable segun HUMANS_PER_SQUARE_METER) */ 
 	public static final double DEFAULT_PLACES_CAP_LIMIT		= 4d;	// metros cuadrados de superficie util, por persona
 	/** Multiplicador del limit de aforo en Places de ocio */
@@ -65,8 +64,8 @@ public final class DataSet {
 	/** Tiempo de cuarentena preventivo al ser contacto estrecho o convivir con sintomatico (si prevQuarantineEnabled) */
 	public static final int	PREVENTIVE_QUARANTINE_TIME		= 14*24;	// en ticks (14 dias)
 	
-	/** Cantidad de droplets recibidos segun actividad y cercania fisica */
-	public static final double[] ACTIVITY_DROPLET_VOLUME = {1d, 0.5d, 0.7d, 0.2d};	// TODO a revisar
+	/** Cantidad de droplets recibidos segun estado de markov y cercania fisica */
+	public static final double[] STATE_DROPLET_VOLUME = {1d, 0.5d, 0.8d, 0.2d};	// TODO a revisar
 	
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
 	public static final int	CS_MIN_INFECTION_RATE		= 7;	// sobre 100
@@ -104,6 +103,7 @@ public final class DataSet {
 	/** Distancia para que se considere contacto personal */
 	public static final int	PERSONAL_DISTANCE				= 3; // Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
 	/** Habilitar que se cuenten los contactos personales */
+
 	public static final boolean COUNT_INTERACTIONS			= true; // En false se reduce el tiempo de simulacion 25% aprox.
 	/** Para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
 	public static final boolean COUNT_UNIQUE_INTERACTIONS	= false;

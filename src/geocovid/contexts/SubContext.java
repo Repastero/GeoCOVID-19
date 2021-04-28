@@ -181,10 +181,43 @@ public abstract class SubContext extends DefaultContext<Object> {
 		universityPlaces.clear();
 	}
 	
+	/**
+	 * Cambia estado de markov de todos los HumanAgents en sub contexto.
+	 */
 	@ScheduledMethod(start = 0, interval = 1, priority = 0.5)
 	public void switchHumanLocation() {
 		Stream<Object> iteral = getObjectsAsStream(HumanAgent.class);
 		iteral.forEach(h -> ((HumanAgent) h).switchLocation());
+	}
+	
+	/**
+	 * Calcula el promedio de contactos diarios de los HumanAgents en sub contexto.
+	 * @see DataSet#COUNT_INTERACTIONS
+	 */
+	@ScheduledMethod(start = 23, interval = 24, priority = ScheduleParameters.LAST_PRIORITY)
+	public void computeAvgSocialInteractions() {
+		if (!DataSet.COUNT_INTERACTIONS)
+			return;
+		int[] sumOfSocialInteractions	= new int[DataSet.AGE_GROUPS];
+		int[] humansInteracting			= new int[DataSet.AGE_GROUPS];
+		double[] avgSocialInteractions	= new double[DataSet.AGE_GROUPS];
+		// Suma los contactos de cada humano por franja etaria
+		Stream<Object> iteral = getObjectsAsStream(HumanAgent.class);
+		iteral.forEach(
+		h -> {
+			HumanAgent human = ((HumanAgent) h);
+			int interactions = human.getSocialInteractions();
+			int ageGroup = human.getAgeGroup();
+			if (!human.isForeign()) { // si es extranjero no cuenta
+				sumOfSocialInteractions[ageGroup] += interactions;
+				++humansInteracting[ageGroup];
+			}
+        });
+		// Calcula el promedio para cada franja etaria
+		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+			avgSocialInteractions[i] = sumOfSocialInteractions[i] / (double)humansInteracting[i];
+		}
+		InfectionReport.updateSocialInteractions(avgSocialInteractions);
 	}
 	
 	/**
@@ -500,7 +533,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 	/**
 	 * Detiene la creacion programada de fiestas entre jovenes adultos.
 	 */
-	@SuppressWarnings("unused")
 	protected void stopRepeatingYoungAdultsParty() {
 		if (!removeYAPartyAction()) {
 			ScheduleParameters params;
@@ -746,15 +778,15 @@ public abstract class SubContext extends DefaultContext<Object> {
 				sectoralType = town.sectoralsTypes[sectoralIndex];
 				
 				// Crear Agente con los atributos el Place
-				WorkplaceAgent tempWorkspace = new WorkplaceAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type, placeProp.getActivityType(),
+				WorkplaceAgent tempWorkspace = new WorkplaceAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type, placeProp.getActivityState(),
 						buildingArea, placeProp.getBuildingCArea(), placeProp.getWorkersPerPlace(), placeProp.getWorkersPerArea());
 				
 				// Agrupar el Place con el resto del mismo type
-				if (placeProp.getActivityType() == 1) { // trabajo / estudio
+				if (placeProp.getActivityState() == 1) { // trabajo / estudio
 					if (type.contains("primary_school") || type.contains("secondary_school") || type.contains("technical_school")) {
 						for (int i = 0; i < (placeProp.getBuildingCArea() / DataSet.DEFAULT_AREA_CLASSROOM); i++) {
 						WorkplaceAgent tempWork = new ClassroomAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type,
-						placeProp.getActivityType(), DataSet.DEFAULT_AREA_CLASSROOM, DataSet.COVER_AREA_CLASSROOM, DataSet.VACANCY_CLASSROOM);
+								placeProp.getActivityState(), DataSet.DEFAULT_AREA_CLASSROOM, DataSet.COVER_AREA_CLASSROOM, DataSet.VACANCY_CLASSROOM);
 						schoolPlaces.add(tempWork);
 						buildingManager.addWorkplace(type, tempWork);
 						add(tempWork);

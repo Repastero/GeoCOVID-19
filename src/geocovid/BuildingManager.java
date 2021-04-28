@@ -171,7 +171,7 @@ public final class BuildingManager {
 			placesCount.put(type, new int[sectoralsCount]);
 			++placesCount.get(type)[secIndex];
 			//
-			if (prop.getActivityType() == 2) // Ocio
+			if (prop.getActivityState() == 2) // Ocio
 				enterPropList.add(prop);
 			else
 				otherPropList.add(prop);
@@ -387,6 +387,16 @@ public final class BuildingManager {
 	}
 	
 	/**
+	 * Limita aforo por separado en Places tipo Otros y Ocio.
+	 * @param otherSQM m2 por persona en Otros
+	 * @param entertainmentSQM m2 por persona en Ocio
+	 */
+	public void limitActivitiesCapacity(double otherSQM, double entertainmentSQM) {
+		limitOtherActCap(otherSQM);
+		limitEntertainmentActCap(entertainmentSQM);
+	}
+	
+	/**
 	 * Limita aforo en Places tipo Otros y Ocio.
 	 * @param sqMeters metros cuadrados por persona
 	 */
@@ -450,15 +460,15 @@ public final class BuildingManager {
 	 * Busca un nuevo place segun actividad a realizar y otros parametros.
 	 * @param secType indice tipo seccional
 	 * @param secIndex indice seccional
-	 * @param type indice tipo actividad
+	 * @param state indice estado markov
 	 * @param human agente humano
 	 * @param currentBuilding parcela actual o null
 	 * @param ageGroup indice grupo etario
 	 * @return <b>BuildingAgent</b> o <b>null</b>
 	 */
-	public BuildingAgent findRandomPlace(int secType, int secIndex, int type, HumanAgent human, BuildingAgent currentBuilding, int ageGroup) {
+	public BuildingAgent findRandomPlace(int secType, int secIndex, int state, HumanAgent human, BuildingAgent currentBuilding, int ageGroup) {
 		String newActivity;
-		if (type == 2) // Entretenimiento
+		if (state == 2) // Entretenimiento
 			newActivity = findNewPlaceType(entertainmentTypes, entertainmentChances, entertainmentChancesSum, ageGroup);
 		else // Otros
 			newActivity = findNewPlaceType(otherTypes, otherChances, otherChancesSum, ageGroup);

@@ -62,13 +62,6 @@ public class GchuContext extends SubContext {
 
 	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
 	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {45, 0};	// Se desplazan mas de 1500 metros el 47% de la población
-
-	/** % sobre 100 de que use el transporte publico al salir de seccional */
-	public static final int	PUBLIC_TRANSPORT_CHANCE	= 10; // 12.4% utiliza el colectivo (uso menos por medidas en cuarentena) 
-	/** Cantidad de unidades de transporte publico por seccional */
-	public static final int	PUBLIC_TRANSPORT_UNITS	= 2;
-	/** Cantidad de asientos en cada unidad de transorte publico */
-	public static final int	PUBLIC_TRANSPORT_SEATS	= 20;
 	
 	private static Map<String, PlaceProperty> customPlacesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	private static String currentMonth = null;	// Para distinguir entre cambios de markovs
@@ -245,12 +238,14 @@ public class GchuContext extends SubContext {
 	 * @param enabled inicio o fin de fin de semana
 	 */
 	public static void setHumansWeekendTMMC(boolean enabled) {
-		weekendTMMCEnabled = enabled;
-		for (int i = 0; i < DataSet.AGE_GROUPS-1; i++) {
-			MarkovChains.setWeekendDiff(localTMMC[0][i], enabled);
-			MarkovChains.setWeekendDiff(localTMMC[1][i], enabled);
+		if (weekendTMMCEnabled != enabled) {
+			weekendTMMCEnabled = enabled;
+			for (int i = 0; i < DataSet.AGE_GROUPS-1; i++) {
+				MarkovChains.setWeekendDiff(localTMMC[0][i], enabled);
+				MarkovChains.setWeekendDiff(localTMMC[1][i], enabled);
+			}
+			travelerTMMC = (enabled ? MarkovChains.TRAVELER_WEEKEND_TMMC : MarkovChains.TRAVELER_DEFAULT_TMMC);
 		}
-		travelerTMMC = (enabled ? MarkovChains.TRAVELER_WEEKEND_TMMC : MarkovChains.TRAVELER_DEFAULT_TMMC);
 	}
 	
 	/**

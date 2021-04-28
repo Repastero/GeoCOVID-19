@@ -19,7 +19,7 @@ public final class PlaceProperty {
 	/** Tipo primario */
 	private String googlePlaceType;
 	/** Indice tipo actividad (0,1,2,3) */
-	private int activityType;
+	private int activityState;
 	/** Area total */
 	private int buildingArea;
 	/** Porcentaje area cubierta */
@@ -39,7 +39,7 @@ public final class PlaceProperty {
 	public PlaceProperty(String gmapsType, String gplaceType, int type, int avgArea, int avgCoveredArea, int workersPlace, int workersArea, int[] chances) {
 		this.googleMapsType = gmapsType;
 		this.googlePlaceType = gplaceType;
-		this.activityType = type;
+		this.activityState = type;
 		this.buildingArea = avgArea;
 		this.buildingCoveredArea = avgCoveredArea;
 		this.workersPerPlace = workersPlace;
@@ -48,7 +48,7 @@ public final class PlaceProperty {
 	}
 	
 	public PlaceProperty(String gmapsType, String gplaceType, PlaceProperty pp) {
-		this(gmapsType, gplaceType, pp.activityType, pp.buildingArea, pp.buildingCoveredArea, pp.workersPerPlace, pp.workersPerArea, pp.activityChances);
+		this(gmapsType, gplaceType, pp.activityState, pp.buildingArea, pp.buildingCoveredArea, pp.workersPerPlace, pp.workersPerArea, pp.activityChances);
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public final class PlaceProperty {
 				if (gMapsType.equals(gPlaceType)) {
 					placeProperty = new PlaceProperty(gMapsType, gPlaceType);
 					try {
-						placeProperty.setActivityType	(Integer.valueOf(nextLine[dataIndexes[2]]));
+						placeProperty.setActivityState	(Integer.valueOf(nextLine[dataIndexes[2]]));
 						placeProperty.setBuildingArea	(Integer.valueOf(nextLine[dataIndexes[3]]));
 						placeProperty.setBuildingCArea	(Integer.valueOf(nextLine[dataIndexes[4]]));
 						placeProperty.setWorkersPerPlace(Integer.valueOf(nextLine[dataIndexes[5]]));
@@ -163,8 +163,8 @@ public final class PlaceProperty {
 		return googlePlaceType;
 	}
 
-	public int getActivityType() {
-		return activityType;
+	public int getActivityState() {
+		return activityState;
 	}
 
 	public int getBuildingArea() {
@@ -195,8 +195,8 @@ public final class PlaceProperty {
 		this.googlePlaceType = googlePlaceType;
 	}
 
-	public void setActivityType(int activityType) {
-		this.activityType = activityType;
+	public void setActivityState(int activityState) {
+		this.activityState = activityState;
 	}
 
 	public void setBuildingArea(int buildingArea) {
