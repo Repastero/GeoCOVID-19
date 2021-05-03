@@ -29,7 +29,7 @@ public class HumanAgent {
 	/** Ubicacion actual dentro de parcela o null si afuera*/ 
 	private int[] currentPosition = {0,0};
 	/** Ubicacion en parcela trabajo o null si en exterior o desempleado */
-	public int[] workplacePosition = {0,0};
+	private int[] workplacePosition = {0,0};
 	
 	/** Indice de tipo de seccional origen */
 	private int sectoralType;
@@ -603,6 +603,15 @@ public class HumanAgent {
 
 	public void setInCloseContact(boolean inCloseContact) {
 		this.inCloseContact = inCloseContact;
+	}
+	
+	public int[] getWorkplacePosition() {
+		return workplacePosition;
+	}
+
+
+	public void setWorkplacePosition(int[] workplacePosition) {
+		this.workplacePosition = workplacePosition;
 	}
 }
 

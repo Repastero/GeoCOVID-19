@@ -53,7 +53,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	private List<List<HomeAgent>> homePlaces;	// Lista de hogares en cada seccional
 	private List<WorkplaceAgent> workPlaces = new ArrayList<WorkplaceAgent>();		// Lista de lugares de trabajo
 	private List<WorkplaceAgent> schoolPlaces = new ArrayList<WorkplaceAgent>();	// Lista de lugares de estudio primario/secundario (aulas)
-		private List<WorkplaceAgent> universityPlaces = new ArrayList<WorkplaceAgent>();// Lista de lugares de estudio terciario/universitario
+	private List<WorkplaceAgent> universityPlaces = new ArrayList<WorkplaceAgent>();// Lista de lugares de estudio terciario/universitario
 	
 	private HumanAgent[] contextHumans;	// Array de HumanAgent parte del contexto
 	private int localHumansCount;		// Cantidad de humanos que viven en contexto
@@ -64,7 +64,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	private int[] lodgingPlacesSI;				// Seccionales donde existen lugares de hospedaje
 	private ISchedulableAction touristSeasonAction;
 	private ISchedulableAction youngAdultsPartyAction;
-	private ISchedulableAction starProtocolSchool;
+	private ISchedulableAction starSchoolProtocol;
 	
 	protected Map<String, PlaceProperty> placesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	protected BuildingManager buildingManager;
@@ -548,39 +548,28 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public boolean removeYAPartyAction() {
 		return schedule.removeAction(youngAdultsPartyAction);
 	}
-	
-	/**
-	 * Activa el protocolo de asistencia 50% alumnos por semana (protocolo burbuja).
-	 */
-	 public final void protocolSchool (boolean protocol) {
-			if (protocol) {	
-				ClassroomAgent.setProtocolSchool(protocol);
-				starProtocol(protocol);
-			}
-	 }
-		 
+			 
 	 /**
-	 Programa por tiempo indeterminado la asistencia alternada semana a semana de las burbuhas de alumnos.
+	 Activa y programa por tiempo indeterminado la asistencia alternada semana a semana de las burbuhas de alumnos.setchoolProtocol
 		 */ 
-	public  void starProtocol (boolean protocol) {
+	public  void setSchoolProtocol (boolean protocol) {
 		if (protocol) {	
+		ClassroomAgent.setSchoolProtocol(protocol);
 		ScheduleParameters params;
 		params = ScheduleParameters.createRepeating(schedule.getTickCount(), 7*24, ScheduleParameters.FIRST_PRIORITY);
-		starProtocolSchool=schedule.schedule(params,this,"schoolGroupChange");
+		starSchoolProtocol=schedule.schedule(params,this,"schoolGroupChange");
 		}
-				
 	}
-	
-	
-	public void schoolGroupChange() {
+		
+	public void schoolGroupChange() {//TODO no pude lograr que llame directamente este metodo del schedule
 		ClassroomAgent.studyGroupChange();
-}
+	}
 
 	/**
 	 * Detiene el procolo burbuja en escuelas.
 	 */
 	@SuppressWarnings("unused")
-	private void stopRepeatingProtocolSchool() {
+	private void stopRepeatingSchoolProtocol() {
 		if (!removeProtocol()) {
 		ScheduleParameters params;
 		params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1d);
@@ -593,8 +582,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 * @return <b>true</b> si se elimino la accion
 	 */
 	public boolean removeProtocol() {
-		ClassroomAgent.setProtocolSchool(false);
-		return schedule.removeAction(starProtocolSchool);
+		ClassroomAgent.setSchoolProtocol(false);
+		return schedule.removeAction(starSchoolProtocol);
 	}
 	
 	/**
@@ -792,7 +781,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 						add(tempWork);
 						schoolVacancies += tempWork.getVacancy();
 						}
-						geography.move(tempWorkspace, geom);
+					type=null;
 					}
 					else if (type.contains("university")) {
 						universityPlaces.add(tempWorkspace);
@@ -811,7 +800,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 					// Si es lugar con atencion al publico, se agrega a la lista de actividades
 					buildingManager.addPlace(sectoralIndex, tempWorkspace, placeProp);
 				}
-				if (!type.contains("primary_school") || !type.contains("secondary_school") || !type.contains("technical_school")) {
+				if (!(type==null)) {
 				// Agregar al contexto
 				add(tempWorkspace);
 				geography.move(tempWorkspace, geom);

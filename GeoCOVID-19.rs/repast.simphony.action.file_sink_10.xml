@@ -1,6 +1,6 @@
 <repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.8.0">
-  <name>Infectados por grupo</name>
-  <dataSet>Infectados</dataSet>
+  <name>Contactos personales</name>
+  <dataSet>Contactos</dataSet>
   <delimiter>,</delimiter>
   <format>TABULAR</format>
   <sourceIds class="linked-hash-set">
@@ -12,6 +12,6 @@
     <string>41-64</string>
     <string>65+</string>
   </sourceIds>
-  <fileName>ReportInfected.csv</fileName>
+  <fileName>ReportContacts.csv</fileName>
   <addTimeStamp>true</addTimeStamp>
 </repast.simphony.data2.engine.FileSinkDescriptor>

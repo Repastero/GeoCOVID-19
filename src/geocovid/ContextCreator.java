@@ -111,9 +111,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 				humansCount,
 				InfectionReport.getCumExposed());
 		if (cumExposed > 0) {
-			System.out.printf("Inf. por aerosol: %.2f%% | Inf. en colectivos: %.2f%% | Inf. por estela: %.2f%%%n",
+			System.out.printf("Inf. por aerosol: %.2f%% | Inf. en colectivos: %.2f%% | Inf. en escuelas: %.2f%% | Inf. por estela: %.2f%%%n",
 					(InfectionReport.getCumExposedToAero() * 100 / cumExposed),
 					(InfectionReport.getCumExposedPublicTransport() * 100 / cumExposed),
+					(InfectionReport.getCumExposedSchool() * 100 / cumExposed),
 					(InfectionReport.getCumExposedToCS() * 100 / cumExposed));
 			System.out.printf("Recuperados:  %6d | Muertos: %d%n",
 					InfectionReport.getCumRecovered(),

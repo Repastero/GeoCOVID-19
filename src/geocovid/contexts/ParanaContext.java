@@ -217,8 +217,7 @@ public class ParanaContext extends SubContext {
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.limitOtherActCap(1d);
 			buildingManager.openPlaces(new String[] {"library", "school","primary_school", "secondary_school"});
-			//,"primary_school", "secondary_school"
-			protocolSchool(true);
+			//setSchoolProtocol(true);//habilita protocolo burbuja 50% 
 			break;
 		case 435: // 11 marzo
 			// Aumenta un poco el ocio 
@@ -244,6 +243,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.limitEntertainmentActCap(2.5d);
 			// Merman las jodas, por que vuelven a controlar
 			stopRepeatingYoungAdultsParty();
+			buildingManager.setPTUnits(town.getPTPhaseUnits(0));
 			break;
 			
 		default:

@@ -1,59 +1,36 @@
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
-  <name>Infectados</name>
-  <type>NON_AGGREGATE</type>
-  <sourceType>geocovid.InfectionReport</sourceType>
+  <name>Transporte Publico</name>
+  <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
     <start>0.0</start>
     <interval>24.0</interval>
-    <priority>Infinity</priority>
+    <priority>-Infinity</priority>
     <pType>FIRST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-1513635368</hashCode>
+    <hashCode>1088423632</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
   <methodDataSources class="linked-hash-map">
     <entry>
-      <string>5-15</string>
+      <string>Infectados</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>5-15</id>
+        <id>Infectados</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getChildInsInfectious</methodName>
+        <methodName>getCumExposedPublicTransport</methodName>
+        <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>16-25</string>
+      <string>Tickets</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>16-25</id>
+        <id>Tickets</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getYoungInsInfectious</methodName>
-      </repast.simphony.data2.engine.MethodDataSourceDefinition>
-    </entry>
-    <entry>
-      <string>26-40</string>
-      <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>26-40</id>
-        <className>geocovid.InfectionReport</className>
-        <methodName>getAdultInsInfectious</methodName>
-      </repast.simphony.data2.engine.MethodDataSourceDefinition>
-    </entry>
-    <entry>
-      <string>41-64</string>
-      <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>41-64</id>
-        <className>geocovid.InfectionReport</className>
-        <methodName>getElderInsInfectious</methodName>
-      </repast.simphony.data2.engine.MethodDataSourceDefinition>
-    </entry>
-    <entry>
-      <string>65+</string>
-      <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>65+</id>
-        <className>geocovid.InfectionReport</className>
-        <methodName>getHigherInsInfectious</methodName>
+        <methodName>getCumTicketTransportPublic</methodName>
+        <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
   </methodDataSources>
