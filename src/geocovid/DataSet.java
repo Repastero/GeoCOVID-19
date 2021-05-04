@@ -102,13 +102,16 @@ public final class DataSet {
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
+	
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 65d;	// sobre 100
 	
 	/** Cantidad maxima de asientos;
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
+	 * http://leivag1991vehicles.blogspot.com/2018/10/metalpar-tronador-mk2-chasis-of1418.html
+	 * 
 	 * */
-	public static final int	PUBLIC_TRANSPORT_MAX_SEAT				= 24;	// 
+	public static final int	PUBLIC_TRANSPORT_MAX_SEAT				= 31;	// 
 	
 	/** Cantidad maxima de gente parada;
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +

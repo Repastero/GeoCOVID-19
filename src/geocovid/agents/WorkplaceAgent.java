@@ -60,6 +60,15 @@ public class WorkplaceAgent extends BuildingAgent {
 		if (cap <= maximumCapacity)
 			setCapacity(cap);
 	}
+	/**
+	 * Calcula y setea la capacidad de un transporte público
+	 * por defecto en workplace no realiza nada, ya que la función se encuentra sobrecargada para PublicTransportAgent 
+	 * @param sqMetersPerHuman metros cuadrados por persona
+	 */
+	public void limitCapacityBus(int humanSites) {
+
+	}
+
 	
 	/**
 	 * Crea las posiciones de trabajo fijas segun la cantidad establecida. 
@@ -148,6 +157,11 @@ public class WorkplaceAgent extends BuildingAgent {
 		closed = false;
 	}
 	
+	public boolean isClose() {
+		return closed;
+	}
+	
+	
 	@Override
 	public int[] insertHuman(HumanAgent human, int[] pos) {
 		// Prevenir que ingresen cuando esta cerrado
@@ -155,4 +169,21 @@ public class WorkplaceAgent extends BuildingAgent {
 			return null;
 		return super.insertHuman(human, pos);
 	}
+	
+	public int getWorkPositionsCount() {
+		return workPositionsCount;
+	}
+
+	public void setWorkPositionsCount(int workPositionsCount) {
+		this.workPositionsCount = workPositionsCount;
+	}
+	
+	public int getMaximumCapacity() {
+		return maximumCapacity;
+	}
+
+	public void setMaximumCapacity(int maximumCapacity) {
+		this.maximumCapacity = maximumCapacity;
+	}
+
 }
