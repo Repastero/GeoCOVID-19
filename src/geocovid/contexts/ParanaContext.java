@@ -132,14 +132,14 @@ public class ParanaContext extends SubContext {
 			// Nueva normalidad (Fase 5)
 			setMaskAtWork(false); // ya a partir de aca se relajan en oficinas
 			buildingManager.setPTUnits(town.getPTPhaseUnits(2)); // finaliza el paro de choferes
-			buildingManager.limitPublicTransportActCap((31-9)); //Aforo de 24 asientos ya que una fila queda clausurada (7 asientos) y 2 asientos del fondo
+			buildingManager.setVentilatedBusesPlaces(false);
+			buildingManager.limitPublicTransportActCap(DataSet.PUBLIC_TRANSPORT_MAX_SEAT + DataSet.PUBLIC_TRANSPORT_MAX_STILL); //Aforo normal desde el principio se ocupan los 31 sitios y además 10 lugares parados
 																 //fuente: ------
 			setSocialDistancing(40);
 			break;
 		case 244: // 31 agosto - solo Parana
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
-			buildingManager
-					.closePlaces(new String[] { "bar", "restaurant", "sports_school", "gym", "sports_club", "park" });
+			buildingManager.closePlaces(new String[] { "bar", "restaurant", "sports_school", "gym", "sports_club", "park" });
 			buildingManager.setPTUnits(town.getPTPhaseUnits(3));
 			setSocialDistancing(30);
 			buildingManager.limitActivitiesCapacity(2d);
@@ -160,10 +160,12 @@ public class ParanaContext extends SubContext {
 			buildingManager.ventilateEntertainmentPlaces(true);
 			buildingManager.openPlaces(new String[] { "bar", "restaurant", "sports_school", "gym", "sports_club" });
 			buildingManager.limitEntertainmentActCap(1.50d); // la gente aprovecha a salir
+			buildingManager.setVentilatedBusesPlaces(true);
 			break;
 		case 264: // 21 septiembre
 			buildingManager.openPlaces(new String[] { "sports_club", "church", "sports_complex", "park" });
 			buildingManager.limitEntertainmentActCap(1.75d);
+
 			break;
 		case 273: // 1 octubre
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
@@ -176,9 +178,8 @@ public class ParanaContext extends SubContext {
 			break;
 		case 310: // 6 noviembre
 			buildingManager.setPTUnits(town.getPTPhaseUnits(5));
-//			buildingManager.limitPublicTransportActCap(DataSet.PUBLIC_TRANSPORT_MAX_SEAT); // Sale resolucion que no se pueden subir más pasajeros que la cantidad de asientos
 			//empieza a flexibilizarse la cantidad de asientos de ocupacion de UTI
-			buildingManager.limitPublicTransportActCap(DataSet.PUBLIC_TRANSPORT_MAX_SEAT+ DataSet.PUBLIC_TRANSPORT_MAX_STILL);  //Se toman más flexibilizaciones en los transporte público
+			
 			
 			break;
 		case 340: // 6 diciembre - domingo
@@ -193,6 +194,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.openPlaces(new String[] { "bus_station", "lodging", "childrens_party_service", "night_club",
 					"tourist_attraction", "campground", "spa" });
 			buildingManager.setPTUnits(town.getPTPhaseUnits(6));
+
 			break;
 		case 348: // 14 diciembre
 			// Aumentan las compras por las fiestas
@@ -264,6 +266,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 471: // 16 abril
 			// Nuevas medidas
+			buildingManager.setVentilatedBusesPlaces(true); // por decreto se obliga a los colectivos ir ventilados
 			setSocialDistancing(20);
 			buildingManager.limitEntertainmentActCap(2.5d);
 			// Merman las jodas, por que vuelven a controlar

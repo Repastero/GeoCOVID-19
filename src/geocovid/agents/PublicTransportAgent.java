@@ -44,28 +44,13 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	 * Area modificada por 4 personas por metro cuadrado = 136 posiciones
 	 * Con 136 el tamano de parcela es = 8 x 17 posiciones
 	 * Menos una fila del puesto de trabajo = 128 posiciones
-	 * Posiciones divididas por 4 personas por m2 = 32 capacidad, de las cuales 32 son asientos. 
+	 * Posiciones divididas por 4 personas por m2 = 32 capacidad
 	 *  los lugares adicionales se los modelaria como personas paradas.
-	 * (la capacidad no debe superar los 32)
+	 * 
 	 * @param humanSites: capacidad de humanos
 	 */	
 	@Override
-	public void limitCapacity(double humanSites) {
-//		int cap;
-//		// Para calcular el maximo aforo teorico de un local comercial:
-//		if (humanSites > 0d) {
-//			cap = (int) humanSites;
-//			if (cap <= getWorkPositionsCount()) {
-//				cap = getWorkPositionsCount() + 1; // permitir al menos un cliente
-//			}
-//		}
-//		else {
-//			cap = getMaximumCapacity();
-//		}
-//		
-//		// Que no supere la capacidad por defecto
-//		if (cap <= getMaximumCapacity())
-//			setCapacity(cap);
+	public void limitCapacity(double sqMetersPerHuman) {
 		
 	}
 	/**
@@ -74,22 +59,18 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	 * (la capacidad no debe superar los 32)
 	 * @param humanSites: capacidad de humanos
 	 */	
-	public void limitCapacityBus(int humanSites) {
+	public void limitBusCapacity(int humanSites) {
 		int cap;
 		// Para calcular el maximo aforo teorico de un local comercial:
 		if (humanSites > 0d) {
 			cap = humanSites;
-			if (cap <= getWorkPositionsCount()) {
+			if (cap <= getWorkPositionsCount()) 
 				cap = getWorkPositionsCount() + 1; // permitir al menos un cliente
-			}
 		}
-		else {
+		else
 			cap = getMaximumCapacity();
-		}
 		
-		// Que no supere la capacidad por defecto
-		if (cap <= getMaximumCapacity())
-			setCapacity(cap);
+		setCapacity(cap);
 	}
 	
 	public int getPtSeats() {

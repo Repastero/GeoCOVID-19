@@ -228,6 +228,7 @@ auto_wrecker,service,,,,,,,,,,
 computer_repair_service,service,,,,,,,,,,
 taxi_service,service,,,,4,0,,,,,
 shipping_and_mailing_service,service,,260,80,0,30,,,,,
+bus,bus,3,40,100,1,0,45,28,15,10,5
 shipping_service,service,,200,80,0,30,,,,,
 mailing_service,service,,,,,,,,,,
 courier_service,service,,,,,,,,,,

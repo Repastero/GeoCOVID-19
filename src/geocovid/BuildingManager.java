@@ -436,7 +436,10 @@ public final class BuildingManager {
 	public void limitPublicTransportActCap(int humanSites) {
 		if (humanSites == activitiesCapacityLimit)
 			return;
-		placesMap.get("bus").forEach(sect -> sect.forEach(work -> work.limitCapacityBus(humanSites)));
+		placesMap.get("bus").forEach(sect -> sect.forEach( work -> {
+			PublicTransportAgent bus = (PublicTransportAgent) work;
+			bus.limitBusCapacity(humanSites);		 
+		} ));
 
 	}
 	

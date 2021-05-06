@@ -60,14 +60,6 @@ public class WorkplaceAgent extends BuildingAgent {
 		if (cap <= maximumCapacity)
 			setCapacity(cap);
 	}
-	/**
-	 * Calcula y setea la capacidad de un transporte público
-	 * por defecto en workplace no realiza nada, ya que la función se encuentra sobrecargada para PublicTransportAgent 
-	 * @param sqMetersPerHuman metros cuadrados por persona
-	 */
-	public void limitCapacityBus(int humanSites) {
-
-	}
 
 	
 	/**
