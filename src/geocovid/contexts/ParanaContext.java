@@ -216,7 +216,8 @@ public class ParanaContext extends SubContext {
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.limitOtherActCap(1d);
-			buildingManager.openPlaces(new String[] {"library", "school"});
+			buildingManager.openPlaces(new String[] {"library", "school","primary_school", "secondary_school"});
+			//setSchoolProtocol(true);//habilita protocolo burbuja 50% 
 			break;
 		case 435: // 11 marzo
 			// Aumenta un poco el ocio 

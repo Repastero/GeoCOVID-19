@@ -15,10 +15,10 @@ public class WorkplaceAgent extends BuildingAgent {
 	private String workplaceType;
 	private int activityType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
-	private int vacancies = 4;
+	protected int vacancies = 4;
 	/** Capacidad maxima (metros util * humanos por metro cuadrado) */
 	private int maximumCapacity;
-	private boolean closed = false;
+	protected boolean closed = false;
 	
 	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
@@ -31,6 +31,16 @@ public class WorkplaceAgent extends BuildingAgent {
 			this.vacancies = (getNumberOfSpots() / workersArea)+1;
 		else
 			System.err.println("Sin cupo de trabajadores de Workplace: " + workplaceType);
+		createWorkPositions();
+	}
+
+	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace) {
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
+
+		this.workplaceType = workType;
+		this.activityType = activityType;
+		if (workersPlace > 0)
+			this.vacancies = workersPlace;
 		createWorkPositions();
 	}
 	
@@ -64,7 +74,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	/**
 	 * Crea las posiciones de trabajo fijas segun la cantidad establecida. 
 	 */
-	private void createWorkPositions() {
+	public void createWorkPositions() {
 		int x = getWidth();
 		int y = getHeight();
 		workPositions = new int[vacancies][2];
