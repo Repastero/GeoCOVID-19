@@ -528,14 +528,13 @@ public final class BuildingManager {
     	}
     	else {
     		// Busca un lugar aleatorio en la seccional donde esta
-    	 	if(newActivity.equals("bus") ) {
+    	 	if (newActivity.equals("bus")) {
         		//selecciona un cole disponible en la seccional
            		rndPlaceIndex = findBusPlace(secIndex);
             }
     	 	else
     	 		rndPlaceIndex = RandomHelper.nextIntFromTo(0, placeSecCount[secIndex] - 1);
-    	}    
-   	
+    	}
         return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
 	}
 	/**

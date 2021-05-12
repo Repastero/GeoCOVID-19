@@ -13,10 +13,10 @@ import geocovid.contexts.SubContext;
 public class PublicTransportAgent extends WorkplaceAgent {
 	private static int ptSeats = DataSet.PUBLIC_TRANSPORT_MAX_SEAT;
 	private static int ptStill= DataSet.PUBLIC_TRANSPORT_MAX_STILL;
-
+	
 	public PublicTransportAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, PlaceProperty pp) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, pp.getActivityState(), pp.getBuildingArea(), pp.getBuildingCArea(), pp.getWorkersPerPlace(), pp.getWorkersPerArea());
-		this.setMaximumCapacity(ptSeats+ptStill);
+		this.setMaximumCapacity(ptSeats + ptStill);
 	}
 	
 	@Override
@@ -25,7 +25,6 @@ public class PublicTransportAgent extends WorkplaceAgent {
 		if (pos != null) {
 			InfectionReport.addCumTicketTransportPublic();
 		}
-		
 		return pos;
 	}
 	
@@ -53,6 +52,7 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	public void limitCapacity(double sqMetersPerHuman) {
 		
 	}
+	
 	/**
 	 * Cambia el aforo de acuerdo a la cantidad de personas.
 	 * Posiciones divididas por 4 personas por m2 = 32 capacidad, de las cuales 24 son asientos y 8 lugares para que la gente se mantenga parada
@@ -69,25 +69,6 @@ public class PublicTransportAgent extends WorkplaceAgent {
 		}
 		else
 			cap = getMaximumCapacity();
-		
 		setCapacity(cap);
 	}
-	
-	public int getPtSeats() {
-		return ptSeats;
-	}
-	
-	public void setPtSeats(int ptSeatsChange) {
-		ptSeats = ptSeatsChange;
-	}
-
-	public int getPtStill() {
-		return ptStill;
-	}
-
-	public void setPtStill(int ptStill) {
-		this.ptStill = ptStill;
-	}
-
-	
 }

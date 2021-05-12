@@ -70,7 +70,6 @@ public class WorkplaceAgent extends BuildingAgent {
 		if (cap <= maximumCapacity)
 			setCapacity(cap);
 	}
-
 	
 	/**
 	 * Crea las posiciones de trabajo fijas segun la cantidad establecida. 
@@ -159,11 +158,6 @@ public class WorkplaceAgent extends BuildingAgent {
 		closed = false;
 	}
 	
-	public boolean isClose() {
-		return closed;
-	}
-	
-	
 	@Override
 	public int[] insertHuman(HumanAgent human, int[] pos) {
 		// Prevenir que ingresen cuando esta cerrado
@@ -175,17 +169,12 @@ public class WorkplaceAgent extends BuildingAgent {
 	public int getWorkPositionsCount() {
 		return workPositionsCount;
 	}
-
-	public void setWorkPositionsCount(int workPositionsCount) {
-		this.workPositionsCount = workPositionsCount;
-	}
 	
 	public int getMaximumCapacity() {
 		return maximumCapacity;
 	}
-
+	
 	public void setMaximumCapacity(int maximumCapacity) {
 		this.maximumCapacity = maximumCapacity;
 	}
-
 }
