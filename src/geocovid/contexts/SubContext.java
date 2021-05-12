@@ -64,7 +64,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	private int[] lodgingPlacesSI;				// Seccionales donde existen lugares de hospedaje
 	private ISchedulableAction touristSeasonAction;
 	private ISchedulableAction youngAdultsPartyAction;
-	private ISchedulableAction starSchoolProtocol;
+	private ISchedulableAction startSchoolProtocolAction;
 	
 	protected Map<String, PlaceProperty> placesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	protected BuildingManager buildingManager;
@@ -92,7 +92,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 	
 	private boolean closeContactsEnabled;	// Habilitada la "pre infeccion" de contactos estrechos y cuarentena preventiva de los mismos
 	private boolean prevQuarantineEnabled;	// Habilitada la cuarentena preventiva para las personas que conviven con un sintomatico
-	
 	
 	private boolean outbreakStarted;		// Indica que ya se infectaron locales
 	
@@ -549,15 +548,15 @@ public abstract class SubContext extends DefaultContext<Object> {
 		return schedule.removeAction(youngAdultsPartyAction);
 	}
 			 
-	 /**
-	 Activa y programa por tiempo indeterminado la asistencia alternada semana a semana de las burbuhas de alumnos.setchoolProtocol
-		 */ 
-	public  void setSchoolProtocol (boolean protocol) {
+	/*
+	 * Activa y programa por tiempo indeterminado la asistencia alternada semana a semana de las burbuhas de alumnos.setchoolProtocol
+	 */
+	public void setSchoolProtocol (boolean protocol) {
 		if (protocol) {	
-		ClassroomAgent.setSchoolProtocol(protocol);
-		ScheduleParameters params;
-		params = ScheduleParameters.createRepeating(schedule.getTickCount(), 7*24, ScheduleParameters.FIRST_PRIORITY);
-		starSchoolProtocol=schedule.schedule(params,this,"schoolGroupChange");
+			ClassroomAgent.setSchoolProtocol(true);
+			ScheduleParameters params;
+			params = ScheduleParameters.createRepeating(schedule.getTickCount(), 7*24, ScheduleParameters.FIRST_PRIORITY);
+			startSchoolProtocolAction = schedule.schedule(params, this, "schoolGroupChange");
 		}
 	}
 		
@@ -571,9 +570,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 	@SuppressWarnings("unused")
 	private void stopRepeatingSchoolProtocol() {
 		if (!removeProtocol()) {
-		ScheduleParameters params;
-		params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1d);
-		schedule.schedule(params, this, "removeProtocol");
+			ScheduleParameters params;
+			params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1d);
+			schedule.schedule(params, this, "removeProtocol");
 		}
 	}
 			
@@ -583,7 +582,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 */
 	public boolean removeProtocol() {
 		ClassroomAgent.setSchoolProtocol(false);
-		return schedule.removeAction(starSchoolProtocol);
+		return schedule.removeAction(startSchoolProtocolAction);
 	}
 	
 	/**
@@ -710,7 +709,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 		workPlaces.clear();
 		schoolPlaces.clear();
 		universityPlaces.clear();
-		//classroomPlaces.clear();
 		
 		// Variables temporales
 		PlaceProperty placeProp;
@@ -774,23 +772,23 @@ public abstract class SubContext extends DefaultContext<Object> {
 				if (placeProp.getActivityState() == 1) { // trabajo / estudio
 					if (type.contains("primary_school") || type.contains("secondary_school") || type.contains("technical_school")) {
 						for (int i = 0; i < (placeProp.getBuildingCArea() / DataSet.DEFAULT_AREA_CLASSROOM); i++) {
-						WorkplaceAgent tempWork = new ClassroomAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type,
-								placeProp.getActivityState(), DataSet.DEFAULT_AREA_CLASSROOM, DataSet.COVER_AREA_CLASSROOM, DataSet.VACANCY_CLASSROOM);
-						schoolPlaces.add(tempWork);
-						buildingManager.addWorkplace(type, tempWork);
-						add(tempWork);
-						schoolVacancies += tempWork.getVacancy();
+							WorkplaceAgent tempWork = new ClassroomAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type,
+									placeProp.getActivityState(), DataSet.DEFAULT_AREA_CLASSROOM, DataSet.COVER_AREA_CLASSROOM, DataSet.VACANCY_CLASSROOM);
+							schoolPlaces.add(tempWork);
+							buildingManager.addWorkplace(type, tempWork);
+							add(tempWork);
+							schoolVacancies += tempWork.getVacancy();
 						}
-					type=null;
+						type = null;
 					}
 					else if (type.contains("university")) {
 						universityPlaces.add(tempWorkspace);
 						universityVacancies += tempWorkspace.getVacancy();
-						}
-						else {
+					}
+					else {
 						workPlaces.add(tempWorkspace);
 						workVacancies += tempWorkspace.getVacancy();
-						}
+					}
 					// Si es lugar sin atencion al publico, se agrega a la lista de lugares de trabajo/estudio
 					buildingManager.addWorkplace(type, tempWorkspace);
 				}
@@ -800,10 +798,10 @@ public abstract class SubContext extends DefaultContext<Object> {
 					// Si es lugar con atencion al publico, se agrega a la lista de actividades
 					buildingManager.addPlace(sectoralIndex, tempWorkspace, placeProp);
 				}
-				if (!(type==null)) {
-				// Agregar al contexto
-				add(tempWorkspace);
-				geography.move(tempWorkspace, geom);
+				if (type != null) {
+					// Agregar al contexto
+					add(tempWorkspace);
+					geography.move(tempWorkspace, geom);
 				}
 			}
 			else {
@@ -818,7 +816,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 			System.out.println("CUPO TRABAJADORES: " + workVacancies);
 		}
 	}
-
 	
 	private void createPublicTransportUnits() {
 		if (town.publicTransportUnits == 0)
@@ -1037,7 +1034,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 				for (k = 0; k < locals[i][j]; k++) {
 					tempHome = homePlaces.get(i).get(disUniHomesIndex.nextInt());
 					tempJob = findAGWorkingPlace(secType, j, tempHome);
-				  	//
+					//
 					tempHuman = createHuman(secType, i, j, tempHome, tempJob);
 					tempHome.addOccupant(tempHuman);
 					contextHumans[humIdx[j]++] = tempHuman;
@@ -1186,8 +1183,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 * @return <b>BuildingAgent</b> o <b>null</b>
 	 */
 	private BuildingAgent findAGWorkingPlace(int secType, int ageGroup, BuildingAgent home) {
-		BuildingAgent workplace  = null;
-		
+		BuildingAgent workplace = null;
+		//
 		if (schooledCount[secType][ageGroup] > 0) { // estudiante primario/secundario
 			--schooledCount[secType][ageGroup];
     		workplace = findWorkingPlace(schoolPlaces);
@@ -1247,7 +1244,7 @@ public abstract class SubContext extends DefaultContext<Object> {
         }
         if (i == 0) { // estudiante
         	if (ageGroup == 0 || (ageGroup == 1 && (occupation[i] - r < occupation[i]*.45d))) { // 45% es primario/secundario
-        		workplace =(findWorkingPlace(schoolPlaces));
+        		workplace = findWorkingPlace(schoolPlaces);
         	}
         	else {
         		workplace = findWorkingPlace(universityPlaces);

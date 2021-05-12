@@ -213,6 +213,7 @@ public class InfectionReport {
 	public static int getCumHospitalized()	{ return cumHospitalizedAll; }
 	public static int getCumRecovered()		{ return cumRecoveredAll; }
 	public static int getCumDeaths()		{ return cumDeathsAll; }
+	public static int getCumExposedSchool()	{ return cumExposedSchool; }
 	
 	public static int getCumExposed(int ai)			{ return cumExposed[ai]; }
 	public static int getInsASXInfectious(int ai)	{ return insAsxInfectious[ai]; }
@@ -288,6 +289,4 @@ public class InfectionReport {
 	public static int getCumExposedPublicTransport(){ return cumExposedPublicTransport; }
 	public static int getCumTicketTransportPublic()	{ return cumTicketTransportPublic; }
 	public static int getInsSpacePublicTransport()	{ return insSpacePublicTransport; }
-	//
-	public static int getCumExposedSchool(){ return cumExposedSchool; }
 }

@@ -11,7 +11,6 @@ import geocovid.contexts.SubContext;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
-import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 
 /**
@@ -94,8 +93,6 @@ public class HumanAgent {
 		this.ageGroup = ageGroup;
 	}
     
-	
-
 	public HumanAgent(SubContext subContext, int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign, boolean tourist) {
 		this(subContext, secHome, secHomeIndex, ageGroup, home, work, workPos);
 		this.foreignTraveler = foreign;
@@ -600,7 +597,7 @@ public class HumanAgent {
 	public boolean isInCloseContact() {
 		return inCloseContact;
 	}
-
+	
 	public void setInCloseContact(boolean inCloseContact) {
 		this.inCloseContact = inCloseContact;
 	}
@@ -608,10 +605,8 @@ public class HumanAgent {
 	public int[] getWorkplacePosition() {
 		return workplacePosition;
 	}
-
-
+	
 	public void setWorkplacePosition(int[] workplacePosition) {
 		this.workplacePosition = workplacePosition;
 	}
 }
-

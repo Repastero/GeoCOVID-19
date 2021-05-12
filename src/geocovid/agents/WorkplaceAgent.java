@@ -19,7 +19,6 @@ public class WorkplaceAgent extends BuildingAgent {
 	/** Capacidad maxima (metros util * humanos por metro cuadrado) */
 	private int maximumCapacity;
 	protected boolean closed = false;
-
 	
 	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
@@ -35,17 +34,15 @@ public class WorkplaceAgent extends BuildingAgent {
 		createWorkPositions();
 	}
 
-	
-	
 	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace) {
-	super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
-	
-	this.workplaceType = workType;
-	this.activityType = activityType;
-	if (workersPlace > 0)
-		this.vacancies = workersPlace;
-	createWorkPositions();
-}
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
+
+		this.workplaceType = workType;
+		this.activityType = activityType;
+		if (workersPlace > 0)
+			this.vacancies = workersPlace;
+		createWorkPositions();
+	}
 	
 	/**
 	 * Calcula y setea la capacidad total del place.
@@ -78,49 +75,46 @@ public class WorkplaceAgent extends BuildingAgent {
 	 * Crea las posiciones de trabajo fijas segun la cantidad establecida. 
 	 */
 	public void createWorkPositions() {
-		//if (!workplaceType.contains("primary_school") || !workplaceType.contains("secondary_school")||(!workplaceType.contains("primary_school") && !workplaceType.contains("secondary_school"))) {
-	
-			int x = getWidth();
-			int y = getHeight();
-			workPositions = new int[vacancies][2];
-			workPositionsCount = workPositions.length;
-			int distance = DataSet.SPACE_BETWEEN_WORKERS;
-			/* Prueba sin cuarentena
-			if (workplaceType.contains("primary_school") || workplaceType.contains("secondary_school"))
-				distance -= 2;
-			*/
-			int col = 0;
-			int row = 0;
-			boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
-			for (int i = 0; i < workPositionsCount; i++) {
-				workPositions[i][0] = col;
-				workPositions[i][1] = row;
-				col += distance;
-				if (col >= x) {
-					col = distance;
-					row += distance;
-					if (row >= y) {
-						if (i+1 < workPositionsCount) {
-							// Si faltan crear puestos 
-							if (fullBuilding) {
-								// Si hace 2 pasadas de la grilla y aun faltan puestos, reduce el total
-								System.out.format("Cupos de trabajo limitados a %d de %d en tipo: %s id: %d%n",
-										i+1, workPositionsCount, workplaceType, getId());
-								workPositionsCount = i+1;
-								vacancies  = workPositionsCount;
-								break;
-							}
-							// Si es la primer pasada, vuelve al principio + offset
-							System.out.format("Falta espacio para %d cupos de trabajo en tipo: %s id: %d - Inicia segunda pasada%n",
-									workPositionsCount-(i+1), workplaceType, getId());
-							col = (distance > 1 ? distance >> 1 : 1);
-							row = col;
+		int x = getWidth();
+		int y = getHeight();
+		workPositions = new int[vacancies][2];
+		workPositionsCount = workPositions.length;
+		int distance = DataSet.SPACE_BETWEEN_WORKERS;
+		/* Prueba sin cuarentena
+		if (workplaceType.contains("primary_school") || workplaceType.contains("secondary_school"))
+			distance -= 2;
+		*/
+		int col = 0;
+		int row = 0;
+		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
+		for (int i = 0; i < workPositionsCount; i++) {
+			workPositions[i][0] = col;
+			workPositions[i][1] = row;
+			col += distance;
+			if (col >= x) {
+				col = distance;
+				row += distance;
+				if (row >= y) {
+					if (i+1 < workPositionsCount) {
+						// Si faltan crear puestos 
+						if (fullBuilding) {
+							// Si hace 2 pasadas de la grilla y aun faltan puestos, reduce el total
+							System.out.format("Cupos de trabajo limitados a %d de %d en tipo: %s id: %d%n",
+									i+1, workPositionsCount, workplaceType, getId());
+							workPositionsCount = i+1;
+							vacancies = workPositionsCount;
+							break;
 						}
-						fullBuilding = true;
+						// Si es la primer pasada, vuelve al principio + offset
+						System.out.format("Falta espacio para %d cupos de trabajo en tipo: %s id: %d - Inicia segunda pasada%n",
+								workPositionsCount-(i+1), workplaceType, getId());
+						col = (distance > 1 ? distance >> 1 : 1);
+						row = col;
 					}
+					fullBuilding = true;
 				}
 			}
-		
+		}
 		// Separar los trabajadores de los clientes, si quedan filas disponibles
 		if (!fullBuilding) {
 			if (row + 2 < y)
@@ -131,7 +125,6 @@ public class WorkplaceAgent extends BuildingAgent {
 		maximumCapacity = getCapacity();
 		// Por defecto la capacidad maxima es de 1 humano por metro cuadrado
 		limitCapacity(1d);
-
 	}
 	
 	/**

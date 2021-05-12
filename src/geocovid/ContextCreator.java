@@ -35,6 +35,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	private int simulationRun;
 	private int obStartDelayDays;
 	private int weekendStartTick;
+	
 	/** Tiempo inicio de simulacion */
 	private long simulationStartTime;
 	
@@ -48,9 +49,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	/** Lista de municipios a simular */
 	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
-		"parana"/*,"gualeguay","diamante","nogoya","victoria","sansalvador",
+		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
 		"gualeguaychu","uruguay","federacion","colon","ibicuy",
-		"concordia","lapaz","villaguay","federal","tala","feliciano"*/
+		"concordia","lapaz","villaguay","federal","tala","feliciano"
 	};
 	
 	public ContextCreator() {
@@ -172,11 +173,10 @@ public class ContextCreator implements ContextBuilder<Object> {
 			lastContexts[tempTown.regionType] = subContext;
 		}
 		
-		// Programar el cambio de markovs en fines de semana y cambios de alumnos 50%
+		// Programar el cambio de markovs en fines de semana
 		for (SubContext cont : lastContexts) {
 			if (cont != null) { // si se creo ciudad de esta region
 				setWeekendMovement(cont);
-		 
 			}
 		}
 	}
@@ -195,7 +195,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", false);
 	}
-		
+	
 	/**
 	 * Imprime la hora de compilacion del jar (si existe).
 	 * @param cl clase actual

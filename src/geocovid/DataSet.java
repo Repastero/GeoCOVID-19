@@ -20,7 +20,7 @@ public final class DataSet {
 	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
 	/** Porcentaje del area construida ocupable en places (minimo .1) */
 	public static final double WORKPLACE_AVAILABLE_AREA	= 0.8;
-
+	
 	/** Limite de aforo en Places por defecto durante cuarentena (valor minimo variable segun HUMANS_PER_SQUARE_METER) */ 
 	public static final double DEFAULT_PLACES_CAP_LIMIT		= 4d;	// metros cuadrados de superficie util, por persona
 	/** Multiplicador del limit de aforo en Places de ocio */
@@ -103,8 +103,7 @@ public final class DataSet {
 	/** Distancia para que se considere contacto personal */
 	public static final int	PERSONAL_DISTANCE				= 3; // Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
 	/** Habilitar que se cuenten los contactos personales */
-
-	public static final boolean COUNT_INTERACTIONS			= true; // En false se reduce el tiempo de simulacion 25% aprox.
+	public static final boolean COUNT_INTERACTIONS			= false; // En false se reduce bastante el tiempo de simulacion
 	/** Para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
 	public static final boolean COUNT_UNIQUE_INTERACTIONS	= false;
 	

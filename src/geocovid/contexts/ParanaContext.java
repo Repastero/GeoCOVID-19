@@ -243,9 +243,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.limitEntertainmentActCap(2.5d);
 			// Merman las jodas, por que vuelven a controlar
 			stopRepeatingYoungAdultsParty();
-			buildingManager.setPTUnits(town.getPTPhaseUnits(0));
 			break;
-			
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
 		}
