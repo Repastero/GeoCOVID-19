@@ -165,4 +165,16 @@ public class WorkplaceAgent extends BuildingAgent {
 			return null;
 		return super.insertHuman(human, pos);
 	}
+	
+	public int getWorkPositionsCount() {
+		return workPositionsCount;
+	}
+	
+	public int getMaximumCapacity() {
+		return maximumCapacity;
+	}
+	
+	public void setMaximumCapacity(int maximumCapacity) {
+		this.maximumCapacity = maximumCapacity;
+	}
 }

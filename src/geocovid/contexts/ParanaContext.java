@@ -121,6 +121,8 @@ public class ParanaContext extends SubContext {
 			// Nueva normalidad (Fase 5)
 			setMaskAtWork(false); // ya a partir de aca se relajan en oficinas
 			buildingManager.setPTUnits(town.getPTPhaseUnits(2)); // finaliza el paro de choferes
+			buildingManager.setVentilatedBusesPlaces(false);
+			buildingManager.limitPublicTransportActCap(DataSet.PUBLIC_TRANSPORT_MAX_SEAT + DataSet.PUBLIC_TRANSPORT_MAX_STILL); //Aforo normal desde el principio se ocupan los 31 sitios y ademas 10 lugares parados
 			setSocialDistancing(40);
 			break;
 		case 244: // 31 agosto - solo Parana
@@ -145,6 +147,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.ventilateEntertainmentPlaces(true);
 			buildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
 			buildingManager.limitEntertainmentActCap(1.50d); // la gente aprovecha a salir
+			buildingManager.setVentilatedBusesPlaces(true);
 			break;
 		case 264: // 21 septiembre
 			buildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
@@ -161,6 +164,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 310: // 6 noviembre
 			buildingManager.setPTUnits(town.getPTPhaseUnits(5));
+			//empieza a flexibilizarse la cantidad de asientos de ocupacion de UTI
 			break;
 		case 340: // 6 diciembre - domingo
 			buildingManager.limitEntertainmentActCap(2d);
@@ -239,6 +243,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 471: // 16 abril
 			// Nuevas medidas
+			buildingManager.setVentilatedBusesPlaces(true); // por decreto se obliga a los colectivos ir ventilados
 			setSocialDistancing(20);
 			buildingManager.limitEntertainmentActCap(2.5d);
 			// Merman las jodas, por que vuelven a controlar

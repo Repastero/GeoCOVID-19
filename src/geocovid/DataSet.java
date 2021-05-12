@@ -114,8 +114,9 @@ public final class DataSet {
 	
 	/** Cantidad maxima de asientos;
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
-	 * */
-	public static final int	PUBLIC_TRANSPORT_MAX_SEAT				= 24;	// 
+	 * http://leivag1991vehicles.blogspot.com/2018/10/metalpar-tronador-mk2-chasis-of1418.html
+	 */
+	public static final int	PUBLIC_TRANSPORT_MAX_SEAT				= 31;	// 
 	
 	/** Cantidad maxima de gente parada;
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +

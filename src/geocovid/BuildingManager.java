@@ -18,6 +18,7 @@ import geocovid.agents.BuildingAgent;
 import geocovid.agents.HomeAgent;
 import geocovid.agents.HumanAgent;
 import geocovid.agents.InfectiousHumanAgent;
+import geocovid.agents.PublicTransportAgent;
 import geocovid.agents.WorkplaceAgent;
 import geocovid.contexts.SubContext;
 import repast.simphony.context.Context;
@@ -35,6 +36,7 @@ public final class BuildingManager {
 	/** Coordenadas del centro de cada seccional */
 	private Coordinate[] sectoralsCentre;
 	
+	/** Cantidad de unidades de colectivos por seccional */
 	private int[] sectoralsPTUnits;
 	
 	private static Context<Object> mainContext; // Para agregar indicador de humano infectado
@@ -428,6 +430,20 @@ public final class BuildingManager {
 	}
 	
 	/**
+	 * Limita el aforo en Places tipo "bus".
+	 * @param sqMeters metros cuadrados por persona
+	 */
+	public void limitPublicTransportActCap(int humanSites) {
+		if (humanSites == activitiesCapacityLimit)
+			return;
+		placesMap.get("bus").forEach(sect -> sect.forEach( work -> {
+			PublicTransportAgent bus = (PublicTransportAgent) work;
+			bus.limitBusCapacity(humanSites);		 
+		} ));
+
+	}
+	
+	/**
 	 * Selecciona de todas las actividades disponibles, una a realizar. 
 	 * @param types tipos de actividades (places)
 	 * @param chances probabilidad de actividad por grupo etario
@@ -512,10 +528,29 @@ public final class BuildingManager {
     	}
     	else {
     		// Busca un lugar aleatorio en la seccional donde esta
-    		rndPlaceIndex = RandomHelper.nextIntFromTo(0, placeSecCount[secIndex] - 1);
+    	 	if (newActivity.equals("bus")) {
+        		//selecciona un cole disponible en la seccional
+           		rndPlaceIndex = findBusPlace(secIndex);
+            }
+    	 	else
+    	 		rndPlaceIndex = RandomHelper.nextIntFromTo(0, placeSecCount[secIndex] - 1);
     	}
         return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
 	}
+	/**
+	 * Función que les asigna un cole. Si no hay colectivos disponibles en la seccional
+	 * 
+	 * @param secIndex seccional donde se va a buscar buses
+	 * @return elemento de la lista de algun colectivo abierto. 0 si no hay transporte publico habilitado en la seccional
+	 */
+	
+	private int findBusPlace(int secIndex) {
+		int rndPlaceIndex;
+		int amountOpenBusSectorial=sectoralsPTUnits[secIndex];
+		rndPlaceIndex=RandomHelper.nextIntFromTo(0,amountOpenBusSectorial);
+		return rndPlaceIndex;
+	}
+	
 	
 	/**
 	 * Remueve elementos al azar de la lista hasta alcanzar la cantidad deseada.
@@ -632,5 +667,13 @@ public final class BuildingManager {
 			infHuman.setHidden(true);
 			mainContext.remove(infHuman);
 		}
+	}
+	
+	/**
+	 * Setea si los transporte públicos se
+	 * @param ventilated indica si se quiere ventilar o no lo places "bus" 
+	 */
+	public void setVentilatedBusesPlaces(boolean ventilated) {
+		placesMap.get("bus").forEach(sect -> sect.forEach(work -> work.setVentilated(ventilated)));
 	}
 }
