@@ -1,20 +1,14 @@
 <repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.8.0">
-  <name>Reporte diario</name>
-  <dataSet>Reporte</dataSet>
+  <name>Transporte Publico</name>
+  <dataSet>Transporte Publico</dataSet>
   <delimiter>,</delimiter>
   <format>TABULAR</format>
   <sourceIds class="linked-hash-set">
     <string>random_seed</string>
     <string>tick</string>
-    <string>Expuestos</string>
-    <string>Infecciosos</string>
-    <string>Asintomaticos</string>
-    <string>Sintomaticos</string>
-    <string>Camas</string>
-    <string>Recuperados</string>
-    <string>Hospitalizados</string>
-    <string>Muertos</string>
+    <string>Tickets</string>
+    <string>Infectados</string>
   </sourceIds>
-  <fileName>Reporte.csv</fileName>
+  <fileName>ReportTP.csv</fileName>
   <addTimeStamp>true</addTimeStamp>
 </repast.simphony.data2.engine.FileSinkDescriptor>

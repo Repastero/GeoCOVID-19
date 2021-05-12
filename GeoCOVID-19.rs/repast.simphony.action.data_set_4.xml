@@ -1,53 +1,35 @@
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
-  <name>Estados</name>
+  <name>Transporte Publico</name>
   <type>AGGREGATE</type>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
-  <inclRandomSeed>false</inclRandomSeed>
+  <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
-    <start>23.0</start>
+    <start>0.0</start>
     <interval>24.0</interval>
     <priority>-Infinity</priority>
-    <pType>LAST</pType>
+    <pType>FIRST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>1913706464</hashCode>
+    <hashCode>1088423632</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
   <methodDataSources class="linked-hash-map">
     <entry>
-      <string>Hogar</string>
+      <string>Infectados</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Hogar</id>
+        <id>Infectados</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getDailyHomeTime</methodName>
+        <methodName>getCumExposedPublicTransport</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Trabajo</string>
+      <string>Tickets</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Trabajo</id>
+        <id>Tickets</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getDailyWorkTime</methodName>
-        <aggType>SUM</aggType>
-      </repast.simphony.data2.engine.MethodDataSourceDefinition>
-    </entry>
-    <entry>
-      <string>Ocio</string>
-      <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Ocio</id>
-        <className>geocovid.InfectionReport</className>
-        <methodName>getDailyLeisureTime</methodName>
-        <aggType>SUM</aggType>
-      </repast.simphony.data2.engine.MethodDataSourceDefinition>
-    </entry>
-    <entry>
-      <string>Otros</string>
-      <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Otros</id>
-        <className>geocovid.InfectionReport</className>
-        <methodName>getDailyOtherTime</methodName>
+        <methodName>getCumTicketTransportPublic</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>

@@ -1,16 +1,17 @@
 <repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.8.0">
-  <name>Contagios por estados</name>
-  <dataSet>Contagios diarios</dataSet>
+  <name>Contactos personales</name>
+  <dataSet>Contactos</dataSet>
   <delimiter>,</delimiter>
   <format>TABULAR</format>
   <sourceIds class="linked-hash-set">
     <string>random_seed</string>
     <string>tick</string>
-    <string>Hogar</string>
-    <string>Trabajo</string>
-    <string>Ocio</string>
-    <string>Otros</string>
+    <string>5-15</string>
+    <string>16-25</string>
+    <string>26-40</string>
+    <string>41-64</string>
+    <string>65+</string>
   </sourceIds>
-  <fileName>ReportContagion.csv</fileName>
+  <fileName>ReportContacts.csv</fileName>
   <addTimeStamp>true</addTimeStamp>
 </repast.simphony.data2.engine.FileSinkDescriptor>
