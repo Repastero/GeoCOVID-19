@@ -45,13 +45,13 @@ public class BuildingAgent {
 	private static int yShiftsPD[];
 	//
 	/** Lista de HumanAgent trasmisores */
-	private List<HumanAgent> spreadersList = new ArrayList<HumanAgent>();
+	protected List<HumanAgent> spreadersList = new ArrayList<HumanAgent>();
 	/** Lista de HumanAgent pre-trasmisores (sintomaticos) */
-	private List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>();
+	protected List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>();
 	/** Mapa de HumanAgent dentro de parcela <Id Humano, HumanAgent> */
-	private Map<Integer, HumanAgent> humansMap = new HashMap<>();
+	protected Map<Integer, HumanAgent> humansMap = new HashMap<>();
 	/** Mapa de SurfaceAgent dentro de parcela <Id Superficie, SurfaceAgent> */
-	private Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
+	protected Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
 	
 	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea) {
 		this.context = subContext;
@@ -566,7 +566,7 @@ public class BuildingAgent {
 	 * @param human HumanAgent susceptible
 	 * @param pos posicion en grilla de human
 	 */
-	private void checkIfSurfaceContaminated(HumanAgent human, int csId) {
+	protected void checkIfSurfaceContaminated(HumanAgent human, int csId) {
 		SurfaceAgent surface = surfacesMap.get(csId);
 		if (surface != null) {
 			// Si en el ultimo checkeo la superficie seguia contaminada
@@ -585,7 +585,7 @@ public class BuildingAgent {
 	 * @param pos {x, y} de superficie
 	 * @return <b>int</b> id superficie
 	 */
-	private int getPosId(int[] pos) {
+	protected int getPosId(int[] pos) {
 		return (pos[1]*size[0])+pos[0];
 	}
 	

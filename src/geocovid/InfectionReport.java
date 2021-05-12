@@ -42,6 +42,8 @@ public class InfectionReport {
 	private static int cumExposedPublicTransport;	// Acumulado
 	private static int cumTicketTransportPublic;	// Acumulado
 	private static int insSpacePublicTransport;		// 
+	//
+	private static int cumExposedSchool;
 	
 	public InfectionReport(int startDay, int maxDeaths) {
 		simulationStartDay	= startDay;
@@ -76,6 +78,8 @@ public class InfectionReport {
 		cumExposedPublicTransport  =  0;
 		cumTicketTransportPublic   =  0;
 		insSpacePublicTransport    =  0;
+		
+		cumExposedSchool     =  0;
 	}
 	
 	@ScheduledMethod(start = 24, interval = 24, priority = ScheduleParameters.FIRST_PRIORITY)
@@ -194,6 +198,10 @@ public class InfectionReport {
 		--insSpacePublicTransport;
 	}
 	
+	public static void addCumExposedSchool() {
+		++cumExposedSchool;
+	}
+	
 	// Getters para usar en reportes de Repast Simphony
 	public static int getCumExposed()		{ return cumExposedAll; }
 	public static int getCumExposedToCS()	{ return cumExposedToCSAll; }
@@ -205,6 +213,7 @@ public class InfectionReport {
 	public static int getCumHospitalized()	{ return cumHospitalizedAll; }
 	public static int getCumRecovered()		{ return cumRecoveredAll; }
 	public static int getCumDeaths()		{ return cumDeathsAll; }
+	public static int getCumExposedSchool()	{ return cumExposedSchool; }
 	
 	public static int getCumExposed(int ai)			{ return cumExposed[ai]; }
 	public static int getInsASXInfectious(int ai)	{ return insAsxInfectious[ai]; }

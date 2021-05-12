@@ -11,7 +11,6 @@ import geocovid.contexts.SubContext;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
-import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 
 /**
@@ -593,5 +592,21 @@ public class HumanAgent {
     		context.getBuildManager().hideInfectiousHuman(agentID);
     	}
     	relocationTime = schedule.getTickCount();
-    }
+   	}
+	
+	public boolean isInCloseContact() {
+		return inCloseContact;
+	}
+	
+	public void setInCloseContact(boolean inCloseContact) {
+		this.inCloseContact = inCloseContact;
+	}
+	
+	public int[] getWorkplacePosition() {
+		return workplacePosition;
+	}
+	
+	public void setWorkplacePosition(int[] workplacePosition) {
+		this.workplacePosition = workplacePosition;
+	}
 }

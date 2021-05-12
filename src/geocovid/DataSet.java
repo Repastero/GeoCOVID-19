@@ -6,9 +6,16 @@ package geocovid;
 public final class DataSet {
 	/** Cantidad maxima de humanos por m2 (minimo 1) */
 	public static final int HUMANS_PER_SQUARE_METER	= 4;
-	/** Espacios entre puestos de trabajo/estudio (minimo 1) */
+	/** Espacios entre puestos de trabajo (minimo 1) */
 	public static final int SPACE_BETWEEN_WORKERS	= 3;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
-	
+	/** Espacios entre puestos de estudio (minimo 1) */
+	public static final int SPACE_BETWEEN_STUDENTS	= 3;	// Distancia en metros = (SPACE_BETWEEN_STUDENTS / (HUMANS_PER_SQUARE_METRE / 2)
+	/** Area por defecto de aulas */
+	public static final int DEFAULT_AREA_CLASSROOM= 48;     // metros cuadrados por aula
+	/** Area Cobierta por defecto de aulas en porcentaje */
+	public static final int COVER_AREA_CLASSROOM= 100;      // porcentaje de area cuebierta en aulas
+	/** Cantidad de alimnos por aula */
+	public static final int VACANCY_CLASSROOM= 30;          // cantidad de bancos por aula
 	/** Porcentaje del area construida ocupable en casas (minimo .1) */
 	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
 	/** Porcentaje del area construida ocupable en places (minimo .1) */

@@ -133,7 +133,7 @@ public class ParanaContext extends SubContext {
 			setMaskAtWork(false); // ya a partir de aca se relajan en oficinas
 			buildingManager.setPTUnits(town.getPTPhaseUnits(2)); // finaliza el paro de choferes
 			buildingManager.setVentilatedBusesPlaces(false);
-			buildingManager.limitPublicTransportActCap(DataSet.PUBLIC_TRANSPORT_MAX_SEAT + DataSet.PUBLIC_TRANSPORT_MAX_STILL); //Aforo normal desde el principio se ocupan los 31 sitios y además 10 lugares parados
+			buildingManager.limitPublicTransportActCap(DataSet.PUBLIC_TRANSPORT_MAX_SEAT + DataSet.PUBLIC_TRANSPORT_MAX_STILL); //Aforo normal desde el principio se ocupan los 31 sitios y ademï¿½s 10 lugares parados
 																 //fuente: ------
 			setSocialDistancing(40);
 			break;
@@ -242,7 +242,8 @@ public class ParanaContext extends SubContext {
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.limitOtherActCap(1d);
-			buildingManager.openPlaces(new String[] { "library", "school" });
+			buildingManager.openPlaces(new String[] {"library", "school","primary_school", "secondary_school"});
+			//setSchoolProtocol(true);//habilita protocolo burbuja 50% 
 			break;
 		case 435: // 11 marzo
 			// Aumenta un poco el ocio
