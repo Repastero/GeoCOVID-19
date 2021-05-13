@@ -311,6 +311,7 @@ public final class BuildingManager {
 		for (String type : otherTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.setVentilated(ventilate)));
 		}
+		// TODO tendria que diferenciar tipo "bus"
 	}
 	
 	/**
@@ -320,6 +321,16 @@ public final class BuildingManager {
 	public void ventilateEntertainmentPlaces(boolean ventilate) {
 		for (String type : entertainmentTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.setVentilated(ventilate)));
+		}
+	}
+	
+	/**
+	 * Setea si los transporte publicos se ventilan
+	 * @param ventilated indica si se quiere ventilar o no lo places "bus" 
+	 */
+	public void ventilatePTUnits(boolean ventilated) {
+		if (placesMap.containsKey("bus")) {
+			placesMap.get("bus").forEach(sect -> sect.forEach(work -> work.setVentilated(ventilated)));
 		}
 	}
 	
@@ -433,14 +444,10 @@ public final class BuildingManager {
 	 * Limita el aforo en Places tipo "bus".
 	 * @param sqMeters metros cuadrados por persona
 	 */
-	public void limitPublicTransportActCap(int humanSites) {
-		if (humanSites == activitiesCapacityLimit)
-			return;
-		placesMap.get("bus").forEach(sect -> sect.forEach( work -> {
-			PublicTransportAgent bus = (PublicTransportAgent) work;
-			bus.limitBusCapacity(humanSites);		 
-		} ));
-
+	public void limitPTUnitsCap(int humanSites) {
+		if (placesMap.containsKey("bus")) {
+			placesMap.get("bus").forEach(sect -> sect.forEach(work -> ((PublicTransportAgent) work).limitUnitCapacity(humanSites)));
+		}
 	}
 	
 	/**
@@ -667,13 +674,5 @@ public final class BuildingManager {
 			infHuman.setHidden(true);
 			mainContext.remove(infHuman);
 		}
-	}
-	
-	/**
-	 * Setea si los transporte publicos se ventilan
-	 * @param ventilated indica si se quiere ventilar o no lo places "bus" 
-	 */
-	public void setVentilatedBusesPlaces(boolean ventilated) {
-		placesMap.get("bus").forEach(sect -> sect.forEach(work -> work.setVentilated(ventilated)));
 	}
 }

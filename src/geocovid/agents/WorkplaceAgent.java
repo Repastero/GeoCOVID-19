@@ -34,8 +34,8 @@ public class WorkplaceAgent extends BuildingAgent {
 		createWorkPositions();
 	}
 
-	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int width, int height, int workersPlace) {
-		super(subContext, sectoralType, sectoralIndex, coord, id, workType, width, height, true);
+	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int width, int lenght, int workersPlace) {
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, width, lenght, true);
 		
 		this.workplaceType = workType;
 		this.activityType = activityType;
@@ -44,12 +44,12 @@ public class WorkplaceAgent extends BuildingAgent {
 		createWorkPositions();
 	}
 	
-	public WorkplaceAgent(ClassroomAgent cra) {
-		super(cra);
+	public WorkplaceAgent(WorkplaceAgent wpa) {
+		super(wpa);
 		
-		this.workplaceType = cra.workplaceType;
-		this.activityType = cra.activityType;
-		this.vacancies = cra.vacancies;
+		this.workplaceType = wpa.workplaceType;
+		this.activityType = wpa.activityType;
+		this.vacancies = wpa.vacancies;
 		createWorkPositions();
 	}
 

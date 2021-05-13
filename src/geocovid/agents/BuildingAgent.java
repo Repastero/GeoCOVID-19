@@ -73,12 +73,12 @@ public class BuildingAgent {
 		setBuildingShape();
 	}
 	
-	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int width, int height, boolean workplace) {
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int width, int lenght, boolean workplace) {
 		// Constructor Home/Workplace de dimensiones especificas
-		this(subContext, secType, secIndex, coord, id, type, width * height * DataSet.HUMANS_PER_SQUARE_METER, width * height * DataSet.HUMANS_PER_SQUARE_METER);
+		this(subContext, secType, secIndex, coord, id, type, width * lenght * DataSet.HUMANS_PER_SQUARE_METER, width * lenght * DataSet.HUMANS_PER_SQUARE_METER);
 		//
 		this.workingPlace = workplace;
-		setBuildingShape(width, height);
+		setBuildingShape(width, lenght);
 	}
 	
 	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, int realArea, boolean outdoor) {
@@ -212,10 +212,10 @@ public class BuildingAgent {
 		capacity = size[0]*size[1];
 	}
 	
-	private void setBuildingShape(int mWidth, int mHeight) {
+	private void setBuildingShape(int mWidth, int mLenght) {
 		// Se multiplican los metros por la cantidad de Humanos por m2
 		size[0] = mWidth * DataSet.HUMANS_PER_SQUARE_METER;
-		size[1] = mHeight * DataSet.HUMANS_PER_SQUARE_METER;
+		size[1] = mLenght * DataSet.HUMANS_PER_SQUARE_METER;
 		capacity = size[0]*size[1];
 	}
 	

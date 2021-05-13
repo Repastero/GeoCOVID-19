@@ -116,15 +116,16 @@ public final class DataSet {
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 65d;	// sobre 100
-	
-	/** Cantidad maxima de asientos;
-	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
+
+	/** Ancho en metros de colectivo */
+	public static final int	PUBLIC_TRANSPORT_UNIT_WIDTH		= 3;	// 2.6m carrozado, 3m para redondear
+	/** Cantidad maxima de asientos<p>
+	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm
 	 * http://leivag1991vehicles.blogspot.com/2018/10/metalpar-tronador-mk2-chasis-of1418.html
 	 */
-	public static final int	PUBLIC_TRANSPORT_MAX_SEAT	= 31;	// 
-	
-	/** Cantidad maxima de gente parada;
+	public static final int	PUBLIC_TRANSPORT_MAX_SEATED		= 31;	// 
+	/** Cantidad maxima de gente parada<p>
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
-	 * */
-	public static final int	PUBLIC_TRANSPORT_MAX_STILL	= 10;	// 
+	 */
+	public static final int	PUBLIC_TRANSPORT_MAX_STANDING	= 10;	// 
 }
