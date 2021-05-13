@@ -10,10 +10,10 @@ import repast.simphony.random.RandomHelper;
  * Representa las parcelas donde los Humanos trabajan o estudian.
  */
 public class WorkplaceAgent extends BuildingAgent {
-	private int[][] workPositions;
-	private int workPositionsCount;
-	private String workplaceType;
-	private int activityType;
+	protected int[][] workPositions;
+	protected int workPositionsCount;
+	protected String workplaceType;
+	protected int activityType;
 	/** Cantidad maxima de trabajadores en lugar de trabajo */
 	protected int vacancies = 4;
 	/** Capacidad maxima (metros util * humanos por metro cuadrado) */
@@ -34,9 +34,9 @@ public class WorkplaceAgent extends BuildingAgent {
 		createWorkPositions();
 	}
 
-	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace) {
-		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
-
+	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int width, int height, int workersPlace) {
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, width, height, true);
+		
 		this.workplaceType = workType;
 		this.activityType = activityType;
 		if (workersPlace > 0)
@@ -44,6 +44,15 @@ public class WorkplaceAgent extends BuildingAgent {
 		createWorkPositions();
 	}
 	
+	public WorkplaceAgent(ClassroomAgent cra) {
+		super(cra);
+		
+		this.workplaceType = cra.workplaceType;
+		this.activityType = cra.activityType;
+		this.vacancies = cra.vacancies;
+		createWorkPositions();
+	}
+
 	/**
 	 * Calcula y setea la capacidad total del place.
 	 * @param sqMetersPerHuman metros cuadrados por persona
@@ -80,10 +89,6 @@ public class WorkplaceAgent extends BuildingAgent {
 		workPositions = new int[vacancies][2];
 		workPositionsCount = workPositions.length;
 		int distance = DataSet.SPACE_BETWEEN_WORKERS;
-		/* Prueba sin cuarentena
-		if (workplaceType.contains("primary_school") || workplaceType.contains("secondary_school"))
-			distance -= 2;
-		*/
 		int col = 0;
 		int row = 0;
 		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row

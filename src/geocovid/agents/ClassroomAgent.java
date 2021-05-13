@@ -12,55 +12,36 @@ import geocovid.contexts.SubContext;
 public class ClassroomAgent extends WorkplaceAgent {
 
 	private List<HumanAgent> students = new ArrayList<HumanAgent>();
-	private int[][] studentPositions;
-	private int studentPositionsCount;
-	private String workplaceType;
 	private static boolean schoolProtocol; // Habilita protoloco de asistencia 50% semanal
 	private static boolean firstGroup = false; // flag para cambio de grupo de estudio
-	private int Index = 0;
 	
-	public ClassroomAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id,
-			String workType, int activityType, int area, int coveredArea, int workersPlace) {
-		super(subContext, sectoralType, sectoralIndex, coord, id, workType, activityType, area, coveredArea,
-				workersPlace);
-		this.workplaceType = workType;
-		this.vacancies = workersPlace;
+	public ClassroomAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType) {
+		super(subContext, sectoralType, sectoralIndex, coord, id, workType, 1, DataSet.CLASSROOM_SIZE, DataSet.CLASSROOM_SIZE, DataSet.CLASS_SIZE);
+	}
+	
+	public ClassroomAgent(ClassroomAgent cra) {
+		super(cra);
 	}
 	
 	/**
 	 * Habilitar o deshabilitar los grupos de estudiantes semanales.
-	 * 
 	 * @param firstGroup flag cambio de grupo
 	 */
-	public static void studyGroupChange() {
-		if (firstGroup) {
-			firstGroup = false;
-		} else {
-			firstGroup = true;
-		}
+	public static void switchStudyGroup() {
+		firstGroup = !firstGroup;
 	}
 	
 	@Override
 	public int[] insertHuman(HumanAgent human, int[] pos) {
 		if (closed)
 			return null;
-		pos = human.getWorkplacePosition();
 		if (schoolProtocol) {
-			if (firstGroup) {
-				if (pos[0] == 0 || pos[0] % 3 == 0) {
-					students.add(human);
-					return super.insertHuman(human, pos);
-				} else
-					return null;
-			} else if (!(pos[0] == 0) && !(pos[0] % 3 == 0)) {
-				students.add(human);
-				return super.insertHuman(human, pos);
-			} else
+			boolean firstGroupStudent = (pos[0] % DataSet.SPACE_BETWEEN_STUDENTS == 0 ? true : false);
+			if ((firstGroup && !firstGroupStudent) || (!firstGroup && firstGroupStudent))
 				return null;
-		} else {
-			students.add(human);
-			return super.insertHuman(human, pos);
 		}
+		students.add(human);
+		return super.insertHuman(human, pos);
 	}
 	
 	/**
@@ -70,34 +51,34 @@ public class ClassroomAgent extends WorkplaceAgent {
 	public void createWorkPositions() {
 		int x = getWidth();
 		int y = getHeight();
-		studentPositions = new int[vacancies][2];
-		studentPositionsCount = studentPositions.length;
+		workPositions = new int[vacancies][2];
+		workPositionsCount = workPositions.length;
 		int distance = DataSet.SPACE_BETWEEN_STUDENTS;
 		int col = 1;
-		int row = 0;
+		int row = 2 * DataSet.HUMANS_PER_SQUARE_METER; // 2 metros de pasillo
 		boolean fullBuilding = false; // flag para saber si se utiliza todo el rango de col, row
-		for (int i = 1; i < studentPositionsCount; i = i + 2) {
-			studentPositions[i - 1][0] = col - 1;
-			studentPositions[i - 1][1] = row;
-			studentPositions[i][0] = col;
-			studentPositions[i][1] = row;
+		for (int i = 1; i < workPositionsCount; i += 2) {
+			workPositions[i - 1][0] = col - 1;
+			workPositions[i - 1][1] = row;
+			workPositions[i][0] = col;
+			workPositions[i][1] = row;
 			col += distance;
 			if (col >= x) {
 				col = 1;
 				row += distance;
 				if (row >= y) {
-					if (i + 1 < studentPositionsCount) { // TODO esto lo deje como info por las dudas
+					if (i + 1 < workPositionsCount) { // TODO esto lo deje como info por las dudas
 						// Si faltan crear puestos
 						if (fullBuilding) {
 							System.out.format("Cupos de estudiantes limitados a %d de %d en tipo: %s id: %d%n", i + 1,
-									studentPositionsCount, workplaceType, getId());
-							studentPositionsCount = i + 1;
-							vacancies = studentPositionsCount;
+									workPositionsCount, workplaceType, getId());
+							workPositionsCount = i + 1;
+							vacancies = workPositionsCount;
 							break;
 						}
 						// Si es la primer pasada, vuelve al principio + offset
-						System.out.format("Falta espacio para %d cupos de estudiantes en tipo: %s id: %d ",
-								studentPositionsCount - (i + 1), workplaceType, getId());
+						System.out.format("Falta espacio para %d cupos de estudiantes en tipo: %s id: %d%n",
+								workPositionsCount - (i + 1), workplaceType, getId());
 					}
 					fullBuilding = true;
 				}
@@ -106,37 +87,32 @@ public class ClassroomAgent extends WorkplaceAgent {
 	}
 	
 	@Override
-	public int[] getWorkPosition() {
-		int[] pos = studentPositions[Index];
-		studentPositions[Index] = studentPositions[--studentPositionsCount];
-		++Index;
-		return pos;
-	}
-	
-	@Override
 	public void removeHuman(HumanAgent human, int[] pos) {
 		if (pos == null)
 			return;
-		if (human.isContagious()) {
-			for (HumanAgent student : students) {
-				if (schoolProtocol) {
-					int[] desk = student.getWorkplacePosition();
-					if (firstGroup) {
-						if (desk[0] == 0 || desk[0] % 3 == 0) {
-							if (!student.isInCloseContact()) {
-								student.setCloseContact(human.getInfectiousStartTime());
-							}
-						}
-					} else {
-						if (!student.isInCloseContact()) {
+		if (schoolProtocol) {
+			// Si hay pre-sintomaticos, se aislan los alumnos presentes
+			if (!preSpreadersList.isEmpty()) {
+				// El pre-sintomaticos setea contacto estrecho en el resto 
+				if (human.isPreInfectious()) {
+					students.forEach(student -> {
+						if (student != human)
 							student.setCloseContact(human.getInfectiousStartTime());
-						}
-					}
+					});
+				}
+				// Se setea contacto estrecho con el primero de la lista
+				else if (!human.isInCloseContact()) {
+					human.setCloseContact(preSpreadersList.get(0).getInfectiousStartTime());
 				}
 			}
 		}
 		students.remove(human);
 		super.removeHuman(human, pos);
+	}
+	
+	@Override
+	public int[] getWorkPosition() {
+		return workPositions[--workPositionsCount];
 	}
 	
 	@Override
@@ -146,10 +122,6 @@ public class ClassroomAgent extends WorkplaceAgent {
 			return true;
 		}
 		return false;
-	}
-	
-	public static boolean isSchoolProtocol() {
-		return schoolProtocol;
 	}
 
 	public static void setSchoolProtocol(boolean schoolProtocol) {

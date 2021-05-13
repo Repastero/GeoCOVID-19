@@ -538,7 +538,7 @@ public final class BuildingManager {
         return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
 	}
 	/**
-	 * Función que les asigna un cole. Si no hay colectivos disponibles en la seccional
+	 * Funcion que les asigna un cole. Si no hay colectivos disponibles en la seccional
 	 * 
 	 * @param secIndex seccional donde se va a buscar buses
 	 * @return elemento de la lista de algun colectivo abierto. 0 si no hay transporte publico habilitado en la seccional
@@ -670,7 +670,7 @@ public final class BuildingManager {
 	}
 	
 	/**
-	 * Setea si los transporte públicos se
+	 * Setea si los transporte publicos se ventilan
 	 * @param ventilated indica si se quiere ventilar o no lo places "bus" 
 	 */
 	public void setVentilatedBusesPlaces(boolean ventilated) {
