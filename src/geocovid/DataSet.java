@@ -10,12 +10,12 @@ public final class DataSet {
 	public static final int SPACE_BETWEEN_WORKERS	= 3;	// Distancia en metros = (SPACE_BETWEEN_WORKERS / (HUMANS_PER_SQUARE_METRE / 2)
 	/** Espacios entre puestos de estudio (minimo 1) */
 	public static final int SPACE_BETWEEN_STUDENTS	= 3;	// Distancia en metros = (SPACE_BETWEEN_STUDENTS / (HUMANS_PER_SQUARE_METRE / 2)
-	/** Area por defecto de aulas */
-	public static final int DEFAULT_AREA_CLASSROOM= 48;     // metros cuadrados por aula
-	/** Area Cobierta por defecto de aulas en porcentaje */
-	public static final int COVER_AREA_CLASSROOM= 100;      // porcentaje de area cuebierta en aulas
-	/** Cantidad de alimnos por aula */
-	public static final int VACANCY_CLASSROOM= 30;          // cantidad de bancos por aula
+	
+	/** Metros de largo y ancho de aulas */
+	public static final int CLASSROOM_SIZE	= 4;
+	/** Cantidad de alumnos por aula */
+	public static final int CLASS_SIZE		= 30;
+	
 	/** Porcentaje del area construida ocupable en casas (minimo .1) */
 	public static final double BUILDING_AVAILABLE_AREA	= 0.6;
 	/** Porcentaje del area construida ocupable en places (minimo .1) */
@@ -65,10 +65,15 @@ public final class DataSet {
 	public static final int	PREVENTIVE_QUARANTINE_TIME		= 14*24;	// en ticks (14 dias)
 	
 	/** Cantidad de droplets recibidos segun estado de markov y cercania fisica */
-	public static final double[] STATE_DROPLET_VOLUME = {1d, 0.5d, 0.8d, 0.2d};	// TODO a revisar
+	public static final double[] STATE_DROPLET_VOLUME	= {1d, 0.5d, 0.8d, 0.2d};	// TODO a revisar
 	
 	/** % de contagio minimo, para seguir contando como superficie contaminada */
 	public static final int	CS_MIN_INFECTION_RATE		= 7;	// sobre 100
+	
+	/** Ticks que representan el tiempo de una semana */
+	public static final int WEEKLY_TICKS = 7*24;
+	/** Ticks que representan el tiempo que dura el fin de semana */
+	public static final int WEEKEND_TICKS = 2*24;
 	
 	/** Duracion de periodo de incubacion */
 	public static final int EXPOSED_PERIOD_MEAN			= 5*24;	// 5 dias
@@ -96,9 +101,9 @@ public final class DataSet {
 	 * <li>65 o mas anos</ul>
 	 */
 	public static final int AGE_GROUPS = 5; // cantidad de franjas etarias
-	public static final String[] AGE_GROUP_LABELS				= {"Niños", "Jovenes", "Adultos", "Mayores", "Muy Mayores"};
+	public static final String[] AGE_GROUP_LABELS			= {"Niños", "Jovenes", "Adultos", "Mayores", "Muy Mayores"};
 	/** Porcentaje poblacion de cada grupo etario */
-	public static final double[] HUMANS_PER_AGE_GROUP			= {14.40d, 17.92d, 22.88d, 31.10d, 13.70d}; // Abelardo Parana
+	public static final double[] HUMANS_PER_AGE_GROUP		= {14.40d, 17.92d, 22.88d, 31.10d, 13.70d}; // Abelardo Parana
 	
 	/** Distancia para que se considere contacto personal */
 	public static final int	PERSONAL_DISTANCE				= 3; // Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
@@ -111,15 +116,16 @@ public final class DataSet {
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
 	/** % de casos en UTI que mueren al terminar la infeccion */
 	public static final double	ICU_DEATH_RATE				= 65d;	// sobre 100
-	
-	/** Cantidad maxima de asientos;
-	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
+
+	/** Ancho en metros de colectivo */
+	public static final int	PUBLIC_TRANSPORT_UNIT_WIDTH		= 3;	// 2.6m carrozado, 3m para redondear
+	/** Cantidad maxima de asientos<p>
+	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm
 	 * http://leivag1991vehicles.blogspot.com/2018/10/metalpar-tronador-mk2-chasis-of1418.html
 	 */
-	public static final int	PUBLIC_TRANSPORT_MAX_SEAT				= 31;	// 
-	
-	/** Cantidad maxima de gente parada;
+	public static final int	PUBLIC_TRANSPORT_MAX_SEATED		= 31;	// 
+	/** Cantidad maxima de gente parada<p>
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
-	 * */
-	public static final int	PUBLIC_TRANSPORT_MAX_STILL				= 10;	// 
+	 */
+	public static final int	PUBLIC_TRANSPORT_MAX_STANDING	= 10;	// 
 }

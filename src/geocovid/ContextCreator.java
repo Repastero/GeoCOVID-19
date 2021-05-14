@@ -42,11 +42,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 	/** Suma inicial de agentes humanos */
 	private int humansCount;
 	
-	/** Ticks que representan el tiempo de una semana */
-	static final int WEEKLY_TICKS = 7*24;
-	/** Ticks que representan el tiempo que dura el fin de semana */
-	static final int WEEKEND_TICKS = 2*24;
-	
 	/** Lista de municipios a simular */
 	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
 		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
@@ -112,11 +107,14 @@ public class ContextCreator implements ContextBuilder<Object> {
 				humansCount,
 				InfectionReport.getCumExposed());
 		if (cumExposed > 0) {
-			System.out.printf("Inf. por aerosol: %.2f%% | Inf. en colectivos: %.2f%% | Inf. en escuelas: %.2f%% | Inf. por estela: %.2f%%%n",
+			System.out.printf("Inf. por aerosol: %.2f%% | Inf. por estela: %.2f%%%n",
 					(InfectionReport.getCumExposedToAero() * 100 / cumExposed),
-					(InfectionReport.getCumExposedPublicTransport() * 100 / cumExposed),
-					(InfectionReport.getCumExposedSchool() * 100 / cumExposed),
 					(InfectionReport.getCumExposedToCS() * 100 / cumExposed));
+			System.out.printf("Inf. en colectivos: %d - %.2f%% | Inf. en escuelas: %d - %.2f%%%n",
+					(InfectionReport.getCumExposedPublicTransport()),
+					(InfectionReport.getCumExposedPublicTransport() * 100 / cumExposed),
+					(InfectionReport.getCumExposedSchool()),
+					(InfectionReport.getCumExposedSchool() * 100 / cumExposed));
 			System.out.printf("Recuperados:  %6d | Muertos: %d%n",
 					InfectionReport.getCumRecovered(),
 					InfectionReport.getCumDeaths());
@@ -169,6 +167,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 				subContext = new ConcordContext(tempTown);
 			//
 			context.addSubContext(subContext);
+			// Programa movilidad en humanos del sub contexto
+			scheduleHumanInteractions(subContext);
 			// Guardar el ultimo de cada tipo de sub contexto
 			lastContexts[tempTown.regionType] = subContext;
 		}
@@ -176,8 +176,22 @@ public class ContextCreator implements ContextBuilder<Object> {
 		// Programar el cambio de markovs en fines de semana
 		for (SubContext cont : lastContexts) {
 			if (cont != null) { // si se creo ciudad de esta region
-				setWeekendMovement(cont);
+				scheduleWeekendPeriod(cont);
 			}
+		}
+	}
+	
+	/**
+	 * Programa en schedule los metodos para que los humanos cambien de estado y calculen contactos.
+	 * @param subContext sub contexto
+	 */
+	private void scheduleHumanInteractions(Object subContext) {
+		ScheduleParameters params;
+		params = ScheduleParameters.createRepeating(0, 1, 0.5);
+		schedule.schedule(params, subContext, "switchHumanLocation");
+		if (DataSet.COUNT_INTERACTIONS) {
+			params = ScheduleParameters.createRepeating(23, 24, ScheduleParameters.LAST_PRIORITY);
+			schedule.schedule(params, subContext, "computeAvgSocialInteractions");
 		}
 	}
 	
@@ -185,11 +199,11 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Programa en schedule los metodos para cambiar matrices de markov en los periodos de fines de semanas.
 	 * @param subContext sub contexto
 	 */
-	private void setWeekendMovement(Object subContext) {
+	private void scheduleWeekendPeriod(Object subContext) {
 		ScheduleParameters params;
-		params = ScheduleParameters.createRepeating(weekendStartTick, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+		params = ScheduleParameters.createRepeating(weekendStartTick, DataSet.WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", true);
-		params = ScheduleParameters.createRepeating(weekendStartTick + WEEKEND_TICKS, WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+		params = ScheduleParameters.createRepeating(weekendStartTick + DataSet.WEEKEND_TICKS, DataSet.WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", false);
 		// Por si finaliza simulacion un fin de semana, reiniciar markov 
 		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);

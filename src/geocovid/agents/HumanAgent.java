@@ -179,6 +179,11 @@ public class HumanAgent {
 		return activityQueued;
 	}
 	
+	/** @return {@link HumanAgent#isInCloseContact} */
+	public boolean isInCloseContact() {
+		return inCloseContact;
+	}
+	
 	/**
 	 * Inicia o finaliza el periodo en que puede generar contactos estrechos en el trabajo.
 	 * @see DataSet#CLOSE_CONTACT_INFECTIOUS_TIME
@@ -593,20 +598,4 @@ public class HumanAgent {
     	}
     	relocationTime = schedule.getTickCount();
    	}
-	
-	public boolean isInCloseContact() {
-		return inCloseContact;
-	}
-	
-	public void setInCloseContact(boolean inCloseContact) {
-		this.inCloseContact = inCloseContact;
-	}
-	
-	public int[] getWorkplacePosition() {
-		return workplacePosition;
-	}
-	
-	public void setWorkplacePosition(int[] workplacePosition) {
-		this.workplacePosition = workplacePosition;
-	}
 }

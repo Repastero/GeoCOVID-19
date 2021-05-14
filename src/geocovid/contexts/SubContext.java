@@ -76,6 +76,10 @@ public abstract class SubContext extends DefaultContext<Object> {
 	private int[][] employedCount;	// Cupo de trabajadores
 	private int[][] schooledCount;	// Cupo de estudiantes pri/sec
 	private int[][] collegiateCount;// Cupo de estudiantes ter/uni
+	private int employedSum;		// Total de trabajadores
+	private int schooledSum;		// Total de estudiantes pri/sec
+	private int collegiateSum;		// Total de estudiantes ter/uni
+	
 	private int unemployedCount;	// Contador de empleos faltantes
 	private int unschooledCount;	// Contador de bancos faltantes en escuelas
 	private int noncollegiateCount; // Contador de bancos faltantes en universidades
@@ -139,8 +143,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 */
 	public void init() {
 		schedule = RunEnvironment.getInstance().getCurrentSchedule();
-		// Schedule one shot para agregar infectados
-		ScheduleParameters params = ScheduleParameters.createOneTime((town.outbreakStartDay - InfectionReport.simulationStartDay) * 24, 0.9d);
+		// Crea Schedule one shot para agregar infectados el dia de ingreso del primero, o el primer dia de simulacion (si ingresa antes)  
+		ScheduleParameters params = ScheduleParameters.createOneTime(
+				(InfectionReport.simulationStartDay > town.outbreakStartDay ? 0 : (town.outbreakStartDay - InfectionReport.simulationStartDay) * 24), 0.9d);
 		schedule.schedule(params, this, "infectLocalRandos", Town.firstInfectedAmount);
 		
 		// Programa los cambios de fases, pasadas y futuras
@@ -156,7 +161,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 			schedule.schedule(params, this, "initiateLockdownPhase", phasesStartDay[i]);
 		}
 		
-				
 		// Crea BuildingManager para esta ciudad
 		buildingManager = new BuildingManager(this, town.sectoralsCount);
 		
@@ -168,6 +172,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 		// Creacion de colectivos
 		createPublicTransportUnits();
 		
+		loadOccupationalNumbers();
+		createSchoolClassrooms();
 		buildingManager.createActivitiesChances();
 		
 		// Por ultimo crea agentes humanos, les asigna trabajo/estudio y los distribuye en hogares
@@ -181,22 +187,19 @@ public abstract class SubContext extends DefaultContext<Object> {
 	}
 	
 	/**
-	 * Cambia estado de markov de todos los HumanAgents en sub contexto.
+	 * Cambia estado de markov de todos los HumanAgents en sub contexto.<p>
+	 * Para usar como Schedulable Action
 	 */
-	@ScheduledMethod(start = 0, interval = 1, priority = 0.5)
 	public void switchHumanLocation() {
 		Stream<Object> iteral = getObjectsAsStream(HumanAgent.class);
 		iteral.forEach(h -> ((HumanAgent) h).switchLocation());
 	}
 	
 	/**
-	 * Calcula el promedio de contactos diarios de los HumanAgents en sub contexto.
-	 * @see DataSet#COUNT_INTERACTIONS
+	 * Calcula el promedio de contactos diarios de los HumanAgents en sub contexto.<p>
+	 * Para usar como Schedulable Action
 	 */
-	@ScheduledMethod(start = 23, interval = 24, priority = ScheduleParameters.LAST_PRIORITY)
 	public void computeAvgSocialInteractions() {
-		if (!DataSet.COUNT_INTERACTIONS)
-			return;
 		int[] sumOfSocialInteractions	= new int[DataSet.AGE_GROUPS];
 		int[] humansInteracting			= new int[DataSet.AGE_GROUPS];
 		double[] avgSocialInteractions	= new double[DataSet.AGE_GROUPS];
@@ -551,28 +554,30 @@ public abstract class SubContext extends DefaultContext<Object> {
 	/*
 	 * Activa y programa por tiempo indeterminado la asistencia alternada semana a semana de las burbuhas de alumnos.setchoolProtocol
 	 */
-	public void setSchoolProtocol (boolean protocol) {
+	public void setSchoolProtocol(boolean protocol) {
 		if (protocol) {	
 			ClassroomAgent.setSchoolProtocol(true);
 			ScheduleParameters params;
-			params = ScheduleParameters.createRepeating(schedule.getTickCount(), 7*24, ScheduleParameters.FIRST_PRIORITY);
-			startSchoolProtocolAction = schedule.schedule(params, this, "schoolGroupChange");
+			params = ScheduleParameters.createRepeating(schedule.getTickCount(), DataSet.WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
+			startSchoolProtocolAction = schedule.schedule(params, this, "callSwitchStudyGroup");
+		}
+		else {
+			disableSchoolProtocol();
 		}
 	}
 		
-	public void schoolGroupChange() {//TODO no pude lograr que llame directamente este metodo del schedule
-		ClassroomAgent.studyGroupChange();
+	public void callSwitchStudyGroup() {
+		ClassroomAgent.switchStudyGroup();
 	}
 
 	/**
 	 * Detiene el procolo burbuja en escuelas.
 	 */
-	@SuppressWarnings("unused")
-	private void stopRepeatingSchoolProtocol() {
-		if (!removeProtocol()) {
+	private void disableSchoolProtocol() {
+		if (!removeSchoolProtocolAction()) {
 			ScheduleParameters params;
 			params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1d);
-			schedule.schedule(params, this, "removeProtocol");
+			schedule.schedule(params, this, "removeSchoolProtocolAction");
 		}
 	}
 			
@@ -580,7 +585,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 * Eliminar la accion programada para protocolo burbuja
 	 * @return <b>true</b> si se elimino la accion
 	 */
-	public boolean removeProtocol() {
+	public boolean removeSchoolProtocolAction() {
 		ClassroomAgent.setSchoolProtocol(false);
 		return schedule.removeAction(startSchoolProtocolAction);
 	}
@@ -721,7 +726,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		int sectoralType, sectoralIndex = 0;
 		int buildingArea;
 		//
-		int schoolVacancies = 0, universityVacancies = 0, workVacancies = 0;
+		int universityVacancies = 0, workVacancies = 0;
 		for (SimpleFeature feature : features) {
 			Geometry geom = (Geometry) feature.getDefaultGeometry();
 			if (geom == null || !geom.isValid()) {
@@ -770,16 +775,10 @@ public abstract class SubContext extends DefaultContext<Object> {
 				
 				// Agrupar el Place con el resto del mismo type
 				if (placeProp.getActivityState() == 1) { // trabajo / estudio
-					if (type.contains("primary_school") || type.contains("secondary_school") || type.contains("technical_school")) {
-						for (int i = 0; i < (placeProp.getBuildingCArea() / DataSet.DEFAULT_AREA_CLASSROOM); i++) {
-							WorkplaceAgent tempWork = new ClassroomAgent(this, sectoralType, sectoralIndex, coord, ++lastHomeId, type,
-									placeProp.getActivityState(), DataSet.DEFAULT_AREA_CLASSROOM, DataSet.COVER_AREA_CLASSROOM, DataSet.VACANCY_CLASSROOM);
-							schoolPlaces.add(tempWork);
-							buildingManager.addWorkplace(type, tempWork);
-							add(tempWork);
-							schoolVacancies += tempWork.getVacancy();
-						}
-						type = null;
+					if (type.contains("primary_school") || type.contains("secondary_school")) {
+						// Creo un ClassroomAgent por escuela para que figure en GIS y luego crear clones 
+						tempWorkspace = new ClassroomAgent(this, sectoralType, sectoralIndex, coord, lastHomeId, type); // cambio WorkplaceAgent por ClassroomAgent
+						schoolPlaces.add(tempWorkspace);
 					}
 					else if (type.contains("university")) {
 						universityPlaces.add(tempWorkspace);
@@ -798,11 +797,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 					// Si es lugar con atencion al publico, se agrega a la lista de actividades
 					buildingManager.addPlace(sectoralIndex, tempWorkspace, placeProp);
 				}
-				if (type != null) {
-					// Agregar al contexto
-					add(tempWorkspace);
-					geography.move(tempWorkspace, geom);
-				}
+				// Agregar al contexto
+				add(tempWorkspace);
+				geography.move(tempWorkspace, geom);
 			}
 			else {
 				System.err.println("Error creating agent for " + geom);
@@ -811,7 +808,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 		features.clear();
 		
 		if (DEBUG_MSG) {
-			System.out.println("CUPO ESTUDIANTES PRI/SEC: " + schoolVacancies);
 			System.out.println("CUPO ESTUDIANTES TER/UNI: " + universityVacancies);
 			System.out.println("CUPO TRABAJADORES: " + workVacancies);
 		}
@@ -944,6 +940,34 @@ public abstract class SubContext extends DefaultContext<Object> {
 	}
 	
 	/**
+	 * Crea copias de instancias ClassroomAgent para cada escuela hasta cubrir el cupo escolar. 
+	 */
+	private void createSchoolClassrooms() {
+		ClassroomAgent baseCA, tempCA;
+		int schools = schoolPlaces.size(); // cantidad real de escuelas
+		// Calcula cuantas divisiones por escuela
+		int classPerSchool = ((schooledSum / DataSet.CLASS_SIZE) / schools) - 1; // -1 para restar aula original
+		int classroomCount = schools; // contador
+		for (int i = 1; i <= schools; i++) {
+			baseCA = (ClassroomAgent) schoolPlaces.get(i); // aula original
+			if (i == schools) { // ultima escuela
+				// Calcula la cantidad que falta
+				classPerSchool = (schooledSum / DataSet.CLASS_SIZE) - classroomCount;
+			}
+			for (int j = 0; j < classPerSchool; j++) {
+				// Crea copia de instancia
+				tempCA = new ClassroomAgent(baseCA);
+				tempCA.setId(++lastHomeId);
+				//
+				schoolPlaces.add(tempCA);
+				buildingManager.addWorkplace(baseCA.getType(), tempCA);
+				//add(tempCA); // no hace falta por ahora agregarlo al contexto
+			}
+			classroomCount += classPerSchool;
+		}
+	}
+	
+	/**
 	 * Crea Humano con los parametros dados y lo agrega al contexto.
 	 * @param secType indice tipo seccional
 	 * @param secIndex indice seccional
@@ -1001,7 +1025,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 		noncollegiateCount = 0;
 		int secType;
 		int[] humIdx = loadHumansAmount(locals, localTravelers, foreignTravelers);
-		loadOccupationalNumbers();
 		
 		Uniform disUniHomesIndex;
 		// Primero se crean los locales, pero que trabajan o estudian fuera
@@ -1134,6 +1157,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		employedCount = new int[2][DataSet.AGE_GROUPS];
 		schooledCount = new int[2][DataSet.AGE_GROUPS];
 		collegiateCount = new int[2][DataSet.AGE_GROUPS];
+		schooledSum = collegiateSum = employedSum = 0;
 		//
 		int i, j;
 		double[] percPP = {0d, 0d};
@@ -1142,7 +1166,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 		}
 		//
 		int humansCount;
-		int schooledSum = 0, collegiateSum = 0, employedSum = 0;
 		double[][] occupationPerAG;
 		for (i = 0; i < 2; i++) {
 			occupationPerAG = getOccupationPerAG(i);

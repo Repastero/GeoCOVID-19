@@ -311,6 +311,7 @@ public final class BuildingManager {
 		for (String type : otherTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.setVentilated(ventilate)));
 		}
+		// TODO tendria que diferenciar tipo "bus"
 	}
 	
 	/**
@@ -320,6 +321,16 @@ public final class BuildingManager {
 	public void ventilateEntertainmentPlaces(boolean ventilate) {
 		for (String type : entertainmentTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.setVentilated(ventilate)));
+		}
+	}
+	
+	/**
+	 * Setea si los transporte publicos se ventilan
+	 * @param ventilated indica si se quiere ventilar o no lo places "bus" 
+	 */
+	public void ventilatePTUnits(boolean ventilated) {
+		if (placesMap.containsKey("bus")) {
+			placesMap.get("bus").forEach(sect -> sect.forEach(work -> work.setVentilated(ventilated)));
 		}
 	}
 	
@@ -433,14 +444,10 @@ public final class BuildingManager {
 	 * Limita el aforo en Places tipo "bus".
 	 * @param sqMeters metros cuadrados por persona
 	 */
-	public void limitPublicTransportActCap(int humanSites) {
-		if (humanSites == activitiesCapacityLimit)
-			return;
-		placesMap.get("bus").forEach(sect -> sect.forEach( work -> {
-			PublicTransportAgent bus = (PublicTransportAgent) work;
-			bus.limitBusCapacity(humanSites);		 
-		} ));
-
+	public void limitPTUnitsCap(int humanSites) {
+		if (placesMap.containsKey("bus")) {
+			placesMap.get("bus").forEach(sect -> sect.forEach(work -> ((PublicTransportAgent) work).limitUnitCapacity(humanSites)));
+		}
 	}
 	
 	/**
@@ -465,7 +472,7 @@ public final class BuildingManager {
 	}
 	
 	/**
-	 * Busca un nuevo place segun actividad a realizar y otros parametros.
+	 * Busca una actividad a realizar segun parametros y retorna un nuevo place.
 	 * @param secType indice tipo seccional
 	 * @param secIndex indice seccional
 	 * @param state indice estado markov
@@ -475,6 +482,7 @@ public final class BuildingManager {
 	 * @return <b>BuildingAgent</b> o <b>null</b>
 	 */
 	public BuildingAgent findRandomPlace(int secType, int secIndex, int state, HumanAgent human, BuildingAgent currentBuilding, int ageGroup) {
+		BuildingAgent randomPlace;
 		String newActivity;
 		if (state == 2) // Entretenimiento
 			newActivity = findNewPlaceType(entertainmentTypes, entertainmentChances, entertainmentChancesSum, ageGroup);
@@ -485,72 +493,68 @@ public final class BuildingManager {
 		if (closedPlaces.contains(newActivity))
 			return null;
 		
-		boolean atHome = false;
+		boolean getOut = false;
 		if (currentBuilding == null) {
 			// Si no esta en un Building, va a una de las seccionales aleatoriamente
 			secIndex = RandomHelper.nextIntFromTo(0, sectoralsCount - 1);
 		}
 		else if (currentBuilding.getSectoralIndex() == secIndex) {
-			atHome = true;
 			// Si esta en otro barrio se queda, hasta volver a casa
+			if (RandomHelper.nextIntFromTo(1, 100) <= context.travelOutsideChance(secType))
+				getOut = true;
 		}
 		
-		int[] placeSecCount = placesCount.get(newActivity);
-    	boolean getOut = false;
-    	// Chequear si actividad no esta disponible en la seccional actual
-    	if (placeSecCount[secIndex] == 0) {
-    		getOut = true;
+		// Busca el place de salida de acuerdo a disponibilidad
+    	if (pTWorkingUnits > 0 && newActivity.contentEquals("bus")) {
+			// Si no hay unidades de PT en la seccional actual, queda afuera
+			if ((!getOut) && (sectoralsPTUnits[secIndex] == 0)) {
+		    	return null;
+			}
+    		randomPlace = getRandomPlace(newActivity, getOut, pTWorkingUnits, sectoralsPTUnits, secIndex);
     	}
-    	// Chequear si actividad disponible en otras seccionales
-    	else if (placesTotal.get(newActivity) - placeSecCount[secIndex] != 0) {
-    		if (atHome) {
-				// Si se va fuera del barrio
-				if (RandomHelper.nextIntFromTo(1, 100) <= context.travelOutsideChance(secType)) {
-					getOut = true;
-				}
-    		}
+    	else {
+			int[] placeSecCount = placesCount.get(newActivity); // cantidad de places por seccional segun actividad
+			// Si la actividad no esta disponible en la seccional actual, viaja afuera
+			if ((!getOut) && (placeSecCount[secIndex] == 0)) {
+		    	getOut = true;
+			}
+			randomPlace = getRandomPlace(newActivity, getOut, placesTotal.get(newActivity), placeSecCount, secIndex);
     	}
-    	
-    	int rndPlaceIndex;
-    	if (getOut) {
+    	return randomPlace;
+	}
+	
+	/**
+	 * Selecciona un place al azar, de acuerdo a los parametros dados.
+	 * @param activity tipo de actividad
+	 * @param switchSectoral cambiar de seccional
+	 * @param totalPCount cantidad total de places
+	 * @param sectoralPCount cantidad de places por seccional
+	 * @param currentSectoral indice de seccional actual
+	 * @return <b>BuildingAgent</b>
+	 */
+	private BuildingAgent getRandomPlace(String activity, boolean switchSectoral, int totalPCount, int[] sectoralPCount, int currentSectoral) {
+		int rndPlaceIndex;
+    	if (switchSectoral) {
     		// Si le toca cambiar de seccional, busca a que seccional ir
-    		int placesSum = placesTotal.get(newActivity) - placeSecCount[secIndex]; // restar la % de la seccional donde esta
+    		int placesSum = totalPCount - sectoralPCount[currentSectoral]; // restar la cantidad de la seccional donde esta
     		rndPlaceIndex = RandomHelper.nextIntFromTo(0, placesSum - 1);
-    		for (int i = 0; i < placeSecCount.length; i++) {
-    			if (i == secIndex) // saltea su propia seccional
+    		for (int i = 0; i < sectoralPCount.length; i++) {
+    			if (i == currentSectoral) // saltea su propia seccional
     				continue;
-	    		if (rndPlaceIndex < placeSecCount[i]) {
-	    			secIndex = i; // seccional seleccionada
+    			// La seccional que tenga mayor cantidad de places de la actividad, tiene mayor chance
+	    		if (rndPlaceIndex < sectoralPCount[i]) {
+	    			currentSectoral = i; // seccional seleccionada
 	    			break;
 	    		}
-	    		rndPlaceIndex -= placeSecCount[i];
+	    		rndPlaceIndex -= sectoralPCount[i];
     		}
     	}
     	else {
     		// Busca un lugar aleatorio en la seccional donde esta
-    	 	if (newActivity.equals("bus")) {
-        		//selecciona un cole disponible en la seccional
-           		rndPlaceIndex = findBusPlace(secIndex);
-            }
-    	 	else
-    	 		rndPlaceIndex = RandomHelper.nextIntFromTo(0, placeSecCount[secIndex] - 1);
+    	 	rndPlaceIndex = RandomHelper.nextIntFromTo(0, sectoralPCount[currentSectoral] - 1);
     	}
-        return placesMap.get(newActivity).get(secIndex).get(rndPlaceIndex);
+    	return placesMap.get(activity).get(currentSectoral).get(rndPlaceIndex);
 	}
-	/**
-	 * Función que les asigna un cole. Si no hay colectivos disponibles en la seccional
-	 * 
-	 * @param secIndex seccional donde se va a buscar buses
-	 * @return elemento de la lista de algun colectivo abierto. 0 si no hay transporte publico habilitado en la seccional
-	 */
-	
-	private int findBusPlace(int secIndex) {
-		int rndPlaceIndex;
-		int amountOpenBusSectorial=sectoralsPTUnits[secIndex];
-		rndPlaceIndex=RandomHelper.nextIntFromTo(0,amountOpenBusSectorial);
-		return rndPlaceIndex;
-	}
-	
 	
 	/**
 	 * Remueve elementos al azar de la lista hasta alcanzar la cantidad deseada.
@@ -667,13 +671,5 @@ public final class BuildingManager {
 			infHuman.setHidden(true);
 			mainContext.remove(infHuman);
 		}
-	}
-	
-	/**
-	 * Setea si los transporte públicos se
-	 * @param ventilated indica si se quiere ventilar o no lo places "bus" 
-	 */
-	public void setVentilatedBusesPlaces(boolean ventilated) {
-		placesMap.get("bus").forEach(sect -> sect.forEach(work -> work.setVentilated(ventilated)));
 	}
 }

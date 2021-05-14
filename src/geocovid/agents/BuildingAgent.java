@@ -73,6 +73,14 @@ public class BuildingAgent {
 		setBuildingShape();
 	}
 	
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int width, int lenght, boolean workplace) {
+		// Constructor Home/Workplace de dimensiones especificas
+		this(subContext, secType, secIndex, coord, id, type, width * lenght * DataSet.HUMANS_PER_SQUARE_METER, width * lenght * DataSet.HUMANS_PER_SQUARE_METER);
+		//
+		this.workingPlace = workplace;
+		setBuildingShape(width, lenght);
+	}
+	
 	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, int realArea, boolean outdoor) {
 		// Constructor Evento
 		this(subContext, secType, secIndex, coord, 0xFFFFFFFF, "event", 0, 0);
@@ -81,8 +89,8 @@ public class BuildingAgent {
 		else
 			this.coveredArea = realArea;
 		//
-		this.outdoor = outdoor;
 		this.realArea = realArea;
+		this.outdoor = outdoor;
 		setBuildingShape();
 	}
 	
@@ -91,7 +99,12 @@ public class BuildingAgent {
 		this(ba.context, ba.sectoralType, ba.sectoralIndex, ba.coordinate, ba.id, ba.type, ba.area, ba.coveredArea);
 		//
 		this.realArea = ba.realArea;
-		setBuildingShape();
+		this.outdoor = ba.outdoor;
+		this.size[0] = ba.size[0];
+		this.size[1] = ba.size[1];
+		this.capacity = ba.capacity;
+		//
+		this.workingPlace = ba.workingPlace;
 	}
 	
 	/**
@@ -191,13 +204,18 @@ public class BuildingAgent {
     	        size[1] = humansCap / i;
             }
 		}
-		
 		// Si Y es mas del doble que X, uso calculo viejo
 		if (size[0] < size[1] >> 1) {
 			size[1] = (int)Math.sqrt(humansCap);
 			size[0] = size[1] + 1;
 		}
-		
+		capacity = size[0]*size[1];
+	}
+	
+	private void setBuildingShape(int mWidth, int mLenght) {
+		// Se multiplican los metros por la cantidad de Humanos por m2
+		size[0] = mWidth * DataSet.HUMANS_PER_SQUARE_METER;
+		size[1] = mLenght * DataSet.HUMANS_PER_SQUARE_METER;
 		capacity = size[0]*size[1];
 	}
 	
