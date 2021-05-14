@@ -187,22 +187,19 @@ public abstract class SubContext extends DefaultContext<Object> {
 	}
 	
 	/**
-	 * Cambia estado de markov de todos los HumanAgents en sub contexto.
+	 * Cambia estado de markov de todos los HumanAgents en sub contexto.<p>
+	 * Para usar como Schedulable Action
 	 */
-	@ScheduledMethod(start = 0, interval = 1, priority = 0.5)
 	public void switchHumanLocation() {
 		Stream<Object> iteral = getObjectsAsStream(HumanAgent.class);
 		iteral.forEach(h -> ((HumanAgent) h).switchLocation());
 	}
 	
 	/**
-	 * Calcula el promedio de contactos diarios de los HumanAgents en sub contexto.
-	 * @see DataSet#COUNT_INTERACTIONS
+	 * Calcula el promedio de contactos diarios de los HumanAgents en sub contexto.<p>
+	 * Para usar como Schedulable Action
 	 */
-	@ScheduledMethod(start = 23, interval = 24, priority = ScheduleParameters.LAST_PRIORITY)
 	public void computeAvgSocialInteractions() {
-		if (!DataSet.COUNT_INTERACTIONS)
-			return;
 		int[] sumOfSocialInteractions	= new int[DataSet.AGE_GROUPS];
 		int[] humansInteracting			= new int[DataSet.AGE_GROUPS];
 		double[] avgSocialInteractions	= new double[DataSet.AGE_GROUPS];

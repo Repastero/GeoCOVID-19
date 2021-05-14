@@ -167,6 +167,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 				subContext = new ConcordContext(tempTown);
 			//
 			context.addSubContext(subContext);
+			// Programa movilidad en humanos del sub contexto
+			scheduleHumanInteractions(subContext);
 			// Guardar el ultimo de cada tipo de sub contexto
 			lastContexts[tempTown.regionType] = subContext;
 		}
@@ -174,8 +176,22 @@ public class ContextCreator implements ContextBuilder<Object> {
 		// Programar el cambio de markovs en fines de semana
 		for (SubContext cont : lastContexts) {
 			if (cont != null) { // si se creo ciudad de esta region
-				setWeekendMovement(cont);
+				scheduleWeekendPeriod(cont);
 			}
+		}
+	}
+	
+	/**
+	 * Programa en schedule los metodos para que los humanos cambien de estado y calculen contactos.
+	 * @param subContext sub contexto
+	 */
+	private void scheduleHumanInteractions(Object subContext) {
+		ScheduleParameters params;
+		params = ScheduleParameters.createRepeating(0, 1, 0.5);
+		schedule.schedule(params, subContext, "switchHumanLocation");
+		if (DataSet.COUNT_INTERACTIONS) {
+			params = ScheduleParameters.createRepeating(23, 24, ScheduleParameters.LAST_PRIORITY);
+			schedule.schedule(params, subContext, "computeAvgSocialInteractions");
 		}
 	}
 	
@@ -183,7 +199,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 	 * Programa en schedule los metodos para cambiar matrices de markov en los periodos de fines de semanas.
 	 * @param subContext sub contexto
 	 */
-	private void setWeekendMovement(Object subContext) {
+	private void scheduleWeekendPeriod(Object subContext) {
 		ScheduleParameters params;
 		params = ScheduleParameters.createRepeating(weekendStartTick, DataSet.WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", true);
