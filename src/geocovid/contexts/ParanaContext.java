@@ -119,7 +119,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 229: // 17 agosto
 			// Nueva normalidad (Fase 5)
-			setMaskAtWork(false); // ya a partir de aca se relajan en oficinas
+			setWearMaskCS(false); // ya a partir de aca se relajan empleados en atencion al publico
 			buildingManager.setPTUnits(town.getPTPhaseUnits(2)); // finaliza el paro de choferes
 			buildingManager.ventilatePTUnits(false);
 			buildingManager.limitPTUnitsCap(-1); // aforo normal desde el principio
@@ -258,7 +258,7 @@ public class ParanaContext extends SubContext {
 	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
 	 */
 	public void setDefaultValues() {
-		setMaskValues(0, false, true, true);
+		setMaskValues(0, false, true, true, true);
 		setSDValues(0, true, false);
 		disableCloseContacts();
 		disablePrevQuarantine();

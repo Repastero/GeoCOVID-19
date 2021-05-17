@@ -201,26 +201,36 @@ public class WorkplaceAgent extends BuildingAgent {
 	
 	@Override
 	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey, double infectionRate) {
+		// No hay contagio entre pre-infectados y susceptibles
 		if (spreader.isPreInfectious()) {
-			infectionRate = 0;
+			return super.checkContagion(spreader, prey, 0);
 		}
-		else if (context.getSDPercentage() != 0) {
+		// Chequea si respetan distanciamiento social
+		if (context.getSDPercentage() != 0) {
 			// Si es un lugar cerrado o se respeta el distanciamiento en exteriores
 			if (!isOutdoor() || context.sDOutdoor()) {
 				// Si los dos humanos respetan el distanciamiento
 				if (spreader.distanced && prey.distanced) {
 					// Si se respeta el distanciamiento en lugares de trabajo
-					if (!(spreader.atWork() && prey.atWork()) || context.sDWorkspace())
-						infectionRate = 0;
+					if (!(spreader.atWork() && prey.atWork()) || context.sDWorkspace()) {
+						return super.checkContagion(spreader, prey, 0);
+					}
 				}
 			}
 		}
-		else if (context.getMaskEffectivity() > 0) {
+		// Chequea efectividad de cubrebocas
+		if (context.getMaskEffectivity() > 0) {
 			// Si es un lugar cerrado o se usa cubreboca en exteriores
 			if (!isOutdoor() || context.wearMaskOutdoor()) {
-				// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
+				// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados
 				final boolean workers = (spreader.atWork() && prey.atWork());
-				if ((!workers && context.wearMaskAtPlaces()) || (workers && context.wearMaskAtWork())) {
+				if (workers) {
+					// Chequea si utilizan cubreboca entre empleados del tipo de actividad de parcela
+					if ((activityType == 1 && context.wearMaskWorkspace()) || (activityType > 1 && context.wearMaskCS()))
+						infectionRate *= 1 - context.getMaskEffectivity();
+				}
+				// Chequea si utilizan cubreboca entre clientes y empleados
+				else if (context.wearMaskCustomer()) {
 					infectionRate *= 1 - context.getMaskEffectivity();
 				}
 			}

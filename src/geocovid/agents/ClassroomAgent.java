@@ -90,6 +90,12 @@ public class ClassroomAgent extends WorkplaceAgent {
 	public void removeHuman(HumanAgent human, int[] pos) {
 		if (pos == null)
 			return;
+		students.remove(human);
+		super.removeHuman(human, pos);
+	}
+	
+	@Override
+	protected void lookForCloseContacts(HumanAgent human, int[] pos) {
 		if (schoolProtocol) {
 			// Si hay pre-sintomaticos, se aislan los alumnos presentes
 			if (!preSpreadersList.isEmpty()) {
@@ -106,8 +112,9 @@ public class ClassroomAgent extends WorkplaceAgent {
 				}
 			}
 		}
-		students.remove(human);
-		super.removeHuman(human, pos);
+		else {
+			super.lookForCloseContacts(human, pos);
+		}
 	}
 	
 	@Override
