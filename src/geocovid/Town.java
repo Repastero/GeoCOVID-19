@@ -130,7 +130,7 @@ public final class Town {
 				new double[] {6.6, 5.5, 3.8, 6.3, 5.1, 1.9, 1.0, 11.9, 2.2, 3.0, 6.1, 9.5, 10.5, 1.0, 8.3, 6.5, 8.6, 2.2},
 				new int[] {163,182,201,215,229,244,254,257,264,273,302,310,340,343,348,358,359,365,366,376,397,411,425,435,445,459,471},
 				182,
-				140,
+				120,
 				false);
 			break;
 		case "gualeguay": // 45280
@@ -349,16 +349,44 @@ public final class Town {
 		return true;
 	}
 	
-	public int getPTPhaseUnits(int phase) {
+	/**
+	 * Calcula la cantidad de unidades de PTs en funcionamiento por seccional.
+	 * @param ptUnits total de unidades en funcionamiento 
+	 * @return unidades de PublicTransport en funcionamiento por seccional
+	 */
+	public int[] getPTSectoralUnits(int ptUnits) {
+		double fraction = ptUnits / 100d;
+		int units;
+		int[] sectoralsPTUnits = new int[sectoralsCount];
+		for (int sI = 0; sI < sectoralsCount; sI++) {
+			units = (int) Math.round(fraction * sectoralsPopulation[sI]);
+			// Cada seccional tiene minimo 1
+	      	if (units < 1)
+	      		units = 1;
+	      	//
+	    	sectoralsPTUnits[sI] = units;
+		}
+		return sectoralsPTUnits;
+	}
+	
+	/**
+	 * Calcula la cantidad de PTs en funcionamiento segun fase y retorna cantidad por seccional.
+	 * @param phase indice de fase
+	 * @return unidades de PublicTransport por seccional segun fase
+	 */
+	public int[] getPTPhaseUnits(int phase) {
+		// Si no hay transporte publico en town, retorna 0
 		if (publicTransportUnits == 0)
-			return 0;
+			return new int[sectoralsCount];
+		// Si el indice de fase supera los disponibles, retorna el maximo
 		else if (phase > PUBLIC_TRANSPORT_QUANTIFICATION.length)
-			return publicTransportUnits;
+			return getPTSectoralUnits(publicTransportUnits);
+		// Calcula la cantidad en funcionamiento segun fase
 		else {
 			int units = (int) Math.round(publicTransportUnits * PUBLIC_TRANSPORT_QUANTIFICATION[phase]);
 			if (units > publicTransportUnits)
 				units = publicTransportUnits;
-			return units;
+			return getPTSectoralUnits(units);
 		} 
 	}
 }

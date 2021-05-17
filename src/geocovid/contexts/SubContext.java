@@ -822,31 +822,18 @@ public abstract class SubContext extends DefaultContext<Object> {
 		Coordinate secCoord;
 		Coordinate[] secCoords = buildingManager.getSectoralsCentre();
 		int sectoralType;
-		int[] sectoralsPTUnits = new int[town.sectoralsCount];
+		int[] sectoralsPTUnits = town.getPTSectoralUnits(town.publicTransportUnits);
 		// Separar types y tomar el primero
 		PlaceProperty placeProp = placesProperty.get(type);
 		if (placeProp == null) {
 			System.out.println("Type de Place desconocido: " + type);
 		}
-		
 		// Buscar la seccional mas cercana para asignar a este Place
 		int ptUnits = 0;
-		double doubleP = town.publicTransportUnits / (double)town.sectoralsCount;
-		double decimalRest = 0d;
-		int integerP;
-		for (int sI = 0; sI < town.sectoralsCount; sI++) {
+		for (int sI = 0; sI < sectoralsPTUnits.length; sI++) {
 			sectoralType = town.sectoralsTypes[sI];
 			secCoord = secCoords[sI];
-	    	// Separo la parte entera
-	    	integerP = (int) doubleP;
-	    	// Sumo la parte decimal que sobra 
-	    	decimalRest += doubleP - integerP;
-	    	// Si los restos decimales suman 1 o mas, se suma un entero
-	    	if (decimalRest >= 1d) {
-	    		decimalRest -= 0.99d;
-	    		++integerP;
-	    	}
-	    	for (int j = 0; j < integerP; j++) {
+	    	for (int j = 0; j < sectoralsPTUnits[sI]; j++) {
 				// Crear Agente con los atributos el Place
 				PublicTransportAgent tempPublicTransport = new PublicTransportAgent(this, sectoralType, sI, secCoord, ++lastHomeId, type, placeProp);
 				workPlaces.add(tempPublicTransport);
@@ -856,8 +843,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 				add(tempPublicTransport);
 				geography.move(tempPublicTransport, geometryFactory.createPoint(secCoord));
 			}
-	    	sectoralsPTUnits[sI] = integerP;
-	    	ptUnits += integerP;
+	    	ptUnits += sectoralsPTUnits[sI];
 		}
 		buildingManager.setDefaultPTUnits(ptUnits, sectoralsPTUnits);
 	}

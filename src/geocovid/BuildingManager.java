@@ -1,6 +1,7 @@
 package geocovid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -217,47 +218,56 @@ public final class BuildingManager {
 		}
 	}
 	
+	/**
+	 * Define la cantidad por defecto de unidades de PublicTransport.
+	 * @param maxUnits cantidad total de unidades de PublicTransport
+	 * @param sectoralUnits unidades de PublicTransport por seccional
+	 */
 	public void setDefaultPTUnits(int maxUnits, int[] sectoralUnits) {
 		pTWorkingUnits = maxUnits;
 		sectoralsPTUnits = sectoralUnits;
 	}
 	
-	public void setPTUnits(int units) {
+	/**
+	 * Cierra todas las unidades de PublicTransport.
+	 */
+	public void closePTUnits() {
+		setPTUnits(new int[sectoralsCount]);
+	}
+	
+	/**
+	 * Cierra o abre unidades de PT en cada seccional.
+	 * @param sectoralUnits unidades de PublicTransport en funcionamiento por seccional
+	 */
+	public void setPTUnits(int[] sectoralUnits) {
+		// Verifica si cambia la cantidad de PTs
+		int units = Arrays.stream(sectoralUnits).sum();
 		if (units == pTWorkingUnits)
 			return;
-		// Buscar la seccional mas cercana para asignar a este Place
-		double doubleP = units / (double) sectoralsCount;
-		double decimalRest = 0d;
-		int integerP;
-		String type = "bus";
-		List<List<WorkplaceAgent>> busSectorals = placesMap.get(type); // buses en todas las seccionales
-		for (int sI = 0; sI < sectoralsCount; sI++) {
-			List<WorkplaceAgent> ptUnits = busSectorals.get(sI); // buses en seccional sI
-	    	// Separo la parte entera
-	    	integerP = (int) doubleP;
-	    	// Sumo la parte decimal que sobra 
-	    	decimalRest += doubleP - integerP;
-	    	// Si los restos decimales suman 1 o mas, se suma un entero
-	    	if (decimalRest >= 1d) {
-	    		decimalRest -= 0.99d;
-	    		++integerP;
-	    	}
+		//
+		List<List<WorkplaceAgent>> busSectorals = placesMap.get("bus"); // buses en todas las seccionales
+		List<WorkplaceAgent> ptUnits; // buses en seccional
+		int newUnits;
+		// Cierra o abre PTs por seccional
+		for (int sI = 0; sI < sectoralUnits.length; sI++) {
+			newUnits = sectoralUnits[sI];
+			ptUnits = busSectorals.get(sI); // buses en seccional sI
 	    	// Por las dudas
-	    	if (integerP > ptUnits.size())
-	    		integerP = ptUnits.size();
+	    	if (newUnits > ptUnits.size())
+	    		newUnits = ptUnits.size();
 	    	// Abrieron mas
-	    	if (sectoralsPTUnits[sI] < integerP) {
-	    		for (int i = sectoralsPTUnits[sI]; i < integerP; i++) {
+	    	if (sectoralsPTUnits[sI] < newUnits) {
+	    		for (int i = sectoralsPTUnits[sI]; i < newUnits; i++) {
 	    			ptUnits.get(i).open();
 				}
 	    	}
 	    	// Cerraron
-	    	else if (sectoralsPTUnits[sI] > integerP) {
-	    		for (int i = integerP; i < sectoralsPTUnits[sI]; i++) {
+	    	else if (sectoralsPTUnits[sI] > newUnits) {
+	    		for (int i = newUnits; i < sectoralsPTUnits[sI]; i++) {
 	    			ptUnits.get(i).close();
 				}
 	    	}
-	    	sectoralsPTUnits[sI] = integerP;
+	    	sectoralsPTUnits[sI] = newUnits;
 		}
 		pTWorkingUnits = units;
 	}

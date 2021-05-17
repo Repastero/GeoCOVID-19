@@ -105,7 +105,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.ventilateEntertainmentPlaces(false);
 			break;
 		case 182: //  1 julio - solo Parana
-			buildingManager.setPTUnits(0); // comienza el paro de choferes
+			buildingManager.closePTUnits(); // comienza el paro de choferes
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
