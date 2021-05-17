@@ -75,7 +75,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		Town.outbreakStartDelay = obStartDelayDays;
 		
 		HumanAgent.initAgentID(); // Reinicio contador de IDs
-		BuildingAgent.initInfAndPDRadius(); // Crea posiciones de infeccion en grilla
+		BuildingAgent.initInfAndPDRadius(); // Crea posiciones del radio de infeccion
 
 		context.add(new InfectionReport(simulationStartDay, deathLimit)); // Unicamente para la grafica en Repast Simphony
 		context.add(new Temperature(simulationStartYear, simulationStartDay)); // Para leer temperatura diaria y calcular tasas de contagio

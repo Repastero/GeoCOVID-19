@@ -1,5 +1,8 @@
 package geocovid.agents;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vividsolutions.jts.geom.Coordinate;
 
 import geocovid.DataSet;
@@ -19,6 +22,8 @@ public class WorkplaceAgent extends BuildingAgent {
 	/** Capacidad maxima (metros util * humanos por metro cuadrado) */
 	private int maximumCapacity;
 	protected boolean closed = false;
+	/** Lista de HumanAgent pre-trasmisores (sintomaticos) */
+	protected List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>();
 	
 	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
@@ -103,7 +108,7 @@ public class WorkplaceAgent extends BuildingAgent {
 					if (i+1 < workPositionsCount) {
 						// Si faltan crear puestos 
 						if (fullBuilding) {
-							// Si hace 2 pasadas de la grilla y aun faltan puestos, reduce el total
+							// Si hace 2 pasadas y aun faltan puestos, reduce el total
 							System.out.format("Cupos de trabajo limitados a %d de %d en tipo: %s id: %d%n",
 									i+1, workPositionsCount, workplaceType, getId());
 							workPositionsCount = i+1;
@@ -169,6 +174,75 @@ public class WorkplaceAgent extends BuildingAgent {
 		if (closed)
 			return null;
 		return super.insertHuman(human, pos);
+	}
+	
+	@Override
+	protected void lookForCloseContacts(HumanAgent human, int[] pos) {
+		// Si es un lugar de trabajo y existen pre contagiosos, se chequean contactos estrechos
+		if (!preSpreadersList.isEmpty()) {
+			if (human.isPreInfectious()) {
+				spreadVirus(human, pos);
+				removePreSpreader(human, pos); // No puede ser de ambos tipos de spreader
+			}
+			else if (!human.wasExposed()) // Los ya expuestos estan exeptuados
+				findNearbySpreaders(human, pos, preSpreadersList);
+		}
+	}
+	
+	@Override
+	protected boolean checkCloseContact(HumanAgent preSpreader, HumanAgent prey) {
+		// Si los dos estan trabajando, se aisla el susceptible
+		if (prey.atWork()) {
+			prey.setCloseContact(preSpreader.getInfectiousStartTime());
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey, double infectionRate) {
+		if (spreader.isPreInfectious()) {
+			infectionRate = 0;
+		}
+		else if (context.getSDPercentage() != 0) {
+			// Si es un lugar cerrado o se respeta el distanciamiento en exteriores
+			if (!isOutdoor() || context.sDOutdoor()) {
+				// Si los dos humanos respetan el distanciamiento
+				if (spreader.distanced && prey.distanced) {
+					// Si se respeta el distanciamiento en lugares de trabajo
+					if (!(spreader.atWork() && prey.atWork()) || context.sDWorkspace())
+						infectionRate = 0;
+				}
+			}
+		}
+		else if (context.getMaskEffectivity() > 0) {
+			// Si es un lugar cerrado o se usa cubreboca en exteriores
+			if (!isOutdoor() || context.wearMaskOutdoor()) {
+				// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados que usan cubreboca
+				final boolean workers = (spreader.atWork() && prey.atWork());
+				if ((!workers && context.wearMaskAtPlaces()) || (workers && context.wearMaskAtWork())) {
+					infectionRate *= 1 - context.getMaskEffectivity();
+				}
+			}
+		}
+		return super.checkContagion(spreader, prey, infectionRate);
+	}
+	
+	/**
+	 * Se agregan recien llegados y los que cambiaron de estado luego de ingresar al building.
+	 * @param human HumanAgent pre contagioso
+	 */
+	public void addPreSpreader(HumanAgent human) {
+		preSpreadersList.add(human);
+	}
+	
+	/**
+	 * Se remueven pre contagiosos.
+	 * @param human HumanAgent que sale del building o cambia de estado
+	 * @param pos {x, y} en parcela
+	 */
+	public void removePreSpreader(HumanAgent human, int[] pos) {
+		preSpreadersList.remove(human);
 	}
 	
 	public int getWorkPositionsCount() {

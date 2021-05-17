@@ -116,14 +116,11 @@ public class ClassroomAgent extends WorkplaceAgent {
 	}
 	
 	@Override
-	protected boolean checkContagion(HumanAgent spreader, HumanAgent prey, boolean direct) {
-		if (super.checkContagion(spreader, prey, direct)) {
-			InfectionReport.addCumExposedSchool();
-			return true;
-		}
-		return false;
+	protected void infectHuman(HumanAgent prey) {
+		InfectionReport.addCumExposedSchool();
+		super.infectHuman(prey);
 	}
-
+	
 	public static void setSchoolProtocol(boolean schoolProtocol) {
 		ClassroomAgent.schoolProtocol = schoolProtocol;
 	}
