@@ -41,7 +41,6 @@ import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedulableAction;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
-import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.gis.Geography;
 
@@ -86,8 +85,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 	
 	private double maskInfRateReduction;	// Fraccion de reduccion de beta al usar barbijo
 	private boolean wearMaskOutdoor;		// Si al aire libre se usa tapaboca
-	private boolean wearMaskAtWork;			// Si entre empleados/estudiantes usan tapaboca
-	private boolean wearMaskAtPlaces;		// Si clientes en lugares de otros/ocio usan tapaboca
+	private boolean wearMaskWorkspace;		// Si en oficinas y aulas usan tapaboca entre empleados y alumnos
+	private boolean wearMaskCustomerService;// Si en lugares de atencion al publico usan tapaboca entre empleados
+	private boolean wearMaskCustomer;		// Si en lugares de otros/ocio usan tapaboca entre clientes y empleados
 	
 	private Set<Integer> socialDistIndexes;	// Lista con ids de humanos que respetan distanciamiento
 	private int socialDistPercentage;		// Porcentaje de la poblacion que respeta el distanciamiento social
@@ -822,31 +822,18 @@ public abstract class SubContext extends DefaultContext<Object> {
 		Coordinate secCoord;
 		Coordinate[] secCoords = buildingManager.getSectoralsCentre();
 		int sectoralType;
-		int[] sectoralsPTUnits = new int[town.sectoralsCount];
+		int[] sectoralsPTUnits = town.getPTSectoralUnits(town.publicTransportUnits);
 		// Separar types y tomar el primero
 		PlaceProperty placeProp = placesProperty.get(type);
 		if (placeProp == null) {
 			System.out.println("Type de Place desconocido: " + type);
 		}
-		
 		// Buscar la seccional mas cercana para asignar a este Place
 		int ptUnits = 0;
-		double doubleP = town.publicTransportUnits / (double)town.sectoralsCount;
-		double decimalRest = 0d;
-		int integerP;
-		for (int sI = 0; sI < town.sectoralsCount; sI++) {
+		for (int sI = 0; sI < sectoralsPTUnits.length; sI++) {
 			sectoralType = town.sectoralsTypes[sI];
 			secCoord = secCoords[sI];
-	    	// Separo la parte entera
-	    	integerP = (int) doubleP;
-	    	// Sumo la parte decimal que sobra 
-	    	decimalRest += doubleP - integerP;
-	    	// Si los restos decimales suman 1 o mas, se suma un entero
-	    	if (decimalRest >= 1d) {
-	    		decimalRest -= 0.99d;
-	    		++integerP;
-	    	}
-	    	for (int j = 0; j < integerP; j++) {
+	    	for (int j = 0; j < sectoralsPTUnits[sI]; j++) {
 				// Crear Agente con los atributos el Place
 				PublicTransportAgent tempPublicTransport = new PublicTransportAgent(this, sectoralType, sI, secCoord, ++lastHomeId, type, placeProp);
 				workPlaces.add(tempPublicTransport);
@@ -856,8 +843,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 				add(tempPublicTransport);
 				geography.move(tempPublicTransport, geometryFactory.createPoint(secCoord));
 			}
-	    	sectoralsPTUnits[sI] = integerP;
-	    	ptUnits += integerP;
+	    	ptUnits += sectoralsPTUnits[sI];
 		}
 		buildingManager.setDefaultPTUnits(ptUnits, sectoralsPTUnits);
 	}
@@ -1307,15 +1293,17 @@ public abstract class SubContext extends DefaultContext<Object> {
 	
 	/**
 	 * @param minusRate porcentaje de reduccion de infeccion (0...100)
-	 * @param enableOutdoor utilizar cubreboca en espacios abiertos
-	 * @param enableAtWork utilizar cubreboca entre trabajadores/estudiantes
-	 * @param enableAtPlaces utilizar cubreboca entre clientes de otros/ocio
+	 * @param enableMaskOutdoor utilizar cubreboca en espacios abiertos
+	 * @param enableMaskWorkspace utilizar cubreboca en oficinas y aulas
+	 * @param enableMaskCS utilizar cubreboca entre empleados de atencion al publico
+	 * @param enableMaskCustomer utilizar cubreboca entre clientes/empleados de otros/ocio
 	 */
-	public void setMaskValues(int minusRate, boolean enableOutdoor, boolean enableAtWork, boolean enableAtPlaces) {
+	public void setMaskValues(int minusRate, boolean enableMaskOutdoor, boolean enableMaskWorkspace, boolean enableMaskCS, boolean enableMaskCustomer) {
 		maskInfRateReduction = minusRate;
-		wearMaskOutdoor = enableOutdoor;
-		wearMaskAtWork = enableAtWork;
-		wearMaskAtPlaces = enableAtPlaces;
+		wearMaskOutdoor = enableMaskOutdoor;
+		wearMaskWorkspace = enableMaskWorkspace;
+		wearMaskCustomerService = enableMaskCS;
+		wearMaskCustomer = enableMaskCustomer;
 	}
 	
 	/**
@@ -1356,12 +1344,17 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public void setMaskEffectivity(double minusFrac) { maskInfRateReduction = minusFrac; }
 	/** @return <b>0...1</b> fraccion de reduccion de infeccion */
 	public double getMaskEffectivity()	{ return maskInfRateReduction; }
-	/** @return <b>true</b> si se utiliza cubrebocas en espacios abiertos */
+	
+	/** @return <b>true</b> si se utiliza tapaboca en espacios abiertos */
 	public boolean wearMaskOutdoor()	{ return wearMaskOutdoor; }
-	/** @param wear utilizan cubrebocas entre trabajadores/estudiantes */
-	public void setMaskAtWork(boolean wear) { wearMaskAtWork = wear; }
-	/** @return <b>true</b> si entre trabajadores/estudiantes utilizan cubrebocas */
-	public boolean wearMaskAtWork()		{ return wearMaskAtWork; }
-	/** @return <b>true</b> si clientes de places utilizan cubrebocas */
-	public boolean wearMaskAtPlaces()	{ return wearMaskAtPlaces; }
+	/** @param wear utilizan tapaboca en oficinas y aulas */
+	public void setWearMaskWorkspace(boolean wear) { wearMaskWorkspace = wear; }
+	/** @return <b>true</b> si entre trabajadores/estudiantes en oficinas/aulas utilizan tapaboca */
+	public boolean wearMaskWorkspace()	{ return wearMaskWorkspace; }
+	/** @param wear utilizan tapaboca entre trabajadores en atencion al publico */
+	public void setWearMaskCS(boolean wear) { wearMaskCustomerService = wear; }
+	/** @return <b>true</b> si entre trabajadores en atencion al publico usan tapaboca */
+	public boolean wearMaskCS()	{ return wearMaskCustomerService; }
+	/** @return <b>true</b> si entre clientes y trabajadores en lugares de otros/ocio usan tapaboca */
+	public boolean wearMaskCustomer()	{ return wearMaskCustomer; }
 }

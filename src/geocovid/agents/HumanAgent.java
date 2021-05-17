@@ -196,9 +196,9 @@ public class HumanAgent {
 			if (atWork() && currentBuilding instanceof WorkplaceAgent) {
 				// Se agrega o remueve de la lista de "pre contagiosos"
 				if (value)
-					currentBuilding.addPreSpreader(this);
+					((WorkplaceAgent) currentBuilding).addPreSpreader(this);
 				else
-					currentBuilding.removePreSpreader(this, currentPosition);
+					((WorkplaceAgent) currentBuilding).removePreSpreader(this, currentPosition);
 			}
 			preInfectious = value;
 		}

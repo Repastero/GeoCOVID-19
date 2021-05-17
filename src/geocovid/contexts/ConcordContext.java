@@ -182,7 +182,7 @@ public class ConcordContext extends SubContext {
 	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
 	 */
 	public void setDefaultValues() {
-		setMaskValues(0, false, false, true);
+		setMaskValues(0, false, true, true, true);
 		setSDValues(0, true, false);
 		disableCloseContacts();
 		disablePrevQuarantine();
