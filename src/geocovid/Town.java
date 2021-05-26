@@ -267,7 +267,7 @@ public final class Town {
 		// Tipos Concordia
 		case "concordia": // 159680
 			setTownData(
-				2,1,
+				2,2,
 				143700,
 				15980,
 				0,
