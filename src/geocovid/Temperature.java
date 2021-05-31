@@ -156,7 +156,7 @@ public class Temperature {
 	}
 	
 	private static void loadWeatherData(int year) {
-		String weatherFile = String.format("./data/%d-entrerios.csv", year);
+		String weatherFile = String.format("./data/%d-temperature.csv", year);
 		readCSV(weatherFile, 0, 0, 366);
 	}
 	

@@ -1,1 +1,1 @@
-Carpeta para shape files y .tifs
+Directorio para archivos relacionados a departamentos modelados (shapefiles, tifs, temperatura, etc).

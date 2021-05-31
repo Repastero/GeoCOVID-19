@@ -100,7 +100,7 @@ public final class Town {
 	}
 	
 	public String getParcelsFilepath() {
-		return String.format("./data/%1$s/%1$s.shp", townName);
+		return String.format("./data/%s/parcels.shp", townName);
 	}
 	
 	public String getPlacesFilepath() {
@@ -251,7 +251,7 @@ public final class Town {
 				0,
 				true);
 			break;
-		case "ibicuy": // 5086
+		case "islasdelibicuy": // 5086
 			setTownData(
 				1,0,
 				4580,
