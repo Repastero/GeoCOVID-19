@@ -248,7 +248,7 @@ public class ParanaContext extends SubContext {
 		case 481: // 2 mayo , nuevas restricciones
 			buildingManager.closePlaces(new String[] {"library", "school","primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club"});
-			buildingManager.limitEntertainmentActCap(2.7d);//3
+			buildingManager.limitEntertainmentActCap(2.7d);
 			break;
 		case 488: // 9 mayo , fin de nuevas restricciones
 			buildingManager.limitEntertainmentActCap(3d);
@@ -270,11 +270,9 @@ public class ParanaContext extends SubContext {
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.limitEntertainmentActCap(3d);
 			buildingManager.openPlaces(new String[] {
-			// Trabajo/estudio
-			
 			// Ocio
-			 "bar", "sports_complex",   "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym",
-			 "stadium", "sports_club", "park", "library", "cultural_center", "club",   });
+			"bar", "sports_complex",   "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym",
+			"stadium", "sports_club", "park", "library", "cultural_center", "club"});
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);

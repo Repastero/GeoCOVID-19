@@ -1,0 +1,17 @@
+<repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.8.0">
+  <name>DailyCases</name>
+  <dataSet>DailyCases</dataSet>
+  <delimiter>,</delimiter>
+  <format>TABULAR</format>
+  <sourceIds class="linked-hash-set">
+    <string>tick</string>
+    <string>Niños</string>
+    <string>Jovenes</string>
+    <string>Adultos</string>
+    <string>AdultosMayores</string>
+    <string>Masde65</string>
+    <string>Totales</string>
+  </sourceIds>
+  <fileName>DailyCases.csv</fileName>
+  <addTimeStamp>true</addTimeStamp>
+</repast.simphony.data2.engine.FileSinkDescriptor>

@@ -122,7 +122,7 @@ public class ConcordContext extends SubContext {
 			break;
 		case 257: // 14 septiembre
 			buildingManager.ventilateEntertainmentPlaces(true);
-			buildingManager.limitActivitiesCapacity(1.2d);//1.8
+			buildingManager.limitActivitiesCapacity(1.2d);
 			break;
 		case 264: // 21 septiembre
 			buildingManager.openPlaces(new String[] {"sports_club", "sports_complex", "park"});
@@ -163,7 +163,7 @@ public class ConcordContext extends SubContext {
 			scheduleForcedEvent(16, true, true, tmp, 15, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
 		case 366: // 1 enero
-			buildingManager.limitActivitiesCapacity(2d);//1.8
+			buildingManager.limitActivitiesCapacity(2d);
 		case 359: // 25 diciembre
 			// Festejos entre jovenes - 4% de la poblacion a 1 cuadrados por persona, al aire libre
 			tmp = (int) Math.round(town.getLocalPopulation() * 0.04d);
@@ -177,7 +177,7 @@ public class ConcordContext extends SubContext {
 		case 397: // 1 febrero
 			// Aumenta un poco el movimiento en Febrero
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
-			buildingManager.limitEntertainmentActCap(1.5d); // bajo aforo, para simular que se hacen mas actividades afuera
+			buildingManager.limitEntertainmentActCap(1.5d); 
 			break;
 		case 411: // 15 febrero
 			buildingManager.limitEntertainmentActCap(3d);
@@ -240,11 +240,9 @@ public class ConcordContext extends SubContext {
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.limitEntertainmentActCap(2.6d);
 			buildingManager.openPlaces(new String[] {
-			// Trabajo/estudio
-			"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school", "university",
 			// Ocio
-			"movie_theater", "bar", "sports_complex",  "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
-			 "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
+			"bar", "sports_complex",   "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym",
+			"stadium", "sports_club", "park", "library", "cultural_center", "club"});
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);

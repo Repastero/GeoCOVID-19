@@ -215,11 +215,11 @@ public class GchuContext extends SubContext {
 			break;
 		case 445: // 21 marzo
 			// Aumenta el ocio 
-			buildingManager.limitEntertainmentActCap(1.5d);//1.5
+			buildingManager.limitEntertainmentActCap(1.5d);
 			break;
 		case 459: // 4 abril - domingo
 			// Vuelven a controlar aforo (?)
-			buildingManager.limitEntertainmentActCap(1.9d);//1.7
+			buildingManager.limitEntertainmentActCap(1.9d);
 			setMaskEffectivity(0.25);
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
 			tmp = (int) Math.round(town.getLocalPopulation() / 10 * 0.5d);
@@ -230,14 +230,14 @@ public class GchuContext extends SubContext {
 			buildingManager.ventilateHomes(false);
 			setSocialDistancing(40);
 			//buildingManager.limitEntertainmentActCap(1.8d);
-			buildingManager.limitActivitiesCapacity(2.3d, 2.3d);//2.5,1.8
+			buildingManager.limitActivitiesCapacity(2.3d, 2.3d);
 			// Merman las jodas, por que vuelven a controlar
 			stopRepeatingYoungAdultsParty();
 			break;
 		case 481: // 2 mayo , nuevas restricciones
 			buildingManager.closePlaces(new String[] {"library", "school","primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club"});
-			buildingManager.limitActivitiesCapacity(2.9d, 2.9d);//3,2.2
+			buildingManager.limitActivitiesCapacity(2.9d, 2.9d);
 			break;
 		case 488: // 9 mayo , fin de nuevas restricciones
 			buildingManager.openPlaces(new String[] {"library", "school","primary_school", "secondary_school",
@@ -246,7 +246,7 @@ public class GchuContext extends SubContext {
 		case 502: // 22 mayo , nuevas de nuevas restricciones fase1
 			setSocialDistancing(50);
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
-			buildingManager.limitActivitiesCapacity(3d, 3d);//3,2.2
+			buildingManager.limitActivitiesCapacity(3d, 3d);
 			buildingManager.closePlaces(new String[] {
 			// Trabajo/estudio
 			"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school", "university",
@@ -258,11 +258,9 @@ public class GchuContext extends SubContext {
 			setTMMCs("march", MarkovChains.OCTOBER_TMMC);
 			buildingManager.limitActivitiesCapacity(2.9d, 2.9d);
 			buildingManager.openPlaces(new String[] {
-			// Trabajo/estudio
-			"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school", "university",
 			// Ocio
-			"movie_theater", "bar", "sports_complex",  "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
-			 "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
+			"bar", "sports_complex",   "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym",
+			"stadium", "sports_club", "park", "library", "cultural_center", "club"});
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
