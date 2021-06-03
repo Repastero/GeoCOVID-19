@@ -295,6 +295,7 @@ public class HumanAgent {
 		// Se contagia del virus
 		exposed = true;
 		InfectionReport.addExposed(ageGroup, currentState);
+		InfectionReport.addDailyCases(ageGroup);
 		int mean = DataSet.EXPOSED_PERIOD_MEAN;
 		int std = DataSet.EXPOSED_PERIOD_DEVIATION;
 		double period = RandomHelper.createNormal(mean, std).nextDouble();
