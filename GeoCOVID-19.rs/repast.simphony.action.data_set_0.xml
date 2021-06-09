@@ -5,10 +5,10 @@
   <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
-    <start>0.0</start>
+    <start>24.0</start>
     <interval>24.0</interval>
-    <priority>-Infinity</priority>
-    <pType>LAST</pType>
+    <priority>Infinity</priority>
+    <pType>FIRST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
     <hashCode>355055598</hashCode>
@@ -25,20 +25,38 @@
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Asintomaticos</string>
+      <string>Inf. Asintomaticos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Asintomaticos</id>
+        <id>Inf. Asintomaticos</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getInsASXInfectious</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Sintomaticos</string>
+      <string>Inf. Sintomaticos</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Sintomaticos</id>
+        <id>Inf. Sintomaticos</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getInsSYMInfectious</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Casos Asintomaticos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Casos Asintomaticos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsDailyAsxCases</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>Casos Sintomaticos</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>Casos Sintomaticos</id>
+        <className>geocovid.InfectionReport</className>
+        <methodName>getInsDailySymCases</methodName>
         <aggType>SUM</aggType>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>

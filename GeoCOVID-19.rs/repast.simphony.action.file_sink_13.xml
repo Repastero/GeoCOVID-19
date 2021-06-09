@@ -1,17 +1,18 @@
 <repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.8.0">
-  <name>DailyCases</name>
-  <dataSet>DailyCases</dataSet>
+  <name>Casos diarios por grupo</name>
+  <dataSet>Casos diarios</dataSet>
   <delimiter>,</delimiter>
   <format>TABULAR</format>
   <sourceIds class="linked-hash-set">
+    <string>random_seed</string>
     <string>tick</string>
-    <string>Niños</string>
-    <string>Jovenes</string>
-    <string>Adultos</string>
-    <string>AdultosMayores</string>
-    <string>Masde65</string>
+    <string>5-15</string>
+    <string>16-25</string>
+    <string>26-40</string>
+    <string>41-64</string>
+    <string>65+</string>
     <string>Totales</string>
   </sourceIds>
-  <fileName>DailyCases.csv</fileName>
+  <fileName>ReportDailyCases.csv</fileName>
   <addTimeStamp>true</addTimeStamp>
 </repast.simphony.data2.engine.FileSinkDescriptor>

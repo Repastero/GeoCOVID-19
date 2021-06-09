@@ -186,7 +186,6 @@ public class HumanAgent {
 	
 	/**
 	 * Inicia o finaliza el periodo en que puede generar contactos estrechos en el trabajo.
-	 * @see DataSet#CLOSE_CONTACT_INFECTIOUS_TIME
 	 * @param value iniciar o finalizar
 	 */
 	public void setPreInfectious(boolean value) {
@@ -295,7 +294,6 @@ public class HumanAgent {
 		// Se contagia del virus
 		exposed = true;
 		InfectionReport.addExposed(ageGroup, currentState);
-		InfectionReport.addDailyCases(ageGroup);
 		int mean = DataSet.EXPOSED_PERIOD_MEAN;
 		int std = DataSet.EXPOSED_PERIOD_DEVIATION;
 		double period = RandomHelper.createNormal(mean, std).nextDouble();
@@ -303,6 +301,7 @@ public class HumanAgent {
 		
 		// Define al comienzo de infeccion si va a ser asintomatico o sintomatico
 		boolean asymp = (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ASX_INFECTIOUS_RATE[ageGroup]) ? true : false;
+		InfectionReport.addDailyCases(ageGroup, asymp);
 		
 		// Programa el inicio del periodo de contagio
 		infectiousStartTime = schedule.getTickCount() + period;

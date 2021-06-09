@@ -8,8 +8,10 @@
     <string>tick</string>
     <string>Expuestos</string>
     <string>Infecciosos</string>
-    <string>Asintomaticos</string>
-    <string>Sintomaticos</string>
+    <string>Inf. Asintomaticos</string>
+    <string>Inf. Sintomaticos</string>
+    <string>Casos Asintomaticos</string>
+    <string>Casos Sintomaticos</string>
     <string>Camas</string>
     <string>Recuperados</string>
     <string>Hospitalizados</string>

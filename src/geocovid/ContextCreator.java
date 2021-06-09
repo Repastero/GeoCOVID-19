@@ -190,7 +190,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		params = ScheduleParameters.createRepeating(0, 1, 0.5);
 		schedule.schedule(params, subContext, "switchHumanLocation");
 		if (DataSet.COUNT_INTERACTIONS) {
-			params = ScheduleParameters.createRepeating(23, 24, ScheduleParameters.LAST_PRIORITY);
+			params = ScheduleParameters.createRepeating(24, 24, ScheduleParameters.FIRST_PRIORITY);
 			schedule.schedule(params, subContext, "computeAvgSocialInteractions");
 		}
 	}

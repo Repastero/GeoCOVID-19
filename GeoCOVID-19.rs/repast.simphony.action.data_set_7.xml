@@ -1,57 +1,57 @@
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
-  <name>DailyCases</name>
+  <name>Casos diarios</name>
   <type>NON_AGGREGATE</type>
   <sourceType>geocovid.InfectionReport</sourceType>
   <inclTick>true</inclTick>
   <inclBatchRun>false</inclBatchRun>
-  <inclRandomSeed>false</inclRandomSeed>
+  <inclRandomSeed>true</inclRandomSeed>
   <scheduleParams>
-    <start>23.0</start>
+    <start>24.0</start>
     <interval>24.0</interval>
-    <priority>-Infinity</priority>
-    <pType>LAST</pType>
+    <priority>Infinity</priority>
+    <pType>FIRST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>1235516056</hashCode>
+    <hashCode>-1763551514</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
   <methodDataSources class="linked-hash-map">
     <entry>
-      <string>Niños</string>
+      <string>5-15</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Niños</id>
+        <id>5-15</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getChildInsDailyCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Jovenes</string>
+      <string>16-25</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Jovenes</id>
+        <id>16-25</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getYoungInsDailyCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Adultos</string>
+      <string>26-40</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Adultos</id>
+        <id>26-40</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getAdultInsDailyCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>AdultosMayores</string>
+      <string>41-64</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>AdultosMayores</id>
+        <id>41-64</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getElderInsDailyCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>Masde65</string>
+      <string>65+</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>Masde65</id>
+        <id>65+</id>
         <className>geocovid.InfectionReport</className>
         <methodName>getHigherInsDailyCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>

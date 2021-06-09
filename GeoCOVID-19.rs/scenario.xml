@@ -8,12 +8,12 @@
 <repast.simphony.action.data_set context="GeoCOVID-19" file="repast.simphony.action.data_set_5.xml" />
 <repast.simphony.action.data_set context="GeoCOVID-19" file="repast.simphony.action.data_set_6.xml" />
 <repast.simphony.action.data_set context="GeoCOVID-19" file="repast.simphony.action.data_set_7.xml" />
-<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_8.xml" />
-<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_9.xml" />
-<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_10.xml" />
-<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_11.xml" />
-<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_12.xml" />
-<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_13.xml" />
+<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_8.xml" name="Reporte diario" />
+<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_9.xml" name="Contactos personales" />
+<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_10.xml" name="Transporte Publico" />
+<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_11.xml" name="Infectados por grupo" />
+<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_12.xml" name="Contagios por estados" />
+<repast.simphony.action.file_sink context="GeoCOVID-19" file="repast.simphony.action.file_sink_13.xml" name="Casos diaros por grupo" />
 <repast.simphony.dataLoader.engine.ClassNameDataLoaderAction context="GeoCOVID-19" file="repast.simphony.dataLoader.engine.ClassNameDataLoaderAction_14.xml" />
 <repast.simphony.action.time_series_chart context="GeoCOVID-19" file="repast.simphony.action.time_series_chart_15.xml" />
 <repast.simphony.action.time_series_chart context="GeoCOVID-19" file="repast.simphony.action.time_series_chart_16.xml" />

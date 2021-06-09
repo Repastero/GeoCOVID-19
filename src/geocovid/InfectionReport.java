@@ -1,7 +1,6 @@
 package geocovid;
 
 import repast.simphony.engine.environment.RunEnvironment;
-import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 
 /**
@@ -21,7 +20,8 @@ public class InfectionReport {
 	private static int cumHospitalizedAll;	// Acumulado
 	private static int cumRecoveredAll;		// Acumulado
 	private static int cumDeathsAll;		// Acumulado
-	private static int dailyCasesAll; 		//Instantaneo
+	private static int dailyAsxCasesAll; 	// Instantaneo
+	private static int dailySymCasesAll; 	// Instantaneo
 	//
 	private static int[] cumExposed;		// Acumulado
 	private static int[] insAsxInfectious;	// Instantaneo
@@ -36,7 +36,6 @@ public class InfectionReport {
 	//
 	private static int contextsInteracting;	// Cantidad de sub contextos
 	private static double[] avgContextsSI;	// Contactos promedio por sub contextos
-	private static double[] avgTotalSI;		// Contactos promedio totales
 	//
 	private static int[] dailyStatesTicks;		// Cuenta ticks
 	private static int totalDailyStatesTicks;	// Cuenta ticks
@@ -60,7 +59,8 @@ public class InfectionReport {
 		cumHospitalizedAll	= 0;
 		cumRecoveredAll		= 0;
 		cumDeathsAll		= 0;
-		dailyCasesAll       = 0;
+		dailyAsxCasesAll	= 0;
+		dailySymCasesAll	= 0;
 		
 		cumExposed		= new int[DataSet.AGE_GROUPS];
 		insAsxInfectious= new int[DataSet.AGE_GROUPS];
@@ -73,7 +73,6 @@ public class InfectionReport {
 		
 		contextsInteracting		= 0;
 		avgContextsSI	= new double[DataSet.AGE_GROUPS];
-		avgTotalSI		= new double[DataSet.AGE_GROUPS];
 		
 		dailyStatesContagion= new int[4];
 		dailyStatesTicks	= new int[4];
@@ -86,25 +85,23 @@ public class InfectionReport {
 		cumExposedSchool     =  0;
 	}
 	
-	@ScheduledMethod(start = 24, interval = 24, priority = ScheduleParameters.FIRST_PRIORITY)
+	@ScheduledMethod(start = 24, interval = 24, priority = 1)
 	public void checkPandemicEnd() {
 		int i;
-		// Calcula las interacciones promedio entre sub contextos y reinicia arrays
+		// Reinicia contadores de contactos personales promedio y contagios diarios
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
-			avgTotalSI[i] = avgContextsSI[i] / contextsInteracting;
 			avgContextsSI[i] = 0d;
+			dailyCases[i] = 0;
 		}
 		contextsInteracting = 0;
+		// Reinicia contadores de nuevos casos diarios
+		dailyAsxCasesAll = 0;
+		dailySymCasesAll = 0;
 		// Reinicia los contadores de contagios en estados y ticks por estados
 		for (i = 0; i < 4; i++) {
 			dailyStatesContagion[i] = 0;
 			dailyStatesTicks[i] = 0;
 		}
-		// Reinicia los contadores de contagios diarios
-				for (i = 0; i <  DataSet.AGE_GROUPS; i++) {
-					dailyCases[i] = 0;
-					dailyCasesAll=0;
-				}
 		totalDailyStatesTicks = 0;
 		// Termina la simulacion si se supera el limite te muertes (si existe)
 		if (deathLimit != 0 && deathLimit < cumDeathsAll) {
@@ -182,9 +179,11 @@ public class InfectionReport {
 		++cumDeaths[agIndex];
 	}
 	
-	public static void addDailyCases(int agIndex) {
-		
-		++dailyCasesAll;
+	public static void addDailyCases(int agIndex, boolean asx) {
+		if (asx)
+			++dailyAsxCasesAll;
+		else
+			++dailySymCasesAll;
 		++dailyCases[agIndex];
 	}
 	
@@ -228,7 +227,9 @@ public class InfectionReport {
 	public static int getCumHospitalized()	{ return cumHospitalizedAll; }
 	public static int getCumRecovered()		{ return cumRecoveredAll; }
 	public static int getCumDeaths()		{ return cumDeathsAll; }
-	public static int getInsDailyCases()	{ return dailyCasesAll; }
+	public static int getInsDailyAsxCases()	{ return dailyAsxCasesAll; }
+	public static int getInsDailySymCases()	{ return dailySymCasesAll; }
+	public static int getInsDailyCases()	{ return dailyAsxCasesAll + dailySymCasesAll; }
 	
 	public static int getCumExposed(int ai)			{ return cumExposed[ai]; }
 	public static int getInsASXInfectious(int ai)	{ return insAsxInfectious[ai]; }
@@ -258,7 +259,6 @@ public class InfectionReport {
 	public static int getYoungCumHospitalized()		{ return cumHospitalized[1]; }
 	public static int getYoungCumRecovered()		{ return cumRecovered[1]; }
 	public static int getYoungCumDeaths()			{ return cumDeaths[1]; }
-	public static int getCumExposedSchool()			{ return cumExposedSchool; }
 	public static int getYoungInsDailyCases()		{ return dailyCases[1]; }
 	
 	public static int getAdultCumExposed()			{ return cumExposed[2]; }
@@ -291,11 +291,11 @@ public class InfectionReport {
 	public static int getHigherCumDeaths()			{ return cumDeaths[4]; }
 	public static int getHigherInsDailyCases()		{ return dailyCases[4]; }
 	
-	public static double getChildAVGInteractions()	{ return avgTotalSI[0]; }
-	public static double getYoungAVGInteractions()	{ return avgTotalSI[1]; }
-	public static double getAdultAVGInteractions()	{ return avgTotalSI[2]; }
-	public static double getElderAVGInteractions()	{ return avgTotalSI[3]; }
-	public static double getHigherAVGInteractions()	{ return avgTotalSI[4]; }
+	public static double getChildAVGInteractions()	{ return avgContextsSI[0] / contextsInteracting; }
+	public static double getYoungAVGInteractions()	{ return avgContextsSI[1] / contextsInteracting; }
+	public static double getAdultAVGInteractions()	{ return avgContextsSI[2] / contextsInteracting; }
+	public static double getElderAVGInteractions()	{ return avgContextsSI[3] / contextsInteracting; }
+	public static double getHigherAVGInteractions()	{ return avgContextsSI[4] / contextsInteracting; }
 	
 	public static int getDailyHomeTime()			{ return dailyStatesTicks[0] * 100 / totalDailyStatesTicks; }
 	public static int getDailyWorkTime()			{ return dailyStatesTicks[1] * 100 / totalDailyStatesTicks; }
@@ -307,10 +307,8 @@ public class InfectionReport {
 	public static int getDailyLeisureContagion()	{ return dailyStatesContagion[2]; }
 	public static int getDailyOtherContagion()		{ return dailyStatesContagion[3]; }
 	
-	//PUBLIC TRANSPORT
+	public static int getCumExposedSchool()			{ return cumExposedSchool; }
 	public static int getCumExposedPublicTransport(){ return cumExposedPublicTransport; }
 	public static int getCumTicketTransportPublic()	{ return cumTicketTransportPublic; }
 	public static int getInsSpacePublicTransport()	{ return insSpacePublicTransport; }
-	//
-	
 }
