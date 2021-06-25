@@ -37,8 +37,6 @@ public class BuildingAgent {
 	private boolean ventilated = true; // por defecto todas las parcelas ventiladas
 	// Atributos staticos para checkear el radio de infeccion
 	private static int dropletCircleRadius;
-	private static int xShiftsInf[];
-	private static int yShiftsInf[];
 	private static int aerosolCircleRadius;
 	// Atributos staticos para checkear el radio de contactos personales
 	private static int xShiftsPD[];
@@ -106,26 +104,20 @@ public class BuildingAgent {
 	}
 	
 	/**
-	 * Crea un circulo de acuerdo a el radio de infeccion y de distancia personal<p>
-	 * y guarda los desplazamientos de X e Y a partir del centro
+	 * Calcula el radio de contagio por droplet y aerosol<p>
+	 * Crea las posiciones dentro del circulo de distancia personal
 	 * @see DataSet#DROPLET_INFECTION_RADIUS
+	 * @see DataSet#AEROSOL_INFECTION_RADIUS
 	 * @see DataSet#PERSONAL_DISTANCE
 	 */
 	public static void initInfAndPDRadius() {
-		final int[] shiftsCount = {8,20,36,56,80,128,164,204,248,296,348,444,508,576,648,724,804,948,1040,1136};
-		// Chequeo que radio este dentro del rango
-		int radius = DataSet.DROPLET_INFECTION_RADIUS;
-		if (radius < 1 || radius > 20)
-			radius = 4;
-		// Crea array para contener los desvios de X e Y en contagio por droplet
-		xShiftsInf = new int[shiftsCount[radius-1]];
-		yShiftsInf = new int[shiftsCount[radius-1]];
-		dropletCircleRadius	= getCircleRadius(radius, xShiftsInf, yShiftsInf);
-		// 
+		final int[] shiftsCount = {8,20,36,56,80,128,164,204,248,296,348,444,508,576,648};
+		// Setear radio de contagio por droplet y aerosol
+		dropletCircleRadius	= getCircleRadius(DataSet.DROPLET_INFECTION_RADIUS);
 		aerosolCircleRadius = getCircleRadius(DataSet.AEROSOL_INFECTION_RADIUS);
 		// Chequeo que radio este dentro del rango
-		radius = DataSet.PERSONAL_DISTANCE;
-		if (radius < 1 || radius > 20)
+		int radius = DataSet.PERSONAL_DISTANCE;
+		if (radius < 1 || radius > 15)
 			radius = 4;
 		// Crea array para contener los desvios de X e Y en contactos personales
 		xShiftsPD = new int[shiftsCount[radius-1]];
@@ -468,8 +460,6 @@ public class BuildingAgent {
 		// Primero revisa si el tiempo que estuvo alcanza para contagiar
 		if ((lastTick - spreader.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
 			return;
-		
-		// TODO para optimizar, si hay muchos susceptibles podria buscar en la lista de posiciones de: (aerosol - droplet) + droplet
 		
 		// Contagia todos los humanos susceptibles en parcela
 		for (Map.Entry<Integer, HumanAgent> entry : humansMap.entrySet()) {

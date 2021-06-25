@@ -78,8 +78,10 @@ public final class BuildingManager {
 	/** Listado de types de Places y Workplaces que estan cerrados */ 
 	private final Set<String> closedPlaces = new HashSet<String>();
 	
-	/** Ultimo limite de aforo en Places */
-	private double activitiesCapacityLimit = 0d;
+	/** Ultimo limite de aforo en Places tipo ocio */
+	private double enterActivitiesCapLimit = 0d;
+	/** Ultimo limite de aforo en Places tipo otros*/
+	private double otherActivitiesCapLimit = 0d;
 	
 	/** Ultimas unidades de transporte publico habilitadas */
 	private int pTWorkingUnits = 0;
@@ -93,7 +95,8 @@ public final class BuildingManager {
 	 * @param sectorals cantidad de seccionales en municipio
 	 */
 	public BuildingManager(SubContext subContext, int sectorals) {
-		activitiesCapacityLimit = 1d;
+		enterActivitiesCapLimit = 1d;
+		otherActivitiesCapLimit = 1d;
 		pTWorkingUnits = 0;
 		//
 		placesMap.clear(); // Por si cambio el SHP entre corridas
@@ -200,7 +203,7 @@ public final class BuildingManager {
 	 * Cierra los lugares de trabajo/estudio y las actividades dadas.
 	 * @param typesToClose tipos de Places
 	 */
-	public void closePlaces(String[] typesToClose) {
+	public void closePlaces(String... typesToClose) {
 		for (String type : typesToClose) {
 			if (closedPlaces.contains(type)) // Ya esta cerrado
 				continue;
@@ -276,7 +279,7 @@ public final class BuildingManager {
 	 * Abre los lugares de trabajo/estudio y las actividades dadas.
 	 * @param typesToOpen tipos de Places
 	 */
-	public void openPlaces(String[] typesToOpen) {
+	public void openPlaces(String... typesToOpen) {
 		for (String type : typesToOpen) {
 			if (!closedPlaces.contains(type)) // No esta cerrado
 				continue;
@@ -321,7 +324,6 @@ public final class BuildingManager {
 		for (String type : otherTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.setVentilated(ventilate)));
 		}
-		// TODO tendria que diferenciar tipo "bus"
 	}
 	
 	/**
@@ -416,9 +418,10 @@ public final class BuildingManager {
 	 * @param sqMeters metros cuadrados por persona
 	 */
 	public void limitActivitiesCapacity(double sqMeters) {
-		if (sqMeters == activitiesCapacityLimit)
+		if (sqMeters == enterActivitiesCapLimit && sqMeters == otherActivitiesCapLimit)
 			return;
-		activitiesCapacityLimit = sqMeters;
+		enterActivitiesCapLimit = sqMeters;
+		otherActivitiesCapLimit = sqMeters;
 		for (List<List<WorkplaceAgent>> workplaces : placesMap.values()) {
 			workplaces.forEach(sect -> sect.forEach(work -> work.limitCapacity(sqMeters)));
 		}
@@ -429,9 +432,9 @@ public final class BuildingManager {
 	 * @param sqMeters metros cuadrados por persona
 	 */
 	public void limitOtherActCap(double sqMeters) {
-		if (sqMeters == activitiesCapacityLimit)
+		if (sqMeters == otherActivitiesCapLimit)
 			return;
-		activitiesCapacityLimit = sqMeters;
+		otherActivitiesCapLimit = sqMeters;
 		for (String type : otherTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.limitCapacity(sqMeters)));
 		}
@@ -442,9 +445,9 @@ public final class BuildingManager {
 	 * @param sqMeters metros cuadrados por persona
 	 */
 	public void limitEntertainmentActCap(double sqMeters) {
-		if (sqMeters == activitiesCapacityLimit)
+		if (sqMeters == enterActivitiesCapLimit)
 			return;
-		activitiesCapacityLimit = sqMeters;
+		enterActivitiesCapLimit = sqMeters;
 		for (String type : entertainmentTypes) {
 			placesMap.get(type).forEach(sect -> sect.forEach(work -> work.limitCapacity(sqMeters)));
 		}

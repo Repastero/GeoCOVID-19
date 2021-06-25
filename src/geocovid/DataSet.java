@@ -88,7 +88,7 @@ public final class DataSet {
 	public static final int QUARANTINED_PERIOD_DEVIATION= 2*24;	// 2 dia desvio standard
 	
 	/** Duracion en ICU luego de terminar periodo de infectado */
-	public static final int EXTENDED_ICU_PERIOD			= 4*24;	// 4 dia mas desde infeccioso
+	public static final int EXTENDED_ICU_PERIOD			= 9*24; // 9 dia mas desde infeccioso
 	
 	/** % de casos asintomaticos con respecto a los sintomatcos */
 	public static final double[] ASX_INFECTIOUS_RATE	= {74d, 58d, 42d, 26d, 10d};	// sobre 100 

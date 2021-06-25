@@ -85,7 +85,7 @@
   <globeLayers/>
   <staticCoverages>
     <entry>
-      <string>./data/entrerios.tif</string>
+      <string>./data/province.tif</string>
       <string>repast.simphony.visualization.gis3D.style.DefaultCoverageStyle</string>
     </entry>
   </staticCoverages>

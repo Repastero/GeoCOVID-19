@@ -88,14 +88,13 @@ public class ParanaContext extends SubContext {
 		switch (phase) {
 		case 163: // 12 junio
 			// Reapertura progresiva (Fase 4)
-			buildingManager.closePlaces(new String[] {
+			buildingManager.closePlaces(
 					// Trabajo/estudio
 					"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school", "university",
 					// Ocio
-					"movie_theater", "bar", "sports_complex",  "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
-					"restaurant", "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
+					"movie_theater", "bar", "sports_complex", "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
+					"restaurant", "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" );
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
-			
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
 			buildingManager.setPTUnits(town.getPTPhaseUnits(1));
 			setSocialDistancing(80);
@@ -104,14 +103,13 @@ public class ParanaContext extends SubContext {
 			buildingManager.ventilateHomes(false);
 			buildingManager.ventilateWorkplaces(false);
 			buildingManager.ventilateEntertainmentPlaces(false);
-			
 			break;
-		case 182: //  1 julio - solo Parana
+		case 182: // 1 julio - solo Parana
 			buildingManager.setPTUnits(town.getPTPhaseUnits(0)); // comienza el paro de choferes
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
-			buildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
+			buildingManager.openPlaces("bar", "restaurant", "sports_school", "gym", "sports_club");
 			setSocialDistancing(60);
 			break;
 		case 215: // 3 agosto
@@ -126,7 +124,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 244: // 31 agosto - solo Parana
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
-			buildingManager.closePlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club", "park"});
+			buildingManager.closePlaces("bar", "restaurant", "sports_school", "gym", "sports_club", "park");
 			buildingManager.setPTUnits(town.getPTPhaseUnits(3));
 			setSocialDistancing(25);
 			buildingManager.limitActivitiesCapacity(1.5d);
@@ -144,11 +142,11 @@ public class ParanaContext extends SubContext {
 			setMaskEffectivity(0.25);
 			// A partir de ahora si ventilan en ocio
 			buildingManager.ventilateEntertainmentPlaces(true);
-			buildingManager.openPlaces(new String[] {"bar", "restaurant", "sports_school", "gym", "sports_club"});
+			buildingManager.openPlaces("bar", "restaurant", "sports_school", "gym", "sports_club");
 			buildingManager.limitEntertainmentActCap(1d); //la gente aprovecha a salir
 			break;
 		case 264: // 21 septiembre
-			buildingManager.openPlaces(new String[] {"sports_club", "church", "sports_complex", "park"});
+			buildingManager.openPlaces("sports_club", "church", "sports_complex", "park");
 			buildingManager.limitEntertainmentActCap(1.1d);
 			break;
 		case 273: // 1 octubre
@@ -157,7 +155,7 @@ public class ParanaContext extends SubContext {
 			buildingManager.limitActivitiesCapacity(1.6d, 1.75d);
 			break;
 		case 302: // 29 octubre
-			buildingManager.openPlaces(new String[] {"casino", "nursery_school", "association_or_organization"});
+			buildingManager.openPlaces("casino", "nursery_school", "association_or_organization");
 			buildingManager.limitEntertainmentActCap(1.8d);
 			break;
 		case 310: // 6 noviembre
@@ -171,7 +169,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
-			buildingManager.openPlaces(new String[] {"bus_station", "lodging", "childrens_party_service", "night_club", "tourist_attraction", "campground", "spa"});
+			buildingManager.openPlaces("bus_station", "lodging", "childrens_party_service", "night_club", "tourist_attraction", "campground", "spa");
 			buildingManager.setPTUnits(town.getPTPhaseUnits(6));
 			break;
 		case 348: // 14 diciembre
@@ -204,11 +202,11 @@ public class ParanaContext extends SubContext {
 		case 397: // 1 febrero
 			// Aumenta un poco el movimiento en Febrero
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
-			buildingManager.limitEntertainmentActCap(2.5d); // bajo aforo, para simular que se hacen mas actividades afuera
+			buildingManager.limitEntertainmentActCap(2.5d); // mas actividades afuera
 			break;
-		case 411: // 15 febrero 
+		case 411: // 15 febrero
 			buildingManager.limitActivitiesCapacity(3d);
-			buildingManager.openPlaces(new String[] {"club"});
+			buildingManager.openPlaces("club");
 			break;
 		case 425: // 1 marzo
 			// Fin verano sin ventilacion en hogares, y ahora se cumple en lugares de trabajo
@@ -217,20 +215,20 @@ public class ParanaContext extends SubContext {
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.limitOtherActCap(2.4d);
-			buildingManager.openPlaces(new String[] {"library", "school","primary_school", "secondary_school"});
+			buildingManager.openPlaces("library", "school","primary_school", "secondary_school");
 			setSchoolProtocol(true);//habilita protocolo burbuja 50% 
 			break;
 		case 435: // 11 marzo
-			// Aumenta  el ocio 
+			// Aumenta el ocio 
 			buildingManager.limitEntertainmentActCap(1.5d);
-			buildingManager.openPlaces(new String[] {"movie_theater"});
+			buildingManager.openPlaces("movie_theater");
 			break;
 		case 445: // 21 marzo
 			// Aumenta un poco mas el ocio 
 			buildingManager.limitEntertainmentActCap(1.3d);
 			break;
 		case 459: // 4 abril - domingo
-			// Vuelven a controlar aforo (?)
+			// Vuelven a controlar aforo
 			buildingManager.limitEntertainmentActCap(1.5d);
 			setMaskEffectivity(0.25);
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
@@ -245,34 +243,34 @@ public class ParanaContext extends SubContext {
 			// Merman las jodas, por que vuelven a controlar
 			stopRepeatingYoungAdultsParty();
 			break;
-		case 481: // 2 mayo , nuevas restricciones
-			buildingManager.closePlaces(new String[] {"library", "school","primary_school", "secondary_school",
-			"casino","club","childrens_party_service", "night_club"});
+		case 487: // 2 mayo , nuevas restricciones
+			buildingManager.closePlaces("library", "school","primary_school", "secondary_school",
+			"casino","club","childrens_party_service", "night_club");
 			buildingManager.limitEntertainmentActCap(2.7d);
 			break;
-		case 488: // 9 mayo , fin de nuevas restricciones
+		case 494: // 9 mayo , fin de nuevas restricciones
 			buildingManager.limitEntertainmentActCap(3d);
-			buildingManager.openPlaces(new String[] {"library", "school","primary_school", "secondary_school",
-			"casino","club","childrens_party_service", "night_club"});
+			buildingManager.openPlaces("library", "school","primary_school", "secondary_school",
+			"casino","club","childrens_party_service", "night_club");
 			break;
-		case 502: // 22 mayo , nuevas de nuevas restricciones fase1
+		case 507: // 22 mayo , nuevas restricciones fase1
 			setSocialDistancing(30);
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitEntertainmentActCap(3d);
-			buildingManager.closePlaces(new String[] {
+			buildingManager.closePlaces(
 			// Trabajo/estudio
 			"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school", "university",
 			// Ocio
-			"movie_theater", "bar", "sports_complex",  "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
-			 "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery" });
+			"movie_theater", "bar", "sports_complex", "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
+			 "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery");
 			break;
-		case 511: // 31 mayo , fin de nuevas restricciones fase 1
+		case 516: // 31 mayo , fin de nuevas restricciones fase 1
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.limitEntertainmentActCap(3d);
-			buildingManager.openPlaces(new String[] {
+			buildingManager.openPlaces(
 			// Ocio
-			"bar", "sports_complex",   "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym",
-			"stadium", "sports_club", "park", "library", "cultural_center", "club"});
+			"bar", "sports_complex", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym",
+			"stadium", "sports_club", "park", "library", "cultural_center", "club");
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
@@ -348,7 +346,7 @@ public class ParanaContext extends SubContext {
 		updateLockdownPhase(phaseDay);
 		// Si corresponde, suma la matriz de fin de semana a las nuevas matrices
 		if (lockdownOverWKD)
-			setHumansWeekendTMMC(true);  // para sumar la matriz de finde
+			setHumansWeekendTMMC(true); // para sumar la matriz de finde
 	}
 	
 	@Override

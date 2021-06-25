@@ -347,17 +347,8 @@ public class HumanAgent {
 				((HomeAgent) homePlace).startPreventiveQuarentine(schedule.getTickCount());
 			}
 			
-			// Si se complica el caso, se interna - si no continua vida normal
-			if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup]) {
-				// Mover a ICU hasta que se cure o muera
-				hospitalized = true;
-				InfectionReport.modifyHospitalizedCount(ageGroup, 1);
-				removeFromContext();
-			}
-			else {
-				// Se aisla por tiempo prolongado si no va a ICU
-				startQuarantine();
-			}
+			// Se aisla si es sintomatico
+			startQuarantine();
 			symInfectious = true;
 			InfectionReport.modifySYMInfectiousCount(ageGroup, 1);
 		}
@@ -394,6 +385,14 @@ public class HumanAgent {
 		else
 			return;
 		
+		// Si se complica el caso, se interna - si no continua vida normal
+		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup]) {
+			// Mover a ICU hasta que se cure o muera
+			hospitalized = true;
+			InfectionReport.modifyHospitalizedCount(ageGroup, 1);
+			removeFromContext();
+		}
+		
 		// Se recupera de la infeccion
 		asxInfectious = false;
 		symInfectious = false;
@@ -408,7 +407,7 @@ public class HumanAgent {
 			context.getBuildManager().deleteInfectiousHuman(agentID);
 		}
 		else {
-			// 5 dias mas en ICU
+			// X dias en ICU
 			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + DataSet.EXTENDED_ICU_PERIOD, ScheduleParameters.FIRST_PRIORITY);
 			schedule.schedule(scheduleParams, this, "dischargeFromICU");
 		}

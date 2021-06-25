@@ -133,8 +133,26 @@ public final class MarkovChains {
 		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0, 75, 75 } },
 		{ { 850,0,125, 25 }, { 1000,0,0,0 }, { 800,0,200,  0 }, { 800,0,  0,200 } },
 		{ { 965,0, 15, 20 }, { 1000,0,0,0 }, { 965,0, 15, 20 }, { 965,0, 15, 20 } } };
-	/** Matrices de markov del mes de Octubre / Noviembre 2020 */
+	/** Matrices de markov del mes de Octubre 2020 */
 	public static final int[][][][] OCTOBER_TMMC = {YOUNG_OCTOBER_TMMC, YOUNG_OCTOBER_TMMC, ADULT_OCTOBER_TMMC, ADULT_OCTOBER_TMMC, HIGHER_OCTOBER_TMMC};
+	
+	public static final int YOUNG_NOVEMBER_TMMC[][][] = {
+		{ { 200,725, 50,25 }, {  25,900, 50, 25 }, {  25,900, 50,25 }, {  25,900, 50, 25 } },
+		{ { 900, 50, 25,25 }, { 550,300,100, 50 }, { 800, 10, 95,95 }, { 800, 10, 95, 95 } },
+		{ { 200,475,250,75 }, { 150,725, 75, 50 }, { 275,325,350,50 }, { 275,325,250,150 } },
+		{ { 575,100,250,75 }, { 375,150,200,275 }, { 625,  0,300,75 }, { 575,  0,200,225 } } };
+	public static final int ADULT_NOVEMBER_TMMC[][][] = {
+		{ { 125,825, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 }, {  25,925, 25, 25 } },
+		{ { 900, 50, 25, 25 }, { 450,400,100, 50 }, { 700,120, 90, 90 }, { 700,120, 90, 90 } },
+		{ { 175,525,200,100 }, { 150,750, 25, 75 }, { 250,625,100, 25 }, { 250,625,100, 25 } },
+		{ { 550,150,200,100 }, { 425,175,200,200 }, { 625, 75,200,100 }, { 625,  0,200,175 } } };
+	public static final int HIGHER_NOVEMBER_TMMC[][][] = {
+		{ { 710,0,115,175 }, { 1000,0,0,0 }, { 710,0,115,175 }, { 710,0,115,175 } },
+		{ { 950,0, 25, 25 }, { 1000,0,0,0 }, { 850,0, 75, 75 }, { 850,0, 75, 75 } },
+		{ { 850,0,125, 25 }, { 1000,0,0,0 }, { 750,0,250,  0 }, { 775,0,  0,225 } },
+		{ { 965,0, 15, 20 }, { 1000,0,0,0 }, { 965,0, 15, 20 }, { 965,0, 15, 20 } } };
+	/** Matrices de markov del mes de Noviembre 2020 */
+	public static final int[][][][] NOVEMBER_TMMC = {YOUNG_NOVEMBER_TMMC, YOUNG_NOVEMBER_TMMC, ADULT_NOVEMBER_TMMC, ADULT_NOVEMBER_TMMC, HIGHER_NOVEMBER_TMMC};
 	
 	public static final int YOUNG_HOLIDAYS_TMMC[][][] = {
 		{ { 175,725, 75, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 }, {  25,900, 50, 25 } },
