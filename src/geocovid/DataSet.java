@@ -27,7 +27,7 @@ public final class DataSet {
 	public static final double ENTERTAINMENT_CAP_LIMIT_MOD	= 2d;
 	
 	/** Valor por cual se multiplica beta para obtener la chance de contagio al realizar una actividad fuera del contexto */
-	public static final int OOC_CONTAGION_VALUE = 16000;	// aumentar para incrementar el contagio fuera del contexto
+	public static final int DEFAULT_OOC_CONTAGION_VALUE = 16000;	// aumentar para incrementar el contagio fuera del contexto
 	
 	/** Modificador beta de droplets en lugares al aire libre */
 	public static final double DROPLET_OUTSIDE_MOD		= 0.4d;
@@ -114,8 +114,8 @@ public final class DataSet {
 	
 	/** % de casos graves que entra en UTI - de cada grupo etario */
 	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
-	/** % de casos en UTI que mueren al terminar la infeccion */
-	public static final double	ICU_DEATH_RATE				= 65d;	// sobre 100
+	/** % de casos en UTI que mueren al terminar periodo de internacion */
+	public static final double	DEFAULT_ICU_DEATH_RATE		= 65d;	// sobre 100
 
 	/** Ancho en metros de colectivo */
 	public static final int	PUBLIC_TRANSPORT_UNIT_WIDTH		= 3;	// 2.6m carrozado, 3m para redondear

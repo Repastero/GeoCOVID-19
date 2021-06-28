@@ -106,7 +106,7 @@ public class Temperature {
 			fomiteIR[r] = infectionRate[r][0] * DataSet.FOMITE_IR_MOD;
 			outsideFomiteIR[r] = fomiteIR[r] * DataSet.FOMITE_OUTSIDE_MOD;
 			
-			oocContagionChance[r] = (int) (300000 - (DataSet.OOC_CONTAGION_VALUE * outsideInfectionRate[r])); // 36.5 22.5
+			oocContagionChance[r] = -1; // reiniciar
 		}
 	}
 	
@@ -206,9 +206,12 @@ public class Temperature {
 	/**
 	 * Chance de contagio fuera del contexto o parcelas, segun region.
 	 * @param region indice (0,1,2)
+	 * @param ooc modificador contagio fuera de contexto
 	 * @return <b>int</b> chance contagio
 	 */
-	public static int getOOCContagionChance(int region) {
+	public static int getOOCContagionChance(int region, int ooc) {
+		if (oocContagionChance[region] < 0)
+			oocContagionChance[region] = (int) (300000 - (ooc * outsideInfectionRate[region]));
 		return oocContagionChance[region];
 	}
 }

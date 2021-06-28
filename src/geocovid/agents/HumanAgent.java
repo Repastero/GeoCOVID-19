@@ -420,7 +420,7 @@ public class HumanAgent {
 	public void dischargeFromICU() {
 		hospitalized = false;
 		InfectionReport.modifyHospitalizedCount(ageGroup, -1);
-		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_DEATH_RATE) {
+		if (RandomHelper.nextDoubleFromTo(0, 100) <= context.getICUDeathRate()) {
 			// Se muere en ICU
 			InfectionReport.addDead(ageGroup);
 		}
@@ -565,7 +565,7 @@ public class HumanAgent {
         // Si estuvo afuera, tiene una chance de volver infectado
         else if (!exposed && context.localOutbreakStarted()) {
         	int infectChance = (int) (schedule.getTickCount() - relocationTime);
-        	if (RandomHelper.nextIntFromTo(1, Temperature.getOOCContagionChance(context.getTownRegion())) <= infectChance) {
+        	if (RandomHelper.nextIntFromTo(1, Temperature.getOOCContagionChance(context.getTownRegion(), context.getOOCContagionValue())) <= infectChance) {
     			setExposed();
     		}
         }

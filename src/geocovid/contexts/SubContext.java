@@ -726,6 +726,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		int sectoralType, sectoralIndex = 0;
 		int buildingArea;
 		//
+		@SuppressWarnings("unused")
 		int universityVacancies = 0, workVacancies = 0;
 		for (SimpleFeature feature : features) {
 			Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -1357,4 +1358,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public boolean wearMaskCS()	{ return wearMaskCustomerService; }
 	/** @return <b>true</b> si entre clientes y trabajadores en lugares de otros/ocio usan tapaboca */
 	public boolean wearMaskCustomer()	{ return wearMaskCustomer; }
+	
+	/** @return porcentaje sobre 100 de mortalidad en pacientes internados en UTI */
+	public double getICUDeathRate()		{ return DataSet.DEFAULT_ICU_DEATH_RATE; }
+	/** @return modificador para calcular chance de contagio fuera del contexto (al aumentar, aumenta chance) */
+	public int getOOCContagionValue()	{ return DataSet.DEFAULT_OOC_CONTAGION_VALUE; }
 }
