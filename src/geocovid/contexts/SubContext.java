@@ -875,7 +875,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 		}
 		finally {
 			// liberar recursos
-			fiter.close();
+			if (fiter != null)
+				fiter.close();
 			store.dispose();
 		}
 		//

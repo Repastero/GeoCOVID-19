@@ -46,7 +46,7 @@ public final class DataSet {
 	/** Modificador beta de aerosol en lugares ventilados */
 	public static final double AEROSOL_VENTILATED_MOD	= 0.5d;
 	
-	/** Modificador de chance de contagio en parcelas tipo seccional 11 */
+	/** Modificador de chance de contagio en viviendas precarias */
 	public static final double INFECTION_RATE_SEC11_MOD	  = 0.9d; // 0.9 = 90% del valor comun | 1 = sin modificar
 	
 	/** Radio que puede contagiar un infectado directamente por droplets */

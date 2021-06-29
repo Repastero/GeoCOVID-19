@@ -79,7 +79,7 @@ public final class MarkovChains {
 		{ {-25,0, 25,0 }, { 0,0,0,0 }, {-25,0, 25,0 }, {-25,0, 25,0 } },
 		{ {-50,0, 50,0 }, { 0,0,0,0 }, {-50,0, 50,0 }, {-50,0, 50,0 } },
 		{ {-10,0, 10,0 }, { 0,0,0,0 }, {-10,0, 10,0 }, {-10,0, 10,0 } } };
-	/** Diferencia en matrices para habitantes de seccional tipo 11 */
+	/** Diferencia en matrices para habitantes de seccionales de clase baja */
 	public static final int[][][][] SEC11_DIFF = {YOUNG_SEC11_DIFF, YOUNG_SEC11_DIFF, ADULT_SEC11_DIFF, ADULT_SEC11_DIFF, HIGHER_SEC11_DIFF};
 	
 	public static final int YOUNG_JUNE_TMMC[][][] = {

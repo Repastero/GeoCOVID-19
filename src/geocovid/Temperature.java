@@ -86,7 +86,7 @@ public class Temperature {
 	
 	/**
 	 * Calcula el beta base, segun temperatura exterior del dia, y con el valor obtenido calcula:<p>
-	 * beta en seccional 11, en espacios abiertos y chance de contagio fuera del contexto. 
+	 * beta en viviendas precarias, en espacios abiertos y chance de contagio fuera del contexto. 
 	 */
 	private static void updateInfectionChances() {
 		for (int r = 0; r < REGIONS; r++) {
