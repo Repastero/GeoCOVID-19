@@ -5,6 +5,9 @@ import java.text.SimpleDateFormat;
 
 import geocovid.agents.BuildingAgent;
 import geocovid.agents.HumanAgent;
+import geocovid.contexts.ConcordContext;
+import geocovid.contexts.GchuContext;
+import geocovid.contexts.ParanaContext;
 import geocovid.contexts.SubContext;
 import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
@@ -41,6 +44,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	/** Lista de municipios a simular */
 	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
+		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
+		"gualeguaychu","uruguay","federacion","colon","islasdelibicuy",
+		"concordia","lapaz","villaguay","federal","tala","feliciano"
 	};
 	
 	public ContextCreator() {
@@ -153,7 +159,12 @@ public class ContextCreator implements ContextBuilder<Object> {
 			tempTown = new Town(TOWN_NAMES[i]);
 			humansCount += tempTown.getLocalPopulation();
 			// Segun el indice de la region, el tipo de sub contexto
-			subContext = null;
+			if (tempTown.regionType == 0)
+				subContext = new ParanaContext(tempTown);
+			else if (tempTown.regionType == 1)
+				subContext = new GchuContext(tempTown);
+			else
+				subContext = new ConcordContext(tempTown);
 			//
 			context.addSubContext(subContext);
 			// Programa movilidad en humanos del sub contexto
