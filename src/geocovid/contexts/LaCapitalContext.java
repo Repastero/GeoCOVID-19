@@ -98,6 +98,7 @@ public class LaCapitalContext extends SubContext {
 					"library", "cultural_center", "club", "casino", "campground", "art_gallery");
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
 			buildingManager.limitActivitiesCapacity(DataSet.DEFAULT_PLACES_CAP_LIMIT);
+			buildingManager.setPTUnits(town.getPTPhaseUnits(1));
 			setSocialDistancing(70);
 			setMaskEffectivity(0.30);
 			// Se inicia Junio sin ventilacion en hogares, oficinas y ocio 
@@ -118,6 +119,14 @@ public class LaCapitalContext extends SubContext {
 		case 181: // 30 junio - martes
 			// Habilitaron celebraciones religiosas de hasta 30 personas.
 			buildingManager.openPlaces("church");
+			break;
+		case 131: // 11 mayo - lunes - paro de choferes por 19 dias
+		case 182: // 1 julio - miercoles - paro de choferes por 6 dias
+			buildingManager.closePTUnits();
+			break;
+		case 150: // 30 mayo - sabado
+		case 188: // 7 julio - martes
+			buildingManager.setPTUnits(town.getPTPhaseUnits(1)); // finaliza el paro de choferes
 			break;
 		case 214: // 2 agosto - domingo
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
