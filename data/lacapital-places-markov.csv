@@ -25,7 +25,7 @@ pen_store,book_store,,,,,,,,,,
 copy_shop,book_store,,,,,,,,,,
 commercial_printer,book_store,,,,,,,,,,
 paper_store,book_store,,,,,,,,,,
-bus,bus,3,30,100,1,0,40,20,15,10,5
+bus,bus,3,30,100,1,0,20,25,20,8,3
 bus_station,bus_station,2,4200,60,0,60,2,3,5,4,2
 cafe,cafe,3,100,90,0,20,2,7,12,15,10
 cafeteria,cafe,,,,,,,,,,

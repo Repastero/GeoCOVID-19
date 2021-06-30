@@ -12,13 +12,13 @@ public final class Town {
 	public static int firstInfectedAmount = 1;
 	/** Dias por defecto de cambio de fase */
 	private static final int[][] DEFAULT_PHASES_DAYS = {
-		{158,159,170,181,214,226,231,255,269,281,292,313,317,331,335,340,345,348,358,359,362,365,366,369,375,397,413,425,434,439,463,478,488,505,516,528,538},	// lacapital
+		{158,159,170,181,182,188,214,226,231,255,269,281,292,313,317,331,335,340,345,348,358,359,362,365,366,369,375,397,413,425,434,439,463,478,488,505,516,528,538},	// lacapital
 		{0},// rosario TODO completar
 		{0}	// ??????? TODO completar
 	};
 	
 	/** Dias por defecto de los cambios de unidades de transporte publico */
-	private final double[] PUBLIC_TRANSPORT_QUANTIFICATION	= {};
+	private final double[] PUBLIC_TRANSPORT_QUANTIFICATION	= {1, .6}; // 60% desde Abril 2020 hasta ahora (Junio 2021)
 	
 	/** Nombre del municipio a simular */
 	public String townName;
@@ -129,7 +129,7 @@ public final class Town {
 				new double[] {6.7, 6.05, 6.225, 5.625, 5.5, 7.3, 9.85, 9, 5.25, 8.3, 2.675, 2.6, 2.5, 8.15, 7.325, 3.45, 3.5},
 				DEFAULT_PHASES_DAYS[0],
 				194,
-				0, // TODO ver transporte
+				200, // 200-210 coches en total, en los horarios pico
 				false);
 			break;
 		default:
