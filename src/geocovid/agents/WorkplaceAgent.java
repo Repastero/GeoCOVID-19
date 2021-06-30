@@ -264,6 +264,8 @@ public class WorkplaceAgent extends BuildingAgent {
 	}
 	
 	public void setMaximumCapacity(int maximumCapacity) {
+		if (getCapacity() > maximumCapacity)
+			setCapacity(maximumCapacity);
 		this.maximumCapacity = maximumCapacity;
 	}
 }
