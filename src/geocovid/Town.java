@@ -10,6 +10,12 @@ public final class Town {
 	public static int outbreakStartDelay = 0;
 	/** Cantidad de infectados iniciales en cada municipio */
 	public static int firstInfectedAmount = 1;
+	/** Dias por defecto de cambio de fase */
+	private static final int[][] DEFAULT_PHASES_DAYS = {
+		{158,159,170,181,214,226,231,255,269,281,292,313,317,331,335,340,345,348,358,359,362,365,366,369,375,397,413,425,434,439,463,478,488,505,516,528,538},	// lacapital
+		{0},// rosario TODO completar
+		{0}	// ??????? TODO completar
+	};
 	
 	/** Dias por defecto de los cambios de unidades de transporte publico */
 	private final double[] PUBLIC_TRANSPORT_QUANTIFICATION	= {};
@@ -79,8 +85,14 @@ public final class Town {
 	public String getPlacesPropertiesFilepath() {
 		String type;
 		switch (regionType) {
+		case 0:
+			type = "lacapital";
+			break;
+		case 1:
+			type = "rosario";
+			break;
 		default:
-			type = "town";
+			type = "???????";
 			break;
 		}
 		return String.format("./data/%s-places-markov.csv", type);
@@ -106,9 +118,19 @@ public final class Town {
 		townName = name;
 		//
 		switch (townName) {
-		case "town":
+		// Tipos Santa Fe
+		case "lacapital": // 398610
 			setTownData(
-				0,0,0,0,0,new int[] {},new double[] {},new int[] {},182,120,false);
+				0,1,
+				366610,
+				32000,
+				0,
+				new int[] {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1},
+				new double[] {6.7, 6.05, 6.225, 5.625, 5.5, 7.3, 9.85, 9, 5.25, 8.3, 2.675, 2.6, 2.5, 8.15, 7.325, 3.45, 3.5},
+				DEFAULT_PHASES_DAYS[0],
+				194,
+				0, // TODO ver transporte
+				false);
 			break;
 		default:
 			throw new InvalidParameterException("Ciudad erronea: " + townName);

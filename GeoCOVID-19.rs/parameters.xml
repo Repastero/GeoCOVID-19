@@ -7,7 +7,7 @@
 									
 		/>
 				<parameter name="cantidadMuertosLimite" displayName="Numero maximo de muertes aceptables (0 = ∞)" type="int" 
-						defaultValue="1500" 
+						defaultValue="600" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
@@ -25,13 +25,13 @@
 									
 		/>
 				<parameter name="diasSimulacion" displayName="Dias maximo de simulacion (0 = ∞)" type="int" 
-						defaultValue="318" 
+						defaultValue="308" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
 		/>
 				<parameter name="diaInicioSimulacion" displayName="Dia inicio simulacion (desde 1/1/20)" type="int" 
-						defaultValue="182" 
+						defaultValue="194" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
