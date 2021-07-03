@@ -190,9 +190,23 @@ public final class MarkovChains {
 	
 	/** Matrices de markov Marzo 2021 */
 	public static final int[][][][] MARCH_TMMC = {YOUNG_MARCH_TMMC, YOUNG_MARCH_TMMC, ADULT_MARCH_TMMC, ADULT_MARCH_TMMC, HIGHER_MARCH_TMMC};
-			
+	
 	// FIN DECLARACIONES MATRICES DE MARKOV //
 
+	/**
+	 * Copia los valores de matriz base a matriz copy.
+	 * @param base matriz a copiar
+	 * @param copy matriz donde copiar
+	 */
+    public static void cloneChains(int[][][][] base, int[][][][] copy) {
+		int i,j,k,l;
+		for (i = 0; i < copy.length; i++)
+			for (j = 0; j < copy[i].length; j++)
+				for (k = 0; k < copy[i][j].length; k++)
+					for (l = 0; l < copy[i][j][k].length; l++)
+						copy[i][j][k][l] = base[i][j][k][l];
+    }
+	
 	/**
 	 * Suma o resta la matriz de fines de semana, a la matriz dada, y retorna el resultado.
 	 * @param base matriz a modificar
@@ -201,41 +215,36 @@ public final class MarkovChains {
 	 */
 	public static int[][][] setWeekendDiff(int[][][] base, boolean enable) {
 		int i,j,k;
-		for (i = 0; i < 4; i++) {
-			for (j = 0; j < 4; j++) {
+		for (i = 0; i < 4; i++)
+			for (j = 0; j < 4; j++)
 				for (k = 0; k < 4; k++) {
 					if (enable)
 						base[i][j][k] += WEEKEND_DIFF[i][j][k];
 					else
 						base[i][j][k] -= WEEKEND_DIFF[i][j][k];
 				}
-			}
-		}
 		return base;
 	}
 	
 	/**
-	 * Suma a matriz base la matriz diff y retorna el resultado.
-	 * @param base matriz a modificar
+	 * Suma los valores de matriz base con diff y guarda los resultados en copy.
+	 * @param base matriz original
 	 * @param diff matriz a sumar
-	 * @return matriz base modificada
+	 * @param copy matriz a modificar (resultado)
 	 */
-	public static int[][][] mergeChainsDiff(int[][][] base, int[][][] diff) {
-		int[][][] result = new int[4][4][4];
+	public static void mergeChainsDiff(int[][][][] base, int[][][][] diff, int[][][][] copy) {
 		int temp;
-		int i,j,k;
-		for (i = 0; i < 4; i++) {
-			for (j = 0; j < 4; j++) {
-				for (k = 0; k < 4; k++) {
-					temp = base[i][j][k] + diff[i][j][k];
-					if (temp < 0 || temp > 1000)
-						System.err.println(String.format("Error en matriz diff: [%d][%d][%d]", i, j, k));
-					else
-						result[i][j][k] = temp;
-				}
-			}
-		}
-		return result;
+		int i,j,k,l;
+		for (i = 0; i < base.length; i++)
+			for (j = 0; j < base[i].length; j++)
+				for (k = 0; k < base[i][j].length; k++)
+					for (l = 0; l < base[i][j][k].length; l++) {
+						temp = base[i][j][k][l] + diff[i][j][k][l];
+						if (temp < 0 || temp > 1000)
+							System.err.println(String.format("Error en matriz diff: [%d][%d][%d][%d]", i, j, k, l));
+						else
+							copy[i][j][k][l] = temp;
+					}
 	}
 	
 	/**

@@ -158,7 +158,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 			else				// Fase pasada
 				phaseDay = 0;
 			params = ScheduleParameters.createOneTime(phaseDay, 0.9d);
-			schedule.schedule(params, this, "initiateLockdownPhase", phasesStartDay[i]);
+			schedule.schedule(params, this, "updateLockdownPhase", phasesStartDay[i]);
 		}
 		
 		// Crea BuildingManager para esta ciudad
@@ -1291,6 +1291,16 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 */
 	public boolean localOutbreakStarted() {
 		return outbreakStarted;
+	}
+	
+	/**
+	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
+	 */
+	public void setDefaultValues() {
+		setMaskValues(0, false, true, true, true);
+		setSDValues(0, true, false);
+		disableCloseContacts();
+		disablePrevQuarantine();
 	}
 	
 	/**
