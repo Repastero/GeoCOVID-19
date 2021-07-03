@@ -5,18 +5,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import geocovid.DataSet;
-import geocovid.InfectionReport;
 import geocovid.MarkovChains;
 import geocovid.PlaceProperty;
 import geocovid.Town;
 
 /**
- * Implementacion de <b>SubContext</b> para municipios tipo Parana.
+ * Implementacion de <b>SubContext</b> para municipios tipo La Capital.
  */
 public class LaCapitalContext extends SubContext {
 	// Punteros matriz markov //
-	private static int[][][][][] localTMMC = new int[2][DataSet.AGE_GROUPS][][][];
-	private static int[][][][] isolatedLocalTMMC = new int[DataSet.AGE_GROUPS][][][];
+	private static int[][][][][] localTMMC = new int[2][DataSet.AGE_GROUPS][4][4][4];
+	private static int[][][][] isolatedLocalTMMC = new int[DataSet.AGE_GROUPS][4][4][4];
 	
 	//public static int[][][] travelerTMMC;
 	//public static int[][][] infectedTravelerTMMC;
@@ -31,7 +30,7 @@ public class LaCapitalContext extends SubContext {
 	private static final int[] HOME_BUILDING_COVERED_AREA = {80, 80};
 
 	/** Humanos con hogar dentro y trabajo/estudio fuera - Inventado */
-	private static final double[][] LOCAL_HUMANS_PER_AGE_GROUP	= {
+	private static final double[][] LOCAL_HUMANS_PER_AGE_GROUP = {
 			{ 5d, 35d, 30d, 30d, 0d},	// Seccional 3
 			{ 5d, 25d, 35d, 35d, 0d}	// Seccional 6
 	};
@@ -39,7 +38,7 @@ public class LaCapitalContext extends SubContext {
 	private static final double[] FOREIGN_HUMANS_PER_AGE_GROUP = {10d, 22d, 34d, 34d, 0d};
 
 	/** % de estudiantes, trabajadores e inactivos (ama de casa/jubilado/pensionado/otros) segun grupo etario */
-	private static final double[][][] OCCUPATION_PER_AGE_GROUP	= { // Fuente "Mercado de trabajo" 2019-2020 - IPEC | Abelardo
+	private static final double[][][] OCCUPATION_PER_AGE_GROUP = { // Fuente "Mercado de trabajo" 2019-2020 - IPEC | Abelardo
 			// Seccionales tipo 3 - 50.5% ocupados
 			{{100d,   0d,   0d},	// 5-14
 			{  62d,  26d,  12d},	// 15-24
@@ -305,28 +304,17 @@ public class LaCapitalContext extends SubContext {
 		}
 	}
 	
-	/**
-	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
-	 */
-	public void setDefaultValues() {
-		setMaskValues(0, false, true, true, true);
-		setSDValues(0, true, false);
-		disableCloseContacts();
-		disablePrevQuarantine();
-	}
-	
 	/** 
 	 * Asignar las matrices de markov que se utilizan al principio de simulacion.
 	 */
 	public static void setDefaultTMMC() {
 		if (!"default".equals(currentMonth)) {
-			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
-			
-			//travelerTMMC	= MarkovChains.TRAVELER_DEFAULT_TMMC;
+			//travelerTMMC = MarkovChains.TRAVELER_DEFAULT_TMMC;
 			for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
 				isolatedLocalTMMC[i] = MarkovChains.ISOLATED_TMMC;
 			}
 			//infectedTravelerTMMC = MarkovChains.ISOLATED_TMMC;
+			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
 		}
 	}
 	
@@ -338,9 +326,13 @@ public class LaCapitalContext extends SubContext {
 	public static void setTMMCs(String month, int[][][][] tmmc) {
 		if (!month.equals(currentMonth)) {
 			currentMonth = month;
-			for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
-				localTMMC[0][i]	= tmmc[i];
-				localTMMC[1][i]	= MarkovChains.mergeChainsDiff(tmmc[i], MarkovChains.SEC11_DIFF[i]);
+			MarkovChains.cloneChains(tmmc, localTMMC[0]);
+			MarkovChains.mergeChainsDiff(tmmc, MarkovChains.SEC11_DIFF, localTMMC[1]);
+			// Chequea si se cambio de fase durante el fin de semana
+			if (weekendTMMCEnabled) {
+				// Aplica diff de fin de semana a nuevas markovs
+				weekendTMMCEnabled = false;
+				setHumansWeekendTMMC(true);
 			}
 		}
 	}
@@ -358,23 +350,6 @@ public class LaCapitalContext extends SubContext {
 			}
 			//travelerTMMC = (enabled ? MarkovChains.TRAVELER_WEEKEND_TMMC : MarkovChains.TRAVELER_DEFAULT_TMMC);
 		}
-	}
-	
-	/**
-	 * Antes de setear las caracteristicas de una nueva fase, chequea si sucede el fin de semana.
-	 * @param phaseDay dia nueva fase
-	 */
-	public void initiateLockdownPhase(int phaseDay) {
-		boolean lockdownOverWKD = false;
-		// Chequea si se cambio de fase durante el fin de semana y no es la primer fase
-		if (weekendTMMCEnabled && InfectionReport.simulationStartDay != phaseDay) {
-			lockdownOverWKD = true;
-			setHumansWeekendTMMC(false); // para restar la matriz de finde
-		}
-		updateLockdownPhase(phaseDay);
-		// Si corresponde, suma la matriz de fin de semana a las nuevas matrices
-		if (lockdownOverWKD)
-			setHumansWeekendTMMC(true); // para sumar la matriz de finde
 	}
 	
 	@Override
