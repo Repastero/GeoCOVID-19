@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import geocovid.DataSet;
-import geocovid.InfectionReport;
 import geocovid.MarkovChains;
 import geocovid.PlaceProperty;
 import geocovid.Town;
@@ -15,31 +14,31 @@ import geocovid.Town;
  */
 public class ConcordContext extends SubContext {
 	// Punteros matriz markov //
-	public static int[][][][][] localTMMC		= new int[2][DataSet.AGE_GROUPS][][][];
-	public static int[][][][] isolatedLocalTMMC	= new int[DataSet.AGE_GROUPS][][][];
+	private static int[][][][][] localTMMC = new int[2][DataSet.AGE_GROUPS][4][4][4];
+	private static int[][][][] isolatedLocalTMMC = new int[DataSet.AGE_GROUPS][4][4][4];
 	
-	public static int[][][] travelerTMMC;
-	public static int[][][] infectedTravelerTMMC;
+	//public static int[][][] travelerTMMC;
+	//public static int[][][] infectedTravelerTMMC;
 	//
 	
 	/** Cantidad media de humanos por hogar (minimo 1) */
-	public static final double[] HOUSE_INHABITANTS_MEAN	= {3.7, 4.1};
+	private static final double[] HOUSE_INHABITANTS_MEAN = {3.7, 4.1};
 
 	/** Area en m2 para hogares */
-	public static final int[] HOME_BUILDING_AREA = {100, 100};
+	private static final int[] HOME_BUILDING_AREA = {100, 100};
 	/** Area construida en m2 para hogares */
-	public static final int[] HOME_BUILDING_COVERED_AREA = {80, 80};
+	private static final int[] HOME_BUILDING_COVERED_AREA = {80, 80};
 
 	/** Humanos con hogar dentro y trabajo/estudio fuera - Inventado */
-	public static final double[][] LOCAL_HUMANS_PER_AGE_GROUP	= {
+	private static final double[][] LOCAL_HUMANS_PER_AGE_GROUP = {
 			{ 0d, 24d, 38d, 38d, 0d},	// Seccional 2
 			{ 0d, 20d, 40d, 40d, 0d}	// Seccional 11
 	};
 	/** Humanos con hogar fuera y trabajo/estudio dentro - Inventado */
-	public static final double[] FOREIGN_HUMANS_PER_AGE_GROUP = {10d, 20d, 35d, 35d, 0d};
+	private static final double[] FOREIGN_HUMANS_PER_AGE_GROUP = {10d, 20d, 35d, 35d, 0d};
 
 	/** % de estudiantes, trabajadores e inactivos (ama de casa/jubilado/pensionado/otros) segun grupo etario */
-	public static final double[][][] OCCUPATION_PER_AGE_GROUP	= { // Fuente "El mapa del trabajo argentino 2019" - CEPE | INDEC - EPH 2020
+	private static final double[][][] OCCUPATION_PER_AGE_GROUP = { // Fuente "El mapa del trabajo argentino 2019" - CEPE | INDEC - EPH 2020
 			// Seccional 2 - 44% ocupados
 			{{100d,   0d,   0d},	// 5-15
 			{  62d,  18d,  20d},	// 16-25
@@ -56,12 +55,12 @@ public class ConcordContext extends SubContext {
 	};
 
 	/** Porcentaje que trabaja en el hogar */
-	public static final int[] WORKING_FROM_HOME	= { 5,12};	// 10% de poblacion activa
+	private static final int[] WORKING_FROM_HOME = {5, 12};	// 10% de poblacion activa
 	/** Porcentaje que trabaja al exterior */
-	public static final int[] WORKING_OUTDOORS	= { 4, 6};	// menos del 5%
+	private static final int[] WORKING_OUTDOORS = {4, 6};	// menos del 5%
 
 	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
-	public static final int[] TRAVEL_OUTSIDE_CHANCE	= {50, 40};	// Se desplazan mas de 1500 metros el 60% de la poblacion (bajamos un poco por la epidemia)
+	private static final int[] TRAVEL_OUTSIDE_CHANCE = {50, 40};	// Se desplazan mas de 1500 metros el 60% de la poblacion (bajamos un poco por la epidemia)
 	
 	private static Map<String, PlaceProperty> customPlacesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	private static String currentMonth = null;	// Para distinguir entre cambios de markovs
@@ -255,28 +254,17 @@ public class ConcordContext extends SubContext {
 		}
 	}
 	
-	/**
-	 * Como la simulacion puede comenzar antes de la pandemia se inicia sin medidas de prevencion.
-	 */
-	public void setDefaultValues() {
-		setMaskValues(0, false, true, true, true);
-		setSDValues(0, true, false);
-		disableCloseContacts();
-		disablePrevQuarantine();
-	}
-	
 	/** 
 	 * Asignar las matrices de markov que se utilizan al principio de simulacion.
 	 */
 	public static void setDefaultTMMC() {
 		if (!"default".equals(currentMonth)) {
-			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
-			
-			travelerTMMC	= MarkovChains.TRAVELER_DEFAULT_TMMC;
+			//travelerTMMC = MarkovChains.TRAVELER_DEFAULT_TMMC;
 			for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
 				isolatedLocalTMMC[i] = MarkovChains.ISOLATED_TMMC;
 			}
-			infectedTravelerTMMC = MarkovChains.ISOLATED_TMMC;
+			//infectedTravelerTMMC = MarkovChains.ISOLATED_TMMC;
+			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
 		}
 	}
 	
@@ -288,9 +276,13 @@ public class ConcordContext extends SubContext {
 	public static void setTMMCs(String month, int[][][][] tmmc) {
 		if (!month.equals(currentMonth)) {
 			currentMonth = month;
-			for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
-				localTMMC[0][i]	= tmmc[i];
-				localTMMC[1][i]	= MarkovChains.mergeChainsDiff(tmmc[i], MarkovChains.SEC11_DIFF[i]);
+			MarkovChains.cloneChains(tmmc, localTMMC[0]);
+			MarkovChains.mergeChainsDiff(tmmc, MarkovChains.SEC11_DIFF, localTMMC[1]);
+			// Chequea si se cambio de fase durante el fin de semana
+			if (weekendTMMCEnabled) {
+				// Aplica diff de fin de semana a nuevas markovs
+				weekendTMMCEnabled = false;
+				setHumansWeekendTMMC(true);
 			}
 		}
 	}
@@ -306,25 +298,8 @@ public class ConcordContext extends SubContext {
 				MarkovChains.setWeekendDiff(localTMMC[0][i], enabled);
 				MarkovChains.setWeekendDiff(localTMMC[1][i], enabled);
 			}
-			travelerTMMC = (enabled ? MarkovChains.TRAVELER_WEEKEND_TMMC : MarkovChains.TRAVELER_DEFAULT_TMMC);
+			//travelerTMMC = (enabled ? MarkovChains.TRAVELER_WEEKEND_TMMC : MarkovChains.TRAVELER_DEFAULT_TMMC);
 		}
-	}
-	
-	/**
-	 * Antes de setear las caracteristicas de una nueva fase, chequea si sucede el fin de semana.
-	 * @param phaseDay dia nueva fase
-	 */
-	public void initiateLockdownPhase(int phaseDay) {
-		boolean lockdownOverWKD = false;
-		// Chequea si se cambio de fase durante el fin de semana y no es la primer fase
-		if (weekendTMMCEnabled && InfectionReport.simulationStartDay != phaseDay) {
-			lockdownOverWKD = true;
-			setHumansWeekendTMMC(false); // para restar la matriz de finde
-		}
-		updateLockdownPhase(phaseDay);
-		// Si corresponde, suma la matriz de fin de semana a las nuevas matrices
-		if (lockdownOverWKD)
-			setHumansWeekendTMMC(true); // para sumar la matriz de finde
 	}
 	
 	@Override
