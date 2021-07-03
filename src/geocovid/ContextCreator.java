@@ -194,9 +194,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", true);
 		params = ScheduleParameters.createRepeating(weekendStartTick + DataSet.WEEKEND_TICKS, DataSet.WEEKLY_TICKS, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(params, subContext, "setHumansWeekendTMMC", false);
-		// Por si finaliza simulacion un fin de semana, reiniciar markov 
-		params = ScheduleParameters.createAtEnd(ScheduleParameters.LAST_PRIORITY);
-		schedule.schedule(params, subContext, "setHumansWeekendTMMC", false);
 	}
 	
 	/**
