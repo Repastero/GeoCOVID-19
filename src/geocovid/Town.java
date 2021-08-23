@@ -12,13 +12,16 @@ public final class Town {
 	public static int firstInfectedAmount = 1;
 	/** Dias por defecto de cambio de fase */
 	private static final int[][] DEFAULT_PHASES_DAYS = {
-		{158,159,170,181,182,188,214,226,231,255,269,281,292,313,317,331,335,340,345,348,358,359,362,365,366,369,375,397,413,425,434,439,463,478,488,505,516,528,538},	// lacapital
-		{0},// rosario TODO completar
+		{158,159,170,181,182,    188,214,226,231,    255,269,281,292,313,317,331,335,340,345,348,358,359,362,365,366,369,375,397,413,425,434,439,463,478,488,505,516,528,538},	// lacapital
+		{158,159,170,181,182,184,188,214,226,231,240,255,269,281,    313,    331,335,340,345,348,358,359,362,365,366,369,375,397,413,425,434,439,463,478,488,505,516,528,538},	// rosario
 		{0}	// ??????? TODO completar
 	};
 	
 	/** Dias por defecto de los cambios de unidades de transporte publico */
-	private final double[] PUBLIC_TRANSPORT_QUANTIFICATION	= {1, .6}; // 60% desde Abril 2020 hasta ahora (Junio 2021)
+	private final double[][] PUBLIC_TRANSPORT_QUANTIFICATION	= {
+		{1, .6},	// 60% desde Abril 2020 hasta ahora (Junio 2021)
+		{1, .5, .8},// 50% desde Marzo 2020, 80% desde Octubre 2020 hasta ahora (Julio 2021)
+	};
 	
 	/** Nombre del municipio a simular */
 	public String townName;
@@ -128,8 +131,21 @@ public final class Town {
 				new int[] {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1},
 				new double[] {6.7, 6.05, 6.225, 5.625, 5.5, 7.3, 9.85, 9, 5.25, 8.3, 2.675, 2.6, 2.5, 8.15, 7.325, 3.45, 3.5},
 				DEFAULT_PHASES_DAYS[0],
-				194,
+				194, // 13 Julio 2020
 				200, // 200-210 coches en total, en los horarios pico
+				false);
+			break;
+		case "rosario": // 948945
+			setTownData(
+				1,0,
+				872945,
+				76000,
+				0,
+				new int[] {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1},
+				new double[] {8.14, 5.30, 3.80, 6.75, 8.73, 4.46, 4.22, 5.27, 6.76, 3.44, 3.77, 5.09, 5.94, 4.52, 1.84, 4.57, 3.10, 3.50, 7.06, 2.22, 0.82, 0.70},
+				DEFAULT_PHASES_DAYS[1],
+				194, // 13 Julio 2020
+				800, // Entre las 3 empresas (y el trolebus ???)
 				false);
 			break;
 		default:
@@ -168,11 +184,11 @@ public final class Town {
 		if (publicTransportUnits == 0)
 			return new int[sectoralsCount];
 		// Si el indice de fase supera los disponibles, retorna el maximo
-		else if (phase > PUBLIC_TRANSPORT_QUANTIFICATION.length)
+		else if (phase > PUBLIC_TRANSPORT_QUANTIFICATION[regionType].length)
 			return getPTSectoralUnits(publicTransportUnits);
 		// Calcula la cantidad en funcionamiento segun fase
 		else {
-			int units = (int) Math.round(publicTransportUnits * PUBLIC_TRANSPORT_QUANTIFICATION[phase]);
+			int units = (int) Math.round(publicTransportUnits * PUBLIC_TRANSPORT_QUANTIFICATION[regionType][phase]);
 			if (units > publicTransportUnits)
 				units = publicTransportUnits;
 			return getPTSectoralUnits(units);

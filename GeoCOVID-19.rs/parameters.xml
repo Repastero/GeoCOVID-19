@@ -7,7 +7,7 @@
 									
 		/>
 				<parameter name="cantidadMuertosLimite" displayName="Numero maximo de muertes aceptables (0 = ∞)" type="int" 
-						defaultValue="600" 
+						defaultValue="6000" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 									
