@@ -127,5 +127,77 @@ public final class DataSet {
 	/** Cantidad maxima de gente parada<p>
 	 * Fuente: http://servicios.infoleg.gob.ar/infolegInternet/anexos/45000-49999/48212/norma.htm +
 	 */
-	public static final int	PUBLIC_TRANSPORT_MAX_STANDING	= 10;	// 
+	public static final int	PUBLIC_TRANSPORT_MAX_STANDING	= 10;	//
+	
+	/**
+	 * Proporciones de vacunas de las distintas marcas que han llegado a Argentina<p>
+	 * Orden: AstraZeneca  COVISHIELD   Sinopharm     Sputnik V<p>
+	 * fecha Actualizacion: 07/07/2021<p>
+	 * FUENTE: datos.salud.gov<p>
+	 */
+	public static final double[]	PROPORTION_OF_VACCINES				=  {35.483654,  2.530984,   25.381372,   36.603989} ;
+	
+	/**
+	 * Eficacia de la primera DOSE de las distintas vacunas<p>
+	 * La eficacia de AstraZeneca y COVISHIELD es igual ya que son el mismo componente pero de distintos laboratorios
+	 * fuentes:
+	 *  AstraZeneca  COVISHIELD: Vacunas SARS-COV2 marzo 2021 - Angel LM de Francisco<p>
+	 *  Sinopharm: <p>
+	 *  Sputnik V: https://sputnikvaccine.com/esp/about-vaccine/clinical-trials/<p>
+	 *  TODO valores provisorio, fuentes no tan claras
+	 */
+	public static final double[] 	MEAN_VACCINE_EFFICACY_ONE_DOSE					=	{76, 76, 15, 80};	
+	/**
+	 * Desvío de la Eficacia de la segunda DOSE de las distintas vacunas
+	 */
+
+	public static final double 		DS_VACCINE_EFFICACY_ONE_DOSE					=	5;
+	/**
+	 * Media de dias  y desvio estandar  de la inmmunización con una sola DOSE
+	 * La media de los dias se tomo como referencia 
+	 * TODO esto habria que re ver si cambia para las distintas vacunas
+	 */
+	public static final int    		MEAN_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_ONE_DOSE=	22*24;
+	public static final int    		DS_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_ONE_DOSE	=	2*24;
+
+	/**
+	 * Proporciones de vacunas de las distintas marcas que han llegado a Argentina
+	 * Orden: AstraZeneca  COVISHIELD   Sinopharm     Sputnik V
+	 * fecha Actualizacion: 14/06/2021
+	 * FUENTE: datos.salud.gov
+	 */
+	public static final double[]	PROPORTION_OF_VACCINES_TWO_DOSE				=  {24.4677981,   0.1860178,  39.7707092,  35.5754749};	
+	
+	/**
+	 * Eficacia de la segunda DOSE de las distintas vacunas.<p>
+	 * La eficacia de AstraZeneca y COVISHIELD es igual ya que son el mismo componente pero de distintos lugares.
+	 * Tambien las probabilidades se calculan de acuerdo a las eficacias totales. Ej: Sputnik eficacia 91.8%, la primera tiene 80%, del 20% restante el 52% debe inmmunizarse con la segunda dosis 
+	 * fuentes:
+	 *  AstraZeneca  COVISHIELD: <p>
+	 *  Sinopharm: https://www.sadi.org.ar/rss/item/1403-manual-del-vacunador-vacuna-sinopharm<p>
+	 *  Sputnik V: https://sputnikvaccine.com/esp/about-vaccine/clinical-trials/<p>
+	 *  TODO valores provisorio, fuentes no tan claras
+	 */
+	public static final double[] 	MEAN_VACCINE_EFFICACY_TWO_DOSE=	{64d, 64d, 71d, 52d};	
+	
+	/**
+	 * Desvío de la Eficacia de la segunda DOSE de las distintas vacunas
+	 */
+	public static final double 		DS_VACCINE_EFFICACY_TWO_DOSE  =	5;
+	
+	/**
+	 * Media de dias de la inmmunización con la segunda DOSE
+	 * TODO esto habria que re ver si cambia para las distintas vacunas
+	 */
+	public static final int    		MEAN_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_TWO_DOSE=	22*24;
+	/**
+	 * Desvio estandar  de la inmmunización con la segunda DOSE
+	 */
+	public static final int    		DS_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_TWO_DOSE	=	2*24;
+
+	/**
+	 * Porcentaje de los agentes que han sido vacunados exitosamente y se desea que pasen al estado recuperados,
+	 * el resto solo generaria inmunidad para llegar a un estado grave e ir a UTI
+	 */
+	public static final int    		HUMANS_PER_CHANGE_STATE_RECOVERED	= 70;
 }

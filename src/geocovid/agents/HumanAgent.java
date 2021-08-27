@@ -8,10 +8,13 @@ import geocovid.InfectionReport;
 import geocovid.MarkovChains;
 import geocovid.Temperature;
 import geocovid.contexts.SubContext;
+import geocovid.Vacinne;
+
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.random.RandomHelper;
+
 
 /**
  * Clase base de Agente Humano.
@@ -48,7 +51,7 @@ public class HumanAgent {
 	private int ticksDelay = 0;
 	/** Tick de inicio de periodo infeccioso */
 	private double infectiousStartTime;
-	
+
 	/** Tiene una actividad programada */
 	private boolean activityQueued = false;
 	/** Duracion en ticks de actividad programada */
@@ -74,6 +77,9 @@ public class HumanAgent {
     public boolean symInfectious;	// Infeccioso sintomatico
     public boolean hospitalized;	// Hospitalizado en UTI
     public boolean recovered;		// Recuperado
+    
+    private Vacinne vacinne;
+    
     // Extras
     public boolean quarantined;		// Aislado por sintomatico o cuarentena preventiva
     public boolean distanced;		// Respeta distanciamiento social
@@ -375,6 +381,11 @@ public class HumanAgent {
 	 * @see DataSet#EXTENDED_ICU_PERIOD
 	 */
 	public void setRecovered() {
+		boolean vaccined =(!vacinne.isSucessVaccinedFirst() && !vacinne.isSucessVaccinedSecond()) ;
+		//Verifica si esta recuperado
+		if(recovered) {
+			return;
+		}
 		// Verificar que este infectado
 		if (asxInfectious)
 			InfectionReport.modifyASXInfectiousCount(ageGroup, -1);
@@ -382,11 +393,19 @@ public class HumanAgent {
 			InfectionReport.modifySYMInfectiousCount(ageGroup, -1);
 			setPreInfectious(false); // termina el periodo de contacto estrecho
 		}
-		else
-			return;
+		else {
+			if(vaccined) 
+				return;
+			else {
+				recoveredForVaccine();
+				return;
+			}
+		}
 		
 		// Si se complica el caso, se interna - si no continua vida normal
 		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup]) {
+			if(vacinne.isSucessVaccinedFirst() || vacinne.isSucessVaccinedSecond()) 
+				return;
 			// Mover a ICU hasta que se cure o muera
 			hospitalized = true;
 			InfectionReport.modifyHospitalizedCount(ageGroup, 1);
@@ -411,6 +430,20 @@ public class HumanAgent {
 			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + DataSet.EXTENDED_ICU_PERIOD, ScheduleParameters.FIRST_PRIORITY);
 			schedule.schedule(scheduleParams, this, "dischargeFromICU");
 		}
+	}
+	
+	/**
+	 * Recuperacion pero para el caso de vacunación.<p>
+	 */
+	
+	public void recoveredForVaccine() {		
+		exposed=true;
+		InfectionReport.addExposed(ageGroup);
+		recovered = true;
+		InfectionReport.addRecovered(ageGroup);
+		asxInfectious=false;	// Infeccioso asintomatico
+	    symInfectious=false;	// Infeccioso sintomatico
+	    hospitalized=false;
 	}
 	
 	/**
@@ -597,4 +630,80 @@ public class HumanAgent {
     	}
     	relocationTime = schedule.getTickCount();
    	}
+	
+
+	/**
+	 * Setea la vacuna con la cual fue vacunado el agente, puede generar la inmmunidad a la enfermedad o no.
+	 * 0 - AstraZeneca,<p>
+	 * 1 - COVISHIELD,<p>
+	 * 2 - Sinopharm,<p>
+	 * 3 - Sputnik, <p>
+	 * @param int vacinned
+	 * @see DataSet#MEAN_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_ONE_DOSE
+	 * @see DataSet#DS_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_ONE_DOSE
+	 * @see DataSet#MEAN_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_TWO_DOSE
+	 * @see DataSet#DS_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_TWO_DOSE
+	 */
+	
+	public void setVaccined(int vacinned, boolean firstDose) {
+		//Chequeo de primera dosis o segunda
+		int mean;
+		int std;
+		
+		if(vacinned<0 || vacinned>4){
+			System.err.println("Se ingreso una vacuna invalida");			
+			return;
+		}
+		
+		if(firstDose) {
+			 InfectionReport.addVaccined(getAgeGroup());
+			 vacinne.setVaccined(vacinned);
+			 mean = DataSet.MEAN_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_ONE_DOSE;
+			 std = DataSet.DS_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_ONE_DOSE;
+		}
+		else {
+			InfectionReport.addVaccinedTwoDose(getAgeGroup());
+			if(vacinne.isSucessVaccinedFirst()) 
+				return;
+			
+			 mean = DataSet.MEAN_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_TWO_DOSE;
+			 std = DataSet.DS_DAYS_AFTER_INMMUNIZATION_TO_BE_VACCINATED_TWO_DOSE;
+		}
+		
+		if(vacinne.successVaccine(vacinned, firstDose)) {
+			if(firstDose) {
+				vacinne.setSucessVaccinedFirst(true);
+			}
+			else {
+				vacinne.setSucessVaccinedSecond(true);
+			}
+			
+			if(!vacinne.changeToRecovered()) {
+				inmunization(mean,std);
+			}
+		}
+	}
+	
+	/**
+	 * Pasa al estado recuperado luego de X media y Y desvio de dias.
+	 * @param mean media (en dia).
+	 * @param std , desvio estandar (en dia).
+	 */
+	
+	public void inmunization(int mean, int std) {
+		double period = RandomHelper.createNormal(mean, std).nextDouble();
+		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
+		schedule.schedule(scheduleParams, this, "setRecovered");
+	}
+	
+	public Vacinne getVacinne() {
+		return vacinne;
+	}
+
+	public void setVacinne(Vacinne vacinne) {
+		this.vacinne = vacinne;
+	}
+
+	
 }

@@ -58,6 +58,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 	private int localHumansCount;		// Cantidad de humanos que viven en contexto
 	private int foreignHumansCount;		// Cantidad de humanos que viven fuera del contexto
 	private int[] localHumansIndex;		// Indice en contextHumans de caga grupo etario (local)
+	private int[] localVaccinationIndex;	// Indice del ultimo vacunado en contextHumans de cada grupo etario (local) 
+
 	
 	private ForeignHumanAgent[] touristHumans;	// Array de HumanAgent temporales/turistas
 	private int[] lodgingPlacesSI;				// Seccionales donde existen lugares de hospedaje
@@ -98,6 +100,12 @@ public abstract class SubContext extends DefaultContext<Object> {
 	private boolean prevQuarantineEnabled;	// Habilitada la cuarentena preventiva para las personas que conviven con un sintomatico
 	
 	private boolean outbreakStarted;		// Indica que ya se infectaron locales
+	
+	private List<List<HumanAgent>> firstDoseVaccine;	 // Lista con ids de humanos que fueron vacunados con la primera dosis y su grupo etario
+	private static double[] EfficacyOneDose;		// eficacia de la primerda dosis de las vacunas en el subcontexto
+	private static double[] EfficacyTwoDose;		// eficacia de la segunda dosis de las vacunas en el subcontexto
+
+	
 	
 	static final boolean DEBUG_MSG = false;	// Flag para imprimir valores de inicializacion
 	//
@@ -1266,7 +1274,7 @@ public abstract class SubContext extends DefaultContext<Object> {
         }
 		//
 		return workplace;
-	}
+	}	
 	
 	/**
 	 * Busca y resta una posicion de trabajador en la lista de lugares.
@@ -1329,6 +1337,180 @@ public abstract class SubContext extends DefaultContext<Object> {
 		socialDistWorkspace = enableWorkplace;
 	}
 	
+	/**
+	 * Método que simula la campaña de vacunación:
+	 * Simula por departamento los cambios de estados y generar inmunidad a la distintas cantidades de agentes de los distintos grupos etarios en los distintos departamentos.
+	 */
+	
+	public void campaignVacunation() {	
+		EfficacyOneDose = new double[DataSet.MEAN_VACCINE_EFFICACY_ONE_DOSE.length];
+		for (int i = 0; i < DataSet.MEAN_VACCINE_EFFICACY_ONE_DOSE.length; i++) {
+			EfficacyOneDose[i]=DataSet.MEAN_VACCINE_EFFICACY_ONE_DOSE[i];
+		}
+		
+		EfficacyTwoDose = new double[DataSet.MEAN_VACCINE_EFFICACY_TWO_DOSE.length];
+		for (int i = 0; i < DataSet.MEAN_VACCINE_EFFICACY_TWO_DOSE.length; i++) {
+			EfficacyTwoDose[i]=DataSet.MEAN_VACCINE_EFFICACY_TWO_DOSE[i];
+		}
+		
+		firstDoseVaccine = new ArrayList <List<HumanAgent>>(DataSet.AGE_GROUPS);
+		localVaccinationIndex = new int[DataSet.AGE_GROUPS];
+		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+			firstDoseVaccine.add(new ArrayList<HumanAgent>());
+			localVaccinationIndex[i]=localHumansIndex[i];
+		}
+		town.getVaccinationTown().forEach((k,v) -> {
+			int tick = getTickFromPhase(k);
+			ScheduleParameters params;
+			params = ScheduleParameters.createOneTime(tick, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(params, this, "setVaccineInHuman", v, true);
+		});
+		
+		town.getVaccinationTownDoseTwo().forEach((k,v) -> {
+			int tick = getTickFromPhase(k);
+			ScheduleParameters params;
+			params = ScheduleParameters.createOneTime(tick, ScheduleParameters.FIRST_PRIORITY);
+			schedule.schedule(params, this, "setVaccineInHuman", v, false);
+		});
+
+		
+	}
+	
+	/**
+	 * A partir del número de dias luego de  01/01/2020 se obtiene el número de  tick en el cual debe correr el mútodo
+	 * 
+	 * @param phase: número que representa los dúas pasado luego del 01/01/2020
+	 * @return tick: tick en el cual se ejecutaria X metodo
+	 */
+	
+	public int getTickFromPhase(int phase) {
+		int diffPhase =  phase - InfectionReport.simulationStartDay;
+		int tick= diffPhase*24;
+		return tick;
+	}
+	
+	/**
+	 * Vacuna a un arreglo de agentes de distitnas franjas etarias
+	 * recibe como parametro un arreglo de humanos de las distintas franjas etarias
+	 * 
+	 *  @param arreglo de enteros humanos
+	 */
+	
+	public void setVaccineInHuman(int[] amountEtaryGroup, boolean firstDose) {
+		//Se vacunan las distintas franjas etarias primera dosis;
+		if(firstDose) {
+			for(int i=0; i<amountEtaryGroup.length; i++) {
+				setVaccineGroupEtary(amountEtaryGroup[i],i);
+			}
+		}
+		else {
+			for(int i=0; i<amountEtaryGroup.length; i++) {
+				setVaccineGroupEtaryDoseTwo(amountEtaryGroup[i],i);
+			}	
+		}
+		
+	}
+	
+	/**
+	 * Vacuna a un grupo de humanos de una determinada franaja etaria
+	 * 
+	 *  @param amountEtaryGroup Cantidad de humanos
+	 *  @param groupEtary franja etaria 
+	 *  
+	 */
+
+	public void setVaccineGroupEtary(int amountEtaryGroup, int groupEtary) {
+		
+		int vaccinationIndex = (localVaccinationIndex[groupEtary]==localHumansIndex[groupEtary]) ? localVaccinationIndex[groupEtary]-1 : localVaccinationIndex[groupEtary];
+		int raffledVaccine;
+		int amountHumanEtaryRange = (groupEtary==0) ? localHumansIndex[groupEtary] : (localHumansIndex[groupEtary] - localHumansIndex[groupEtary-1]);
+		if(firstDoseVaccine.get(groupEtary).size()==amountHumanEtaryRange) {
+			System.out.println("Error se quieren vacunar más de la cantidad de agentes existente del grupo etario: " + groupEtary + ", es mayor a " + amountHumanEtaryRange + " agentes existentes");
+			return;
+		}
+		for(int j=0; j<amountEtaryGroup; j++) {
+			//por las dudas se verifica si esta vacunado
+			if(contextHumans[vaccinationIndex].getVacinne().isVaccined()) {
+				System.out.println("El agente: " + contextHumans[vaccinationIndex].getAgentID() + " ya ha sido vacunado");
+				vaccinationIndex--;
+			}	
+			
+			if(incorrectVaccinationIndex(vaccinationIndex,groupEtary)) {
+				System.out.println("El indice de para vacunar al agente es incorrecto ");
+				return;
+			}
+			raffledVaccine=choiceOfVaccine();
+			contextHumans[vaccinationIndex].setVaccined(raffledVaccine, true);
+			firstDoseVaccine.get(groupEtary).add(contextHumans[vaccinationIndex]);
+			vaccinationIndex--;
+//			System.out.println("Group etary " + groupEtary + " vaccinationIndex " + vaccinationIndex);
+		}
+		localVaccinationIndex[groupEtary]=vaccinationIndex;
+	}
+	
+	/**
+	 * Verifica si el indice de vacunacion es correcto y pertenece al grupo etario seleccionado
+	 * @param vaccinationIndex
+	 * @param groupEtary
+	 * @return Verdadero si el indice es incorrecto
+	 */
+	public boolean incorrectVaccinationIndex(int vaccinationIndex, int groupEtary) {
+		if(groupEtary!=0) 
+			return(vaccinationIndex==localHumansIndex[groupEtary-1]);
+		return(vaccinationIndex<0);
+	}
+	
+	/**
+	 * Se realiza la vacunacion de la segunda dosis
+	 * 
+	 * @param amountEtaryGroup: cantidad de humanos.
+	 * @param groupEtary: grupo etario de humanos que se van a vacunar.
+	 */
+	
+	public void setVaccineGroupEtaryDoseTwo(int amountEtaryGroup, int groupEtary) {
+		int j=0;
+		List<HumanAgent> deletePacient = new ArrayList <HumanAgent>();
+		if(firstDoseVaccine.get(groupEtary).isEmpty() && amountEtaryGroup!=0){
+			System.out.println("No se pueden vacunar personas del rango etario " + groupEtary + " quedaron " + amountEtaryGroup + " sin vacunar"); 
+		}
+		else {
+			for(j=0; j<amountEtaryGroup; j++) {
+				if(j>=firstDoseVaccine.get(groupEtary).size())
+					break;
+				firstDoseVaccine.get(groupEtary).get(j).setVaccined(firstDoseVaccine.get(groupEtary).get(j).getVacinne().getVaccined(), false);
+				deletePacient.add(firstDoseVaccine.get(groupEtary).get(j));
+			}
+			firstDoseVaccine.get(groupEtary).removeAll(deletePacient);
+		}				
+	}
+
+	
+	/**
+	 * Vacuna a un agente con una de las 4 vacunas disponible, además si la vacunacion es exitosa pasa a recuperado y sino pasa a estar expuesto
+	 * Las vacunas se clasifican de la siguiente forma:
+	 * 0 - AstraZeneca
+	 * 1 - COVISHIELD
+	 * 2 - Sinopharm
+	 * 3 - Sputnik
+	 * 
+	 */
+	public int choiceOfVaccine() {	
+		
+		double chancesVaccineTrademarkAgent = RandomHelper.nextDoubleFromTo(0, 100);
+		int vaccine;
+		for(vaccine=0; vaccine<=DataSet.PROPORTION_OF_VACCINES.length; vaccine++) {
+				if(chancesVaccineTrademarkAgent<DataSet.PROPORTION_OF_VACCINES[vaccine]) {
+					break;
+				} 
+				else
+					chancesVaccineTrademarkAgent-=DataSet.PROPORTION_OF_VACCINES[vaccine];
+			}
+			
+		return vaccine; 
+	}
+		
+
+	
 	/** @return <b>true</b> si estan habilitados los contactos estrechos y la cuarentena preventiva de los mismos */
 	public boolean closeContactsEnabled(){ return closeContactsEnabled; }
 	/** Habilita contactos estrechos y su cuarentena preventiva. */
@@ -1374,4 +1556,50 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public double getICUDeathRate()		{ return DataSet.DEFAULT_ICU_DEATH_RATE; }
 	/** @return modificador para calcular chance de contagio fuera del contexto (al aumentar, aumenta chance) */
 	public int getOOCContagionValue()	{ return DataSet.DEFAULT_OOC_CONTAGION_VALUE; }
+	
+	/** @return indice en <b>contextHuman</b> de los últimos vacunados de cada grupo etario */
+	public int[] getLocalVaccinationIndex() {
+		return localVaccinationIndex;
+	}
+	/** @param Seteo de posicion que en referencia localHumansIndex de los ultimos vacunados (Orden decreciente) */
+	public void setLocalVaccinationIndex(int[] localVaccinationIndex) {
+		this.localVaccinationIndex = localVaccinationIndex;
+	}
+	
+	/** @return devuelve el arreglo de eficacias de las primeras dosis
+	 * @see DataSet#MEAN_VACCINE_EFFICACY_ONE_DOSE */
+	public static double[] getEfficacyOneDose(){
+		return EfficacyOneDose;
+		}
+	/**@params prop: valor entre 0-1,25 (la vacuna sputnik con ese valor alcanza su eficacia máxima),
+	 * @see DataSet#MEAN_VACCINE_EFFICACY_ONE_DOSE 
+	 * permite cambiar las eficacia mantienendo las proporciones entre las distintas vacunas  */
+	public static void setEfficacyOneDose(double prop ){
+		for(int i=0; i<EfficacyOneDose.length; i++) {
+			EfficacyOneDose[i]=DataSet.MEAN_VACCINE_EFFICACY_ONE_DOSE[i]*prop;
+			if(EfficacyOneDose[i]>100 || EfficacyOneDose[i]<0 ) {
+				System.err.println("La eficacia de la vacuna " + i +  " no se encuentra en el rango 0 a 100");
+			}
+		}
+	}
+
+	/** @return devuelve el arreglo de eficacias de las primeras dosis
+	 * @see DataSet#MEAN_VACCINE_EFFICACY_TWO_DOSE */
+	public static double[] getEfficacyTwoDose(){
+		return EfficacyTwoDose;
+		}
+	/**@params prop: valor entre  (la vacuna sputnik con ese valor alcanza su eficacia máxima), 
+	 * permite cambiar las eficacia mantienendo las proporciones entre las distintas vacunas  
+	 * @see DataSet#MEAN_VACCINE_EFFICACY_TWO_DOSE 
+	 * */
+	public static void setEfficacyTwoDose(double prop ){
+		for(int i=0; i<EfficacyTwoDose.length; i++) {
+			EfficacyTwoDose[i]=DataSet.MEAN_VACCINE_EFFICACY_TWO_DOSE[i]*prop;
+			if(EfficacyTwoDose[i]>100 ||EfficacyTwoDose[i]<0 ) {
+				System.err.println("la eficacia de la vacuna " + i +  " no se encuentra en el rango 0 a 100");
+			}
+
+		}
+	}
+	
 }
