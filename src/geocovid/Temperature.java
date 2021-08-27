@@ -12,49 +12,50 @@ import repast.simphony.engine.schedule.ScheduledMethod;
  * Con los valores de temperatura promedio, calcula el beta en interiores, exteriores y fuera de contexto.
  */
 public class Temperature {
+	/** Contador anual */
+	private static int currentYear;
+	/** Contador diario */
+	private static int dayOfTheYear;
+	
 	/** Numero de regiones: sur, centro y norte */
 	private static final int REGIONS = 3;
 	
-	private static int currentYear;
-	private static int dayOfTheYear;
+	/** Temperaturas diarias anuales (exterior) */
+	private static final double[][] TEMPERATURES = new double[REGIONS][366];
+	/** Temperatura del dia actual */
+	private static double[] DAILY_TEMPERATURE = new double[REGIONS];
 	
-	/** Temperatura exteriores */
-	private static double[] odCurrentTemp = new double[REGIONS];
-	/** Temperatura interiores */
-	private static final double[][] temperature = new double[REGIONS][366];
-	
-	/**offset en porcentaje para variacion de beta base*/
-	private static final double [] variant = new double [366];
 	/** Beta base inicial */
-	private static double betaBase;
+	private static final double BETA_BASE = 24.64d;
+	/** Offset en porcentaje para variacion de beta base */
+	private static final double [] BETA_VARIANT = new double [366];
 	/** Beta diario para cada tipo de seccional */
-	private static double[][] infectionRate = new double[REGIONS][2];
+	private static final double[][] INFECTION_RATE = new double[REGIONS][2];
 	/** Beta diario para cada tipo de seccional ventilada */	
-	private static double[][] ventilatedInfectionRate = new double[REGIONS][2];
+	private static final double[][] VEN_INFECTION_RATE = new double[REGIONS][2];
 	/** Beta diario para espacios al aire libre */
-	private static double[] outsideInfectionRate = new double[REGIONS];
+	private static final double[] OD_INFECTION_RATE = new double[REGIONS];
 	
 	/** Beta diario para contagio por aerosol */
-	private static double[] aerosolIR = new double[REGIONS];
+	private static final double[] AEROSOL_IR = new double[REGIONS];
 	/** Beta diario para contagio por aerosol en espacios cerrados pero ventilados */
-	private static double[] ventilatedAerosolIR = new double[REGIONS];
+	private static final double[] VEN_AEROSOL_IR = new double[REGIONS];
 	/** Beta diario para contagio por aerosol en espacios al aire libre */
-	private static double[] outsideAerosolIR = new double[REGIONS];
+	private static final double[] OD_AEROSOL_IR = new double[REGIONS];
 	
 	/** Beta diario para contagio por estela o fomites */
-	private static double[] fomiteIR = new double[REGIONS];
+	private static final double[] FOMITE_IR = new double[REGIONS];
 	/** Beta diario para contagio por estela o fomites en espacios al aire libre */
-	private static double[] outsideFomiteIR = new double[REGIONS];
+	private static final double[] OD_FOMITE_IR = new double[REGIONS];
 	
 	/** Valor de contagio diario estando fuera del contexto */
-	private static int[] oocContagionChance = new int[REGIONS];
+	private static final int[] OOC_CONTAGION_CHANCE = new int[REGIONS];
 	
 	/**
 	 * @param startYear ano de inicio (2020 o +)
 	 * @param startDay dias desde fecha de inicio
 	 */
 	public Temperature(int startYear, int startDay) {
-		betaBase= 24.64d;
 		currentYear = startYear;
 		dayOfTheYear = startDay;
 		initTemperature();
@@ -95,23 +96,23 @@ public class Temperature {
 	 */
 	private static void updateInfectionChances() {
 		for (int r = 0; r < REGIONS; r++) {
-			odCurrentTemp[r] = temperature[r][dayOfTheYear];
+			DAILY_TEMPERATURE[r] = TEMPERATURES[r][dayOfTheYear];
 			
-			infectionRate[r][0] = ((variant[dayOfTheYear]*betaBase)*(((odCurrentTemp[r])/2)-22.36d))/(-17.11); // 24.64 12.42
-			infectionRate[r][1] = infectionRate[r][0] * DataSet.INFECTION_RATE_SEC11_MOD;
+			INFECTION_RATE[r][0] = BETA_VARIANT[dayOfTheYear] * BETA_BASE * ((DAILY_TEMPERATURE[r] / 2) - 22.36d) / -17.11d;
+			INFECTION_RATE[r][1] = INFECTION_RATE[r][0] * DataSet.INFECTION_RATE_SEC11_MOD;
 			
-			ventilatedInfectionRate[r][0] = infectionRate[r][0] * DataSet.DROPLET_VENTILATED_MOD;
-			ventilatedInfectionRate[r][1] = infectionRate[r][1] * DataSet.DROPLET_VENTILATED_MOD;
-			outsideInfectionRate[r] = infectionRate[r][0] * DataSet.DROPLET_OUTSIDE_MOD;
+			VEN_INFECTION_RATE[r][0] = INFECTION_RATE[r][0] * DataSet.DROPLET_VENTILATED_MOD;
+			VEN_INFECTION_RATE[r][1] = INFECTION_RATE[r][1] * DataSet.DROPLET_VENTILATED_MOD;
+			OD_INFECTION_RATE[r] = INFECTION_RATE[r][0] * DataSet.DROPLET_OUTSIDE_MOD;
 			
-			aerosolIR[r] = infectionRate[r][0] * DataSet.AEROSOL_IR_MOD;
-			ventilatedAerosolIR[r] = aerosolIR[r] * DataSet.AEROSOL_VENTILATED_MOD;
-			outsideAerosolIR[r] = aerosolIR[r] * DataSet.AEROSOL_OUTSIDE_MOD;
+			AEROSOL_IR[r] = INFECTION_RATE[r][0] * DataSet.AEROSOL_IR_MOD;
+			VEN_AEROSOL_IR[r] = AEROSOL_IR[r] * DataSet.AEROSOL_VENTILATED_MOD;
+			OD_AEROSOL_IR[r] = AEROSOL_IR[r] * DataSet.AEROSOL_OUTSIDE_MOD;
 			
-			fomiteIR[r] = infectionRate[r][0] * DataSet.FOMITE_IR_MOD;
-			outsideFomiteIR[r] = fomiteIR[r] * DataSet.FOMITE_OUTSIDE_MOD;
+			FOMITE_IR[r] = INFECTION_RATE[r][0] * DataSet.FOMITE_IR_MOD;
+			OD_FOMITE_IR[r] = FOMITE_IR[r] * DataSet.FOMITE_OUTSIDE_MOD;
 			
-			oocContagionChance[r] = -1; // reiniciar
+			OOC_CONTAGION_CHANCE[r] = -1; // reiniciar
 		}
 	}
 	
@@ -122,7 +123,7 @@ public class Temperature {
 	 * @param dayFrom desde que dia leer
 	 * @param dayTo hasta que dia leer
 	 */
-	private static void readCSV(String file, int index, int dayFrom, int dayTo) {
+	private static void readTemperatureFile(String file, int index, int dayFrom, int dayTo) {
 		boolean headerFound = false;
 		CSVReader reader = null;
 		String [] nextLine;
@@ -134,7 +135,7 @@ public class Temperature {
 				if (i >= dayFrom) {
 					try {
 						for (r = 0; r < REGIONS; r++)
-							temperature[r][index] = Double.valueOf(nextLine[r]);
+							TEMPERATURES[r][index] = Double.valueOf(nextLine[r]);
 						index++;
 					} catch (NumberFormatException e) {
 						if (headerFound) {
@@ -167,17 +168,17 @@ public class Temperature {
 	 * @param dayFrom desde que dia leer
 	 * @param dayTo hasta que dia leer
 	 */
-	private static void readCSVvariant(String file, int index, int dayFrom, int dayTo) {
+	private static void readBetaVariantFile(String file, int index, int dayFrom, int dayTo) {
 		boolean headerFound = false;
 		CSVReader reader = null;
 		String [] nextLine;
 		int i = 0;
-			try {
+		try {
 			reader = new CSVReader(new FileReader(file), ';');
 			while ((nextLine = reader.readNext()) != null) {
 				if (i >= dayFrom) {
 					try {
- 						variant[index] = Double.valueOf(nextLine[0]);
+ 						BETA_VARIANT[index] = Double.valueOf(nextLine[0]);
 						index++;
 					} catch (NumberFormatException e) {
 						if (headerFound) {
@@ -202,14 +203,14 @@ public class Temperature {
 			} catch (IOException e) { }
 		}
 	}
-
+	
 	private static void loadWeatherData(int year) {
 		String weatherFile = String.format("./data/%d-temperature.csv", year);
 		String variantFile = String.format("./data/%d-variant.csv", year);
-		readCSV(weatherFile, 0, 0, 366);
-		readCSVvariant(variantFile, 0, 0, 366);
+		readTemperatureFile(weatherFile, 0, 0, 366);
+		readBetaVariantFile(variantFile, 0, 0, 366);
 	}
-
+	
 	/**
 	 * Chance de contagio segun region parametros.
 	 * @param region indice (0,1,2)
@@ -220,10 +221,10 @@ public class Temperature {
 	 */
 	public static double getInfectionRate(int region, int sectoralType, boolean outdoor, boolean ventilated) {
 		if (outdoor)
-			return outsideInfectionRate[region];
+			return OD_INFECTION_RATE[region];
 		else if (ventilated)
-			return ventilatedInfectionRate[region][sectoralType];
-		return infectionRate[region][sectoralType];
+			return VEN_INFECTION_RATE[region][sectoralType];
+		return INFECTION_RATE[region][sectoralType];
 	}
 	
 	/**
@@ -235,10 +236,10 @@ public class Temperature {
 	 */
 	public static double getAerosolInfectionRate(int region, boolean outdoor, boolean ventilated) {
 		if (outdoor)
-			return outsideAerosolIR[region];
+			return OD_AEROSOL_IR[region];
 		else if (ventilated)
-			return ventilatedAerosolIR[region];
-		return aerosolIR[region];
+			return VEN_AEROSOL_IR[region];
+		return AEROSOL_IR[region];
 	}
 	
 	/**
@@ -249,8 +250,8 @@ public class Temperature {
 	 */
 	public static double getFomiteInfectionRate(int region, boolean outdoor) {
 		if (outdoor)
-			return outsideFomiteIR[region];
-		return fomiteIR[region];
+			return OD_FOMITE_IR[region];
+		return FOMITE_IR[region];
 	}
 	
 	/**
@@ -260,8 +261,8 @@ public class Temperature {
 	 * @return <b>int</b> chance contagio
 	 */
 	public static int getOOCContagionChance(int region, int ooc) {
-		if (oocContagionChance[region] < 0)
-			oocContagionChance[region] = (int) (300000 - (ooc * outsideInfectionRate[region]));
-		return oocContagionChance[region];
+		if (OOC_CONTAGION_CHANCE[region] < 0)
+			OOC_CONTAGION_CHANCE[region] = (int) (300000 - (ooc * OD_INFECTION_RATE[region]));
+		return OOC_CONTAGION_CHANCE[region];
 	}
 }
