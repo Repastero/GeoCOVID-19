@@ -23,6 +23,10 @@ public class Temperature {
 	/** Temperatura interiores */
 	private static final double[][] temperature = new double[REGIONS][366];
 	
+	/**offset en porcentaje para variacion de beta base*/
+	private static final double [] variant = new double [366];
+	/** Beta base inicial */
+	private static double betaBase;
 	/** Beta diario para cada tipo de seccional */
 	private static double[][] infectionRate = new double[REGIONS][2];
 	/** Beta diario para cada tipo de seccional ventilada */	
@@ -50,6 +54,7 @@ public class Temperature {
 	 * @param startDay dias desde fecha de inicio
 	 */
 	public Temperature(int startYear, int startDay) {
+		betaBase= 24.64d;
 		currentYear = startYear;
 		dayOfTheYear = startDay;
 		initTemperature();
@@ -92,7 +97,7 @@ public class Temperature {
 		for (int r = 0; r < REGIONS; r++) {
 			odCurrentTemp[r] = temperature[r][dayOfTheYear];
 			
-			infectionRate[r][0] = (45d - odCurrentTemp[r]) / 1.4d; // 24.64 12.42
+			infectionRate[r][0] = ((variant[dayOfTheYear]*betaBase)*(((odCurrentTemp[r])/2)-22.36d))/(-17.11); // 24.64 12.42
 			infectionRate[r][1] = infectionRate[r][0] * DataSet.INFECTION_RATE_SEC11_MOD;
 			
 			ventilatedInfectionRate[r][0] = infectionRate[r][0] * DataSet.DROPLET_VENTILATED_MOD;
@@ -155,11 +160,56 @@ public class Temperature {
 		}
 	}
 	
+	/**
+	 * Lee el archivo de variantes (offset en porcentaje en base al beta ) y guarda los valores en array variant. 
+	 * @param file ruta de archivo csv
+	 * @param index posicion inicial del array variant
+	 * @param dayFrom desde que dia leer
+	 * @param dayTo hasta que dia leer
+	 */
+	private static void readCSVvariant(String file, int index, int dayFrom, int dayTo) {
+		boolean headerFound = false;
+		CSVReader reader = null;
+		String [] nextLine;
+		int i = 0;
+			try {
+			reader = new CSVReader(new FileReader(file), ';');
+			while ((nextLine = reader.readNext()) != null) {
+				if (i >= dayFrom) {
+					try {
+ 						variant[index] = Double.valueOf(nextLine[0]);
+						index++;
+					} catch (NumberFormatException e) {
+						if (headerFound) {
+							e.printStackTrace();
+							return;
+						}
+						else {
+							headerFound = true;
+						}
+					}
+				}
+				if (++i > dayTo)
+					break;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) { }
+		}
+	}
+
 	private static void loadWeatherData(int year) {
 		String weatherFile = String.format("./data/%d-temperature.csv", year);
+		String variantFile = String.format("./data/%d-variant.csv", year);
 		readCSV(weatherFile, 0, 0, 366);
+		readCSVvariant(variantFile, 0, 0, 366);
 	}
-	
+
 	/**
 	 * Chance de contagio segun region parametros.
 	 * @param region indice (0,1,2)
