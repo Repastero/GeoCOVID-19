@@ -7,6 +7,7 @@ import geocovid.agents.BuildingAgent;
 import geocovid.agents.HumanAgent;
 import geocovid.contexts.LaCapitalContext;
 import geocovid.contexts.RosarioContext;
+import geocovid.contexts.OtrosContext;
 import geocovid.contexts.SubContext;
 import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
@@ -41,9 +42,27 @@ public class ContextCreator implements ContextBuilder<Object> {
 	/** Suma inicial de agentes humanos */
 	private int humansCount;
 	
-	/** Lista de municipios a simular */
-	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
-		"lacapital", "rosario"
+	/** Lista de departamentos a simular */
+	static final String[] DEPARTMENTS_NAMES = { // se puede variar la cantidad, pero no repetir
+		"9dejulio",
+		"belgrano",
+		"caseros",
+		"castellanos",
+		"constitucion",
+		"garay",
+		"generallopez",
+		"generalobligado",
+		"iriondo",
+		"lacapital",
+		"lascolonias",
+		"rosario",
+		"sancristobal",
+		"sanjavier",
+		"sanjeronimo",
+		"sanjusto",
+		"sanlorenzo",
+		"sanmartin",
+		"vera"
 	};
 	
 	public ContextCreator() {
@@ -152,22 +171,31 @@ public class ContextCreator implements ContextBuilder<Object> {
 		Town tempTown;
 		SubContext subContext;
 		SubContext lastContexts[] = new SubContext[3];
-		for (int i = 0; i < TOWN_NAMES.length; i++) {
-			tempTown = new Town(TOWN_NAMES[i]);
-			humansCount += tempTown.localHumans;
-			// Segun el indice de la region, el tipo de sub contexto
-			if (tempTown.regionType == 0)
-				subContext = new LaCapitalContext(tempTown);
-			else if (tempTown.regionType == 1)
-				subContext = new RosarioContext(tempTown);
-			else
-				subContext = new LaCapitalContext(tempTown);
-			//
-			context.addSubContext(subContext);
-			// Programa movilidad en humanos del sub contexto
-			scheduleHumanInteractions(subContext);
-			// Guardar el ultimo de cada tipo de sub contexto
-			lastContexts[tempTown.regionType] = subContext;
+		
+		String[] towns;
+		for (String dept : DEPARTMENTS_NAMES) {
+			towns = Town.DEPARTMENTS_TOWNS.get(dept);
+			if (towns == null) {
+				System.out.println("Departamento desconocido: " + dept);
+				continue;
+			}
+			for (String town : towns) {
+				tempTown = new Town(town, dept);
+				humansCount += tempTown.localHumans;
+				// Segun el indice de la region, el tipo de sub contexto
+				if (tempTown.regionType == 0)
+					subContext = new LaCapitalContext(tempTown);
+				else if (tempTown.regionType == 1)
+					subContext = new RosarioContext(tempTown);
+				else
+					subContext = new OtrosContext(tempTown);
+				//
+				context.addSubContext(subContext);
+				// Programa movilidad en humanos del sub contexto
+				scheduleHumanInteractions(subContext);
+				// Guardar el ultimo de cada tipo de sub contexto
+				lastContexts[tempTown.regionType] = subContext;
+			}
 		}
 		
 		// Programar el cambio de markovs en fines de semana
