@@ -6,6 +6,8 @@ import java.security.InvalidParameterException;
  * Contiene las caracteristicas habitacionales de cada ciudad y los dias de cambio de fases.
  */
 public final class Town {
+	/** Ajuste de poblacion sin menores de 5 anos */
+	private static final double POPULATION_ADJUSTMENT = 0.9192553117; // Fuente: Proyeccion INTA 2021 - Toda Argentina
 	/** Dias de delay en la entrada de infectados */
 	public static int outbreakStartDelay = 0;
 	/** Cantidad de infectados iniciales en cada municipio */
@@ -23,7 +25,7 @@ public final class Town {
 		{1, .5, .8},// 50% desde Marzo 2020, 80% desde Octubre 2020 hasta ahora (Julio 2021)
 	};
 	
-	/** Nombre del municipio a simular */
+	/** Nombre del municipio o comuna a simular */
 	public String townName;
 	
 	/** Tipo de ciudad */ 
@@ -58,16 +60,30 @@ public final class Town {
 	/** Si la ciudad tiene una temporada turistica */
 	public boolean touristSeasonAllowed;
 	
-	public Town(String name) {
-		this.setTown(name);
+	public Town(String town) {
+		this.setTown(town);
 	}
 	
-	private void setTownData(int regionTyp, int regionIdx, int locals, int travelers, int foreign, int[] secTypes, double[] secPop, int[] phasesDays, int obStartDay, int pubTransUnit, boolean tourSeasonAllowed) {
-		regionType = regionTyp;
-		regionIndex = regionIdx;
+	/**
+	 * Asigna valores a atributos de ciudad
+	 * @param rgnType indice tipo de SubContext
+	 * @param rgnIndex indice de region (0 sur, 1 centro o 2 norte)
+	 * @param locals cantidad de humanos locales
+	 * @param travelersPerc porcentaje de humanos locales que trabajan/estudian fuera
+	 * @param foreign cantidad de humanos visitantes
+	 * @param secTypes lista de tipos de seccionales (0 media-alta, 1 media-baja)
+	 * @param secPop lista porcentaje de poblacion por seccional
+	 * @param phasesDays indices de dias de fases
+	 * @param obStartDay indice dia contagio comunitario
+	 * @param pubTransUnit cantidad de colectivos o 0 para deshabilitar
+	 * @param tourSeasonAllowed <b>true</b> para habilitar temporada turistica
+	 */
+	private void setTownData(int rgnType, int rgnIndex, int locals, double travelersPerc, int foreign, int[] secTypes, double[] secPop, int[] phasesDays, int obStartDay, int pubTransUnit, boolean tourSeasonAllowed) {
+		regionType = rgnType;
+		regionIndex = rgnIndex;
 		//
-		localHumans = locals;
-		localTravelerHumans = travelers;
+		localHumans = (int) (locals * POPULATION_ADJUSTMENT);
+		localTravelerHumans = (int) (locals * travelersPerc) / 100;
 		foreignTravelerHumans = foreign;
 		//
 		sectoralsTypes = secTypes;
@@ -79,10 +95,6 @@ public final class Town {
 		//
 		publicTransportUnits = pubTransUnit;
 		touristSeasonAllowed = tourSeasonAllowed;
-	}
-	
-	public int getLocalPopulation() {
-		return localHumans + localTravelerHumans;
 	}
 	
 	public String getPlacesPropertiesFilepath() {
@@ -111,14 +123,14 @@ public final class Town {
 	
 	/**
 	 * Si cambia la ciudad, carga sus atributos.
-	 * @param name nombre de ciudad
+	 * @param town nombre de ciudad
 	 * @return <b>true</b> si se cambio de ciudad
 	 */
-	public boolean setTown(String name) {
+	public boolean setTown(String town) {
 		// Chequeo si es la misma
-		if (name.equals(townName))
+		if (town.equals(townName))
 			return false;
-		townName = name;
+		townName = town;
 		//
 		switch (townName) {
 		// Tipos Santa Fe

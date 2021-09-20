@@ -595,7 +595,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 * @param porc porcentaje que se distancia
 	 */
 	protected void setSocialDistancing(int porc) {
-		int newAmount = (int) Math.ceil((localHumansCount + foreignHumansCount) * porc) / 100;
+		int newAmount = (int) Math.ceil(localHumansCount * porc) / 100;
 		int oldAmount = 0;
 		// El porcentaje era cero
 		if (getSDPercentage() == 0 && porc > 0) {
@@ -1094,7 +1094,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		// Calcula la cantidad de humanos en el contexto de acuerdo a la poblacion del municipio y la distribucion por seccional
 		for (i = 0; i < town.sectoralsCount; i++) {
 			sectoralType = town.sectoralsTypes[i];
-			localCount = (int) ((town.localHumans + town.localTravelerHumans) * town.sectoralsPopulation[i]) / 100;
+			localCount = (int) (town.localHumans * town.sectoralsPopulation[i]) / 100;
 			localTravelersCount = (int) (town.localTravelerHumans * town.sectoralsPopulation[i]) / 100;
 			// Si hay hogares extras, los elimina; Si no alcanzan, se crean 
 			int extraHomes = (int) (localCount / getHouseInhabitantsMean(sectoralType)) - homePlaces.get(i).size();
@@ -1158,7 +1158,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		for (i = 0; i < 2; i++) {
 			occupationPerAG = getOccupationPerAG(i);
 			for (j = 0; j < DataSet.AGE_GROUPS; j++) {
-				humansCount = (int) ((town.localHumans + town.localTravelerHumans) * percPP[i] * DataSet.HUMANS_PER_AGE_GROUP[j] / 10000);
+				humansCount = (int) (town.localHumans * percPP[i] * DataSet.HUMANS_PER_AGE_GROUP[j] / 10000);
 				switch (j) {
 				case 0: // todos primarios/secundarios
 					schooledCount[i][j] = (int) (humansCount * occupationPerAG[j][0]) / 100;
