@@ -200,7 +200,7 @@ public class RosarioContext extends SubContext {
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
 			buildingManager.limitEntertainmentActCap(3); // mas actividades afuera
 			// Festejos cada 7 dias entre jovenes - 1% de la poblacion a 1 cuadrados por persona, mitad afuera y mitad adentro
-			tmp = (int) Math.round(town.getLocalPopulation() * 0.01d);
+			tmp = (int) Math.round(town.localHumans * 0.01d);
 			startRepeatingYoungAdultsParty(7, tmp, 1d, true, true);
 			break;
 		case 345: // 11 diciembre - viernes
@@ -220,7 +220,7 @@ public class RosarioContext extends SubContext {
 			buildingManager.ventilateHomes(false);
 		case 365: // 31 diciembre - jueves
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
-			tmp = (int) Math.round(town.getLocalPopulation() / 15 * 0.8d);
+			tmp = (int) Math.round(town.localHumans / 15 * 0.8d);
 			scheduleForcedEvent(8, true, true, tmp, 15, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
 		case 362: // 28 diciembre - lunes
@@ -233,7 +233,7 @@ public class RosarioContext extends SubContext {
 			buildingManager.limitActivitiesCapacity(2, 3);
 		case 359: // 25 diciembre - viernes
 			// Festejos entre jovenes - 4% de la poblacion a 1 cuadrados por persona, al aire libre
-			tmp = (int) Math.round(town.getLocalPopulation() * 0.04d);
+			tmp = (int) Math.round(town.localHumans * 0.04d);
 			scheduleYoungAdultsParty(tmp, 1d, true, false);
 			break;
 		case 375: // 10 enero - domingo
@@ -275,7 +275,7 @@ public class RosarioContext extends SubContext {
 			// Suspension de actividades culturales
 			buildingManager.closePlaces("cultural_center", "art_gallery");
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
-			tmp = (int) Math.round(town.getLocalPopulation() / 10 * 0.5d);
+			tmp = (int) Math.round(town.localHumans / 10 * 0.5d);
 			scheduleForcedEvent(7, false, true, tmp, 10, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
 		case 478: // 23 abril - viernes, nuevas restricciones

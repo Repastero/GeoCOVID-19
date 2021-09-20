@@ -147,7 +147,7 @@ tool_store,hardware_store,,,,,,,,,,
 wood_supplier,hardware_store,,,,0,60,,,,,
 saw_mill,hardware_store,,,,0,60,,,,,
 home_goods_store,home_goods_store,3,120,100,0,40,2,4,6,8,4
-hospital,hospital,3,15000,70,0,50,0,0,1,2,4
+hospital,hospital,3,15000,70,0,75,0,0,1,2,4
 insurance_agency,insurance_agency,3,100,90,0,12,0,1,2,3,1
 insurance_company,insurance_agency,,120,100,0,12,,,,,
 internet_service_provider,internet_service_provider,3,160,100,0,20,1,2,2,2,1
@@ -244,7 +244,7 @@ state_police,police,,,,,,,,,,
 coast_guard_station,police,,,,,,,,,,
 post_office,post_office,3,500,80,0,20,4,8,10,12,8
 primary_school,primary_school,1,6000,80,0,8,0,0,0,0,0
-prison,prison,1,20000,50,0,20,0,0,0,0,0
+prison,prison,1,20000,50,0,80,0,0,0,0,0
 real_estate_agency,real_estate_agency,3,100,80,0,20,0,2,4,3,2
 architecture_firm,real_estate_agency,,,,0,25,,,,,
 real_estate_agents,real_estate_agency,,,,,,,,,,
@@ -304,7 +304,7 @@ distribution_service,service,,,,,,,,,,
 farm_equipment_supplier,service,,,,,,,,,,
 air_conditioning_contractor,service,,,,,,,,,,
 security_service,service,,,,,,,,,,
-gas_company,service,,,,,,,,,,
+gas_company,service,,200,80,,,,,,,
 bus_company,service,,,,,,,,,,
 event_planner,service,,,,,,,,,,
 photography_service,service,,,,,,,,,,
@@ -397,7 +397,7 @@ recycling_center,storage,,,,,,,,,,
 fruit_and_vegetable_wholesaler,storage,,75000,35,0,75,,,,,
 store,store,3,80,100,4,0,20,35,50,60,40
 general_store,store,,,,,,,,,,
-gift_shop,store,,60,100,0,40,,,,,
+gift_shop,store,,60,100,0,20,,,,,
 camping_store,store,,,,,,,,,,
 cell_phone_store,store,,,,0,20,,,,,
 cleaning_products_supplier,store,,50,100,3,0,,,,,

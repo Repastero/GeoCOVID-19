@@ -7,7 +7,7 @@ import java.security.InvalidParameterException;
  */
 public final class Town {
 	/** Ajuste de poblacion sin menores de 5 anos */
-	private static final double POPULATION_ADJUSTMENT = 0.9192553117; // Fuente: Proyeccion INTA 2021 - Toda Argentina
+	private static final double POPULATION_ADJUSTMENT = 0.9251081133; // Fuente: Proyeccion INTA 2021 - Santa Fe
 	/** Dias de delay en la entrada de infectados */
 	public static int outbreakStartDelay = 0;
 	/** Cantidad de infectados iniciales en cada municipio */
@@ -133,13 +133,9 @@ public final class Town {
 		townName = town;
 		//
 		switch (townName) {
-		// Tipos Santa Fe
-		case "lacapital": // 398610
+		case "lacapital": // 73% de La Capital
 			setTownData(
-				0,1,
-				366610,
-				32000,
-				0,
+				0, 1, 431857, 8, 0,
 				new int[] {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1},
 				new double[] {6.7, 6.05, 6.225, 5.625, 5.5, 7.3, 9.85, 9, 5.25, 8.3, 2.675, 2.6, 2.5, 8.15, 7.325, 3.45, 3.5},
 				DEFAULT_PHASES_DAYS[0],
@@ -147,12 +143,9 @@ public final class Town {
 				200, // 200-210 coches en total, en los horarios pico
 				false);
 			break;
-		case "rosario": // 948945
+		case "rosario": // 77% de Rosario
 			setTownData(
-				1,0,
-				872945,
-				76000,
-				0,
+				1, 0, 1004603, 5.75, 0,
 				new int[] {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1},
 				new double[] {8.14, 5.30, 3.80, 6.75, 8.73, 4.46, 4.22, 5.27, 6.76, 3.44, 3.77, 5.09, 5.94, 4.52, 1.84, 4.57, 3.10, 3.50, 7.06, 2.22, 0.82, 0.70},
 				DEFAULT_PHASES_DAYS[1],
