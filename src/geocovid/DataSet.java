@@ -103,7 +103,7 @@ public final class DataSet {
 	public static final int AGE_GROUPS = 5; // cantidad de franjas etarias
 	public static final String[] AGE_GROUP_LABELS			= {"Niños", "Jovenes", "Adultos", "Mayores", "Muy Mayores"};
 	/** Porcentaje poblacion de cada grupo etario */
-	public static final double[] HUMANS_PER_AGE_GROUP		= {14.40d, 17.92d, 22.88d, 31.10d, 13.70d}; // Abelardo Parana
+	public static final double[] HUMANS_PER_AGE_GROUP		= {17.523, 16.694, 24.013, 29.057, 12.713}; // Fuente: Proyeccion INTA 2021 - Toda Argentina
 	
 	/** Distancia para que se considere contacto personal */
 	public static final int	PERSONAL_DISTANCE				= 3; // Radio en metros = (PERSONAL_DISTANCE / (HUMANS_PER_SQUARE_METRE / 2)
