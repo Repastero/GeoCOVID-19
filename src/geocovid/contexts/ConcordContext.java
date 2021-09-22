@@ -146,7 +146,7 @@ public class ConcordContext extends SubContext {
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
 			buildingManager.openPlaces("bus_station", "lodging", "childrens_party_service", "night_club", "tourist_attraction", "campground", "spa");
 			// Festejos cada 7 dias entre jovenes - 1% de la poblacion a 1 cuadrados por persona, mitad afuera y mitad adentro
-			tmp = (int) Math.round(town.getLocalPopulation() * 0.01d);
+			tmp = (int) Math.round(town.localHumans * 0.01d);
 			startRepeatingYoungAdultsParty(7, tmp, 1d, true, true);
 			break;
 		case 348: // 14 diciembre
@@ -162,14 +162,14 @@ public class ConcordContext extends SubContext {
 			setMaskEffectivity(0.15);
 		case 365: // 31 diciembre
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
-			tmp = (int) Math.round(town.getLocalPopulation() / 15 * 0.8d);
+			tmp = (int) Math.round(town.localHumans / 15 * 0.8d);
 			scheduleForcedEvent(8, true, true, tmp, 15, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
 		case 366: // 1 enero
 			buildingManager.limitActivitiesCapacity(2d);
 		case 359: // 25 diciembre
 			// Festejos entre jovenes - 4% de la poblacion a 1 cuadrados por persona, al aire libre
-			tmp = (int) Math.round(town.getLocalPopulation() * 0.04d);
+			tmp = (int) Math.round(town.localHumans * 0.04d);
 			scheduleYoungAdultsParty(tmp, 1d, true, false);
 			break;
 		case 376: // 11 enero
@@ -210,7 +210,7 @@ public class ConcordContext extends SubContext {
 			buildingManager.limitEntertainmentActCap(1d);
 			setMaskEffectivity(0.25);
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
-			tmp = (int) Math.round(town.getLocalPopulation() / 10 * 0.5d);
+			tmp = (int) Math.round(town.localHumans / 10 * 0.5d);
 			scheduleForcedEvent(7, false, true, tmp, 10, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
 		case 471: // 16 abril

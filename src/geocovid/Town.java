@@ -7,7 +7,7 @@ import java.security.InvalidParameterException;
  */
 public final class Town {
 	/** Ajuste de poblacion sin menores de 5 anos */
-	private static final double POPULATION_ADJUSTMENT = 0.9192553117; // Fuente: Proyeccion INTA 2021 - Toda Argentina
+	private static final double POPULATION_ADJUSTMENT = 0.9206219476; // Fuente: Proyeccion INTA 2021 - Entre Rios
 	/** Dias de delay en la entrada de infectados */
 	public static int outbreakStartDelay = 0;
 	/** Cantidad de infectados iniciales en cada municipio */
@@ -132,12 +132,9 @@ public final class Town {
 		//
 		switch (townName) {
 		// Tipos Parana
-		case "parana": // 256800
+		case "parana": // 73% del depto.
 			setTownData(
-				0,1,
-				236000,
-				20800,
-				0,
+				0, 1, 276975, 5, 0,
 				new int[] {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
 				new double[] {6.6, 5.5, 3.8, 6.3, 5.1, 1.9, 1.0, 11.9, 2.2, 3.0, 6.1, 9.5, 10.5, 1.0, 8.3, 6.5, 8.6, 2.2},
 				new int[] {163,182,201,215,229,244,254,257,264,273,302,310,340,343,348,358,359,365,366,376,397,411,425,435,445,459,471,487,494,507,516},
@@ -145,12 +142,9 @@ public final class Town {
 				120,
 				false);
 			break;
-		case "gualeguay": // 45280
+		case "gualeguay": // 83% del depto.
 			setTownData(
-				0,0,
-				40780,
-				4500,
-				0,
+				0, 0, 49016, 8, 0,
 				new int[] {0, 0, 1, 1},
 				new double[] {26.12, 23.88, 26.08, 23.92},
 				DEFAULT_PHASES_DAYS[0],
@@ -158,12 +152,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "diamante": // 20640
+		case "diamante": // 43% del depto.
 			setTownData(
-				0,1,
-				18600,
-				2040,
-				0,
+				0, 1, 22260, 8, 0,
 				new int[] {0, 1, 1},
 				new double[] {50.00, 24.04, 25.96},
 				DEFAULT_PHASES_DAYS[0],
@@ -171,12 +162,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "nogoya": // 23554
+		case "nogoya": // 61% del depto.
 			setTownData(
-				0,1,
-				21200,
-				2354,
-				0,
+				0, 1, 25160, 8, 0,
 				new int[] {0, 1, 1},
 				new double[] {50.00, 25.00, 25.00},
 				DEFAULT_PHASES_DAYS[0],
@@ -184,12 +172,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "victoria": // 32995
+		case "victoria": // 89% del depto.
 			setTownData(
-				0,0,
-				29700,
-				3295,
-				0,
+				0, 0, 35587, 8, 0,
 				new int[] {0, 0, 1, 1},
 				new double[] {27.39, 22.61, 24.45, 25.55},
 				DEFAULT_PHASES_DAYS[0],
@@ -197,12 +182,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "sansalvador": // 14060
+		case "sansalvador": // 76% de depto.
 			setTownData(
-				0,1,
-				12660,
-				1400,
-				0,
+				0, 1, 15256, 8, 0,
 				new int[] {0, 1, 1},
 				new double[] {50.00, 24.025, 25.975},
 				DEFAULT_PHASES_DAYS[0],
@@ -211,12 +193,9 @@ public final class Town {
 				false);
 			break;
 		// Tipos Gualeguaychu
-		case "gualeguaychu": // 87930
+		case "gualeguaychu": // 76% del depto.
 			setTownData(
-				1,0,
-				79130,
-				8800,
-				0,
+				1, 0, 95296, 7.5, 0,
 				new int[] {0, 0, 0, 0, 0, 0, 0},
 				new double[] {14.056, 15.25, 20.261, 18.111, 12.241, 8.93, 11.151},
 				new int[] {163,201,215,229,244,254,257,264,273,302,310,343,348,358,359,365,366,376,397,411,425,435,445,459,471,487,494,507,516},
@@ -224,12 +203,9 @@ public final class Town {
 				0, // Carlos dijo que por el momento no se tenga en cuenta
 				true);
 			break;
-		case "uruguay": // 77290
+		case "uruguay": // 73% del depto.
 			setTownData(
-				1,0,
-				69590,
-				7700,
-				1,
+				1, 0, 83589, 9, 1,
 				new int[] {0, 0, 0, 0, 0},
 				new double[] {12.86, 14.20, 12.925, 19.665, 40.35},
 				DEFAULT_PHASES_DAYS[1],
@@ -237,12 +213,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "federacion": // 39120 - en realidad es Chajari
+		case "federacion": // 51% del depto. (Chajari)
 			setTownData(
-				1,2,
-				35220,
-				3900,
-				0,
+				1, 2, 42976, 9, 0,
 				new int[] {0, 0, 0, 0},
 				new double[] {30.65, 22.50, 22.70, 24.15},
 				DEFAULT_PHASES_DAYS[1],
@@ -250,12 +223,9 @@ public final class Town {
 				0,
 				true);
 			break;
-		case "colon": // 28432
+		case "colon": // 40% del depto.
 			setTownData(
-				1,1,
-				25600,
-				2832,
-				0,
+				1, 1, 31377, 9, 0,
 				new int[] {0, 0, 0, 0},
 				new double[] {20.00, 14.18, 38.785, 27.035},
 				DEFAULT_PHASES_DAYS[1],
@@ -263,12 +233,9 @@ public final class Town {
 				0,
 				true);
 			break;
-		case "islasdelibicuy": // 5086
+		case "islasdelibicuy": // 41% del depto.
 			setTownData(
-				1,0,
-				4580,
-				506,
-				0,
+				1, 0, 5488, 9, 0,
 				new int[] {0},
 				new double[] {100},
 				DEFAULT_PHASES_DAYS[1],
@@ -277,12 +244,9 @@ public final class Town {
 				true);
 			break;
 		// Tipos Concordia
-		case "concordia": // 159680
+		case "concordia": // 90% del depto.
 			setTownData(
-				2,2,
-				143700,
-				15980,
-				0,
+				2, 2, 172783, 9, 0,
 				new int[] {1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
 				new double[] { 3.39, 13.09, 16.71, 5.275, 5.6625, 19.26, 13.31, 6.8425, 13.17, 3.29},
 				DEFAULT_PHASES_DAYS[2],
@@ -290,12 +254,9 @@ public final class Town {
 				0, // Carlos dijo que por el momento no se tenga en cuenta
 				false);
 			break;
-		case "lapaz": // 26054
+		case "lapaz": // 39% del depto.
 			setTownData(
-				2,2,
-				23450,
-				2604,
-				0,
+				2, 2, 27920, 10, 0,
 				new int[] {0, 1, 1},
 				new double[] {23.18, 28.61, 48.21},
 				DEFAULT_PHASES_DAYS[2],
@@ -303,12 +264,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "villaguay": // 34922
+		case "villaguay": // 71% del depto.
 			setTownData(
-				2,1,
-				31400,
-				3522,
-				0,
+				2, 1, 37404, 10, 0,
 				new int[] {0, 1, 1, 1, 1},
 				new double[] {22.45, 22.02, 19.12, 15.38, 21.03},
 				DEFAULT_PHASES_DAYS[2],
@@ -316,12 +274,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "federal": // 18380
+		case "federal": // 70% del depto.
 			setTownData(
-				2,2,
-				16500,
-				1880,
-				0,
+				2, 2, 19753, 10, 0,
 				new int[] {0, 1, 1, 1, 1},
 				new double[] {22.45, 21.78, 16.94, 16.28, 22.55},
 				DEFAULT_PHASES_DAYS[2],
@@ -329,12 +284,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "tala": // 13410
+		case "tala": // 53% del depto.
 			setTownData(
-				2,1,
-				12050,
-				1360,
-				0,
+				2, 1, 14269, 10, 0,
 				new int[] {0, 1, 1},
 				new double[] {22.00, 40.65, 37.35},
 				DEFAULT_PHASES_DAYS[2],
@@ -342,12 +294,9 @@ public final class Town {
 				0,
 				false);
 			break;
-		case "feliciano": // 12350
+		case "feliciano": // 80% del depto.
 			setTownData(
-				2,2,
-				11100,
-				1250,
-				0,
+				2, 2, 13280, 10, 0,
 				new int[] {0, 1, 1},
 				new double[] {22.00, 43.25, 34.75},
 				DEFAULT_PHASES_DAYS[2],
