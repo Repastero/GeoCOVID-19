@@ -38,6 +38,8 @@ public class HumanAgent {
 	private int currentState = 0;
 	/** Indice de franja etaria */
 	private int ageGroup = 0;
+	/** Chance de padecer caso grave */
+	private double severeCaseChance = 0d;
 	/** Humano extranjero */
 	private boolean foreignTraveler = false;
 	/** Humano turista */
@@ -60,7 +62,7 @@ public class HumanAgent {
 	
 	/** Puntero a ISchedule para programar acciones */
 	protected static ISchedule schedule;
-	/** Cntador Id de agente */
+	/** Contador Id de agente */
 	private static int agentIDCounter = 0;
 	/** Id de agente */
 	private int agentID = ++agentIDCounter;
@@ -91,6 +93,7 @@ public class HumanAgent {
 		this.workPlace = work;
 		this.workplacePosition = workPos;
 		this.ageGroup = ageGroup;
+		setSCChance(ageGroup);
 	}
     
 	public HumanAgent(SubContext subContext, int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign, boolean tourist) {
@@ -179,9 +182,24 @@ public class HumanAgent {
 		return activityQueued;
 	}
 	
-	/** @return {@link HumanAgent#isInCloseContact} */
+	/** @return {@link HumanAgent#inCloseContact} */
 	public boolean isInCloseContact() {
 		return inCloseContact;
+	}
+	
+	/**
+	 * Setea la chance de padecer caso grave segun franja etaria y comorbilidades.
+	 * @param ag indice franja etaria
+	 */
+	private void setSCChance(int ag) {
+		double increasedRisk = 0d;
+		int r;
+		for (int i = 0; i < DataSet.DISEASE_SEVERE_CASE_CHANCE_MOD.length; i++) {
+			r = RandomHelper.nextIntFromTo(1, 1000);
+			if (r <= DataSet.DISEASE_CHANCE_PER_AGE_GROUP[i][ag])
+				increasedRisk += DataSet.DISEASE_SEVERE_CASE_CHANCE_MOD[i];
+		}
+		this.severeCaseChance = DataSet.SEVERE_CASE_CHANCE_PER_AG[ag] + increasedRisk;
 	}
 	
 	/**
@@ -319,9 +337,7 @@ public class HumanAgent {
 	
 	/**
 	 * Inicia el periodo infeccioso y define la duracion.<p>
-	 * Si es sintomatico tiene chances de ser internado en UTI<p>
 	 * Si es sintomatico y cuarentena preventiva esta habilitada, aisla integrantes del hogar.
-	 * @see DataSet#ICU_CHANCE_PER_AGE_GROUP
 	 * @param asymptomatic <b>true</b> si es asintomatico
 	 * @param initial <b>true</b> si es de los primeros infectados
 	 */
@@ -371,6 +387,7 @@ public class HumanAgent {
 	
 	/**
 	 * Recuperacion de infeccion.<p>
+	 * Si es sintomatico hay chances de que sea un caso grave y quedar internado en UTI<p>
 	 * En caso de estar internado en UTI demora un tiempo hasta que vuelve al contexto.
 	 * @see DataSet#EXTENDED_ICU_PERIOD
 	 */
@@ -386,7 +403,7 @@ public class HumanAgent {
 			return;
 		
 		// Si se complica el caso, se interna - si no continua vida normal
-		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup]) {
+		if (RandomHelper.nextDoubleFromTo(0, 100) <= severeCaseChance) {
 			// Mover a ICU hasta que se cure o muera
 			hospitalized = true;
 			InfectionReport.modifyHospitalizedCount(ageGroup, 1);
@@ -415,7 +432,7 @@ public class HumanAgent {
 	
 	/**
 	 * Da el alta de internacion en UTI o tiene un chance que fallezca. 
-	 * @see DataSet#ICU_DEATH_RATE
+	 * @see DataSet#DEFAULT_ICU_DEATH_RATE
 	 */
 	public void dischargeFromICU() {
 		hospitalized = false;
