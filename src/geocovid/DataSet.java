@@ -112,11 +112,23 @@ public final class DataSet {
 	/** Para que el reporte de "Contactos diarios" no tenga en cuenta los repetidos en el dia */
 	public static final boolean COUNT_UNIQUE_INTERACTIONS	= false;
 	
-	/** % de casos graves que entra en UTI - de cada grupo etario */
-	public static final double[] ICU_CHANCE_PER_AGE_GROUP	= {0.011d,  0.031d,  0.081d,  4.644d, 30.518d};	// sobre 100 - valores nuevos calculados por varias estadisticas
+	/** % de casos graves que pueden derivar a UTI - de cada grupo etario */
+	public static final double[] SEVERE_CASE_CHANCE_PER_AG	= {0.008, 0.024, 0.074, 4.402, 28.612}; // sobre 100 - valores calculados por Pierino
+	
 	/** % de casos en UTI que mueren al terminar periodo de internacion */
 	public static final double	DEFAULT_ICU_DEATH_RATE		= 65d;	// sobre 100
-
+	
+	/** Probabilidad de poseer una comorbilidad segun rango etario - sobre 1000 */
+	public static final int[][] DISEASE_CHANCE_PER_AGE_GROUP	= {
+		{ 93, 93, 93, 93, 93}, // Asma
+		{  1, 29, 49,115,203}, // Diabetes
+		{  1, 23, 26, 50, 78}, // EPOC
+		{  1,126,197,379,620}, // Hipertension
+		{173, 78,247,418,350}  // Obesidad
+	};
+	/** Modificador de casos graves por comorbilidad - Asma, Diabetes, EPOC, Hipertension, Obesidad */
+	public static final double[] DISEASE_SEVERE_CASE_CHANCE_MOD	= {0.123, 0.310, 0.125, 0.268, 0.586};
+		
 	/** Ancho en metros de colectivo */
 	public static final int	PUBLIC_TRANSPORT_UNIT_WIDTH		= 3;	// 2.6m carrozado, 3m para redondear
 	/** Cantidad maxima de asientos<p>
