@@ -279,8 +279,8 @@ public class BuildingAgent {
 			if (!human.wasExposed() && !surfacesMap.isEmpty())
 				checkIfSurfaceContaminated(human, posId);
 		}
-		// Puede existir contacto estrecho entre trabajadores
-		if (workingPlace) {
+		// Puede existir contacto estrecho entre trabajadores / estudiantes
+		if (workingPlace && context.closeContactsEnabled()) {
 			lookForCloseContacts(human, pos);
 		}
 		// Si es contagioso se buscan contactos cercanos susceptibles

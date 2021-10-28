@@ -95,20 +95,18 @@ public class ClassroomAgent extends WorkplaceAgent {
 	
 	@Override
 	protected void lookForCloseContacts(HumanAgent human, int[] pos) {
-		if (context.closeContactsEnabled()) {
-			// Si hay pre-sintomaticos, se aislan los alumnos presentes
-			if (!preSpreadersList.isEmpty()) {
-				// El pre-sintomaticos setea contacto estrecho en el resto 
-				if (human.isPreInfectious()) {
-					students.forEach(student -> {
-						if (student != human)
-							student.setCloseContact(human.getInfectiousStartTime());
-					});
-				}
-				// Se setea contacto estrecho con el primero de la lista
-				else if (!human.isInCloseContact()) {
-					human.setCloseContact(preSpreadersList.get(0).getInfectiousStartTime());
-				}
+		// Si hay pre-sintomaticos, se aislan los alumnos presentes
+		if (!preSpreadersList.isEmpty()) {
+			// El pre-sintomaticos setea contacto estrecho en el resto 
+			if (human.isPreInfectious()) {
+				students.forEach(student -> {
+					if (student != human)
+						student.setCloseContact(human.getInfectiousStartTime());
+				});
+			}
+			// Se setea contacto estrecho con el primero de la lista
+			else if (!human.isInCloseContact()) {
+				human.setCloseContact(preSpreadersList.get(0).getInfectiousStartTime());
 			}
 		}
 	}
