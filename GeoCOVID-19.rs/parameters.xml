@@ -1,39 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <parameters>
-				<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
+					<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
 						defaultValue="__NULL__"
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
+											/>
 				<parameter name="cantidadMuertosLimite" displayName="Numero maximo de muertes aceptables (0 = ∞)" type="int" 
-						defaultValue="1500" 
+						defaultValue="2500" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
+											/>
 				<parameter name="corridas" displayName="Cantidad de simulaciones que se quieren realizar" type="int" 
 						defaultValue="20" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="diasRetrasoEntradaCaso" displayName="Dias de retraso en entrada de infectados" type="int" 
-						defaultValue="0" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
+											/>
 				<parameter name="diasSimulacion" displayName="Dias maximo de simulacion (0 = ∞)" type="int" 
-						defaultValue="318" 
+						defaultValue="464" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
+											/>
 				<parameter name="diaInicioSimulacion" displayName="Dia inicio simulacion (desde 1/1/20)" type="int" 
 						defaultValue="182" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-</parameters>
+											/>
+				<parameter name="diasRetrasoEntradaCaso" displayName="Dias de retraso en entrada de infectados" type="int" 
+						defaultValue="0" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+											/>
+		</parameters>
+
+

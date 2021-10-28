@@ -104,23 +104,23 @@ public class GchuContext extends SubContext {
 			break;
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
-			buildingManager.limitActivitiesCapacity(1.5d);
+			buildingManager.limitActivitiesCapacity(1.7);
 			buildingManager.openPlaces("bar", "restaurant", "sports_school", "gym", "sports_club");
 			break;
 		case 215: // 3 agosto
 			// Mini veranito
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
 			setSocialDistancing(60);
-			buildingManager.limitActivitiesCapacity(2.7d);
+			buildingManager.limitActivitiesCapacity(2.9);
 			break;
 		case 229: // 17 agosto
 			// Nueva normalidad (Fase 5)
-			buildingManager.limitActivitiesCapacity(3.2d);
+			buildingManager.limitActivitiesCapacity(3.4);
 			break;
 		case 244: // 31 agosto - solo Gchu
 			// Vuelta a atras por saturacion de sistema sanitario (Fase 4)
 			buildingManager.closePlaces("bar", "restaurant", "sports_school", "gym", "sports_club", "park");
-			buildingManager.limitActivitiesCapacity(2.7d);
+			buildingManager.limitActivitiesCapacity(2.8);
 			break;
 		case 254: // 11 septiembre
 			// Desde Septiembre que termina la fresca vuelven a ventilar hogares
@@ -133,6 +133,7 @@ public class GchuContext extends SubContext {
 			buildingManager.limitActivitiesCapacity(3d);
 			break;
 		case 257: // 14 septiembre
+			// A partir de ahora si ventilan en ocio
 			buildingManager.ventilateEntertainmentPlaces(true);
 			buildingManager.openPlaces("bar", "restaurant", "sports_school", "gym", "sports_club");
 			break;
@@ -142,33 +143,35 @@ public class GchuContext extends SubContext {
 		case 273: // 1 octubre
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
 			setSocialDistancing(30);
-			buildingManager.limitActivitiesCapacity(1.3d);
+			buildingManager.limitActivitiesCapacity(1.5);
 			break;
 		case 302: // 29 octubre
 			buildingManager.openPlaces("casino", "nursery_school", "association_or_organization");
-			buildingManager.limitActivitiesCapacity(1.1d);
+			buildingManager.limitActivitiesCapacity(1.4);
 			setSocialDistancing(25);
 			break;
 		case 310: // 6 noviembre
 			setMaskEffectivity(0.25);
-			buildingManager.limitActivitiesCapacity(1.7d);
+			buildingManager.limitActivitiesCapacity(2d);
 			break;
 		case 343: // 9 diciembre
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
-			buildingManager.limitActivitiesCapacity(1.6d);
+			buildingManager.limitActivitiesCapacity(1.9);
 			buildingManager.openPlaces("bus_station", "lodging", "childrens_party_service", "night_club", "tourist_attraction", "campground", "spa");
 			// Festejos entre jovenes - 1% de la poblacion a 1 cuadrados por persona, mitad afuera y mitad adentro
 			tmp = (int) Math.round(town.localHumans * 0.01d);
 			startRepeatingYoungAdultsParty(7, tmp, 1d, true, true);
 			break;
 		case 348: // 14 diciembre
+			// Verano sin ventilacion en hogares 
 			buildingManager.ventilateHomes(false);
 			setSocialDistancing(20);
-			buildingManager.limitActivitiesCapacity(1.5d);
+			buildingManager.limitActivitiesCapacity(1.8);
 			break;
 		case 358: // 24 diciembre
+			// Aumentan mas las compras y las juntadas por las fiestas
+			buildingManager.limitActivitiesCapacity(1.2, 1.8);
 			setSocialDistancing(10);
-			buildingManager.limitActivitiesCapacity(1d);
 			setMaskEffectivity(0.15);
 		case 365: // 31 diciembre
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
@@ -176,7 +179,7 @@ public class GchuContext extends SubContext {
 			scheduleForcedEvent(8, true, true, tmp, 15, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
 		case 366: // 1 enero
-			buildingManager.limitActivitiesCapacity(1.5d);
+			buildingManager.limitActivitiesCapacity(1.8);
 			// Periodo turistico todo el mes de Enero - 2.5% de la poblacion, 1% infectados
 			tmp = (int) Math.round(town.localHumans * 0.025d);
 			setTouristSeason(30, 3, tmp, 0.01d); // 30 dias, 3 dias recambio
@@ -188,15 +191,15 @@ public class GchuContext extends SubContext {
 		case 376: // 11 enero
 			// Merma el movimiento en Enero
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
-			buildingManager.limitActivitiesCapacity(2d, 1.8d);
+			buildingManager.limitActivitiesCapacity(1.75, 2d);
 			break;
 		case 397: // 1 febrero
 			// Aumenta un poco el movimiento en Febrero
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
-			buildingManager.limitEntertainmentActCap(2.5d); // mas actividades afuera
+			buildingManager.limitEntertainmentActCap(2.7); // mas actividades afuera
 			break;
 		case 411: // 15 febrero
-			buildingManager.limitActivitiesCapacity(3.5d); // para que bajen los casos
+			buildingManager.limitActivitiesCapacity(3.5); // para que bajen los casos
 			buildingManager.openPlaces("movie_theater", "cultural_center", "art_gallery", "club");
 			break;
 		case 425: // 1 marzo
@@ -205,61 +208,110 @@ public class GchuContext extends SubContext {
 			buildingManager.ventilateWorkplaces(true);
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
-			buildingManager.limitOtherActCap(1.5d);
+			buildingManager.limitActivitiesCapacity(1.7, 2.2);
 			buildingManager.openPlaces("library", "school","primary_school", "secondary_school");
-			setSchoolProtocol(true);//habilita protocolo burbuja 50% 
+			setSchoolProtocol(true); // habilita protocolo burbuja 50%
 			break;
 		case 435: // 11 marzo
 			// Aumenta el ocio 
-			buildingManager.limitEntertainmentActCap(1.2d);
+			buildingManager.limitActivitiesCapacity(1.5, 1.75);
 			buildingManager.openPlaces("movie_theater");
 			break;
 		case 445: // 21 marzo
-			buildingManager.limitEntertainmentActCap(1.5d);
+			// Aumenta un poco mas el ocio 
+			buildingManager.limitActivitiesCapacity(1.25, 1.5);
+			break;
+		case 456: // 1 abril - jueves
+			// Inicio Semana Santa
+			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
+			buildingManager.limitActivitiesCapacity(1d, 1.25);
 			break;
 		case 459: // 4 abril - domingo
-			// Vuelven a controlar aforo
-			buildingManager.limitEntertainmentActCap(1.5d);
-			setMaskEffectivity(0.25);
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
 			tmp = (int) Math.round(town.localHumans / 10 * 0.5d);
 			scheduleForcedEvent(7, false, true, tmp, 10, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
+		case 460: // 1 abril - jueves
+			// Fin Semana Santa
+			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
+			break;
 		case 471: // 16 abril
 			// Nuevas medidas
+			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.ventilateHomes(false);
-			setSocialDistancing(40);
-			buildingManager.limitActivitiesCapacity(2.3d, 2.3d);
+			buildingManager.limitActivitiesCapacity(1.75, 2.25);
 			// Merman las jodas, por que vuelven a controlar
 			stopRepeatingYoungAdultsParty();
 			break;
-		case 487: // 2 mayo , nuevas restricciones
+		case 487: // 2 mayo - nuevas restricciones
+			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
+			buildingManager.limitActivitiesCapacity(2.25, 2.75);
 			buildingManager.closePlaces("library", "school","primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club");
-			buildingManager.limitActivitiesCapacity(2.9d, 2.9d);
 			break;
-		case 494: // 9 mayo , fin de nuevas restricciones
-			buildingManager.openPlaces("library", "school","primary_school", "secondary_school",
+		case 494: // 9 mayo - fin de nuevas restricciones
+			buildingManager.limitActivitiesCapacity(1.75, 2.25);
+			buildingManager.openPlaces("library", "school", "primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club");
 			break;
-		case 507: // 22 mayo , nuevas restricciones fase1
-			setSocialDistancing(50);
-			setTMMCs("june", MarkovChains.JUNE_TMMC);
-			buildingManager.limitActivitiesCapacity(3d, 3d);
+		case 507: // 22 mayo - nuevas restricciones fase 1
+			setTMMCs("august", MarkovChains.AUGUST_TMMC);
+			buildingManager.limitActivitiesCapacity(2.25, 2.75);
 			buildingManager.closePlaces(
 			// Trabajo/estudio
-			"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school", "university",
+			 "primary_school", "secondary_school", "university",
 			// Ocio
-			"movie_theater", "bar", "sports_complex", "school", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym", "tourist_attraction",
-			 "stadium", "sports_club", "park", "library", "cultural_center", "club", "casino", "campground", "art_gallery");
+			"movie_theater", "school",  "childrens_party_service", "church", "spa", "night_club", "gym", 
+			"cultural_center", "club", "casino", "campground", "art_gallery");
 			break;
-		case 516: // 31 mayo , fin de nuevas restricciones fase 1
-			setTMMCs("march", MarkovChains.OCTOBER_TMMC);
-			buildingManager.limitActivitiesCapacity(2.9d, 2.9d);
+		case 516: // 31 mayo - fin de nuevas restricciones fase 1
+			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
+			buildingManager.limitActivitiesCapacity(1.75, 2.25);
 			buildingManager.openPlaces(
 			// Ocio
-			"bar", "sports_complex", "bus_station", "childrens_party_service", "church", "sports_school", "spa", "night_club", "gym",
-			"stadium", "sports_club", "park", "library", "cultural_center", "club");
+			"church", "spa", "park", "cultural_center"); // "childrens_party_service" no?
+			break;
+		case 523: // 7 junio  
+			buildingManager.openPlaces("movie_theater", "gym");
+			break;
+		case 527: // 11 junio
+			buildingManager.limitActivitiesCapacity(1.25, 2d);
+			buildingManager.openPlaces("primary_school");
+			break;
+		case 538: // 22 junio
+			buildingManager.openPlaces("secondary_school");
+			buildingManager.limitEntertainmentActCap(1.8);
+			break;
+		case 556: // 10 julio sabado
+			// Inicio receso escolar de invierno, 2 semanas
+			buildingManager.closePlaces("school", "primary_school", "secondary_school");
+			buildingManager.limitEntertainmentActCap(1.6);
+			break;
+		case 572: // 26 julio lunes
+			// Fin receso escolar de invierno
+			buildingManager.openPlaces("school", "primary_school", "secondary_school");
+			buildingManager.limitEntertainmentActCap(1.4);
+			setMaskEffectivity(0.20);
+			setSocialDistancing(10);
+			setTMMCs("march", MarkovChains.MARCH_TMMC);
+			break;
+		case 583: // 6 agosto viernes
+			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
+			buildingManager.limitEntertainmentActCap(1.25);
+			//se mantiene las mismas restriccones , se aumenta el aforo en algunas actividades, 
+			//falta habilitra "night_club", "stadium","childrens_party_service,"club""
+			//https://www.argentina.gob.ar/noticias/nuevas-disposiciones-sanitarias-ante-pandemia-de-covid-19
+			break;
+		case 607: // 30 agosto lunes
+			// Presencialidad plena en escuelas
+			setSchoolProtocol(false);
+			// Ventila hogares desde Septiembre
+			buildingManager.ventilateHomes(true);
+			break;
+		case 640: // 2 octubre sabado
+			// Distancia-que???
+			setSocialDistancing(0);
+			buildingManager.openPlaces("night_club", "stadium","childrens_party_service","club");
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
