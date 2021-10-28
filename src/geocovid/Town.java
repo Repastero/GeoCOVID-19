@@ -47,7 +47,7 @@ public final class Town {
 		{158,159,170,181,            214,226,231,    255,269,281,292,313,317,331,335,340,345,348,358,359,362,365,366,369,375,397,413,425,434,439,463,478,488,505,516,528,538},	// otros
 	};
 	
-	/** Dias por defecto de los cambios de unidades de transporte publico */
+	/** Cambios en % de unidades de transporte publico */
 	private final double[][] PUBLIC_TRANSPORT_QUANTIFICATION	= {
 		{1, .6},	// 60% desde Abril 2020 hasta ahora (Junio 2021)
 		{1, .5, .8},// 50% desde Marzo 2020, 80% desde Octubre 2020 hasta ahora (Julio 2021)
@@ -149,6 +149,14 @@ public final class Town {
 	
 	public String getPlacesFilepath() {
 		return String.format("./data/%s/%s/places.shp", departmentName, townName);
+	}
+	
+	public String getVacScheduleFilepath() {
+		return String.format("./data/%s/%s/vac-schedule.csv", departmentName, townName);
+	}
+	
+	public String getVacTypesFilepath() {
+		return String.format("./data/%s/vac-types.csv", departmentName);
 	}
 	
 	/**

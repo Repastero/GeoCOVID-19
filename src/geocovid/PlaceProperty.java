@@ -1,14 +1,11 @@
 package geocovid;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-
-import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * Propiedades de places y metodos para leer archivo de salida de markov.
@@ -52,50 +49,32 @@ public final class PlaceProperty {
 	}
 	
 	/**
-	 * Busca el indice de columna de cada header. 
-	 * @param rows array de Strings
-	 * @return <b>int[]</b> indice de headers
-	 * @throws Exception si faltan headers
-	 */
-	private static int[] readHeader(String[] rows) throws Exception {
-		String[] headers = {"Google_Maps_type","Google_Place_type","Activity_type","Area","Covered_area","Workers_place","Workers_area","Chance_1","Chance_2","Chance_3","Chance_4","Chance_5"};
-		int[] indexes = new int[headers.length];
-		
-		int i,j;
-		for (i = 0; i < headers.length; i++) {
-			for (j = 0; j < rows.length; j++) {
-				if (rows[j].equals(headers[i])) {
-					indexes[i] = j;
-					break;
-				}
-			}
-			if (j == rows.length) {
-				throw new Exception("Falta Header: " + headers[i]);
-			}
-		}
-		return indexes;
-	}
-	
-	/**
 	 * Lee el archivo de salida de markov y carga las propiedades de cada tipo de places.
 	 * @param filePath ruta archivo
 	 * @return mapa con propiedades por cada tipo de place
 	 */
 	public static Map<String, PlaceProperty> loadPlacesProperties(String filePath) {
+		final String[] headers = {"Google_Maps_type","Google_Place_type","Activity_type","Area","Covered_area","Workers_place","Workers_area","Chance_1","Chance_2","Chance_3","Chance_4","Chance_5"};
 		PlaceProperty placeProperty;
 		String gMapsType;
 		String gPlaceType;
 		String chance;
 		Map<String, PlaceProperty> placesProperty = new HashMap<>();
 		boolean headerFound = false;
-		CSVReader reader = null;
 		String[] nextLine;
 		int[] dataIndexes = {};
-		try {
-			reader = new CSVReader(new FileReader(filePath), ',');
-			while ((nextLine = reader.readNext()) != null) {
+		// Leo todas las lineas 
+		List<String[]> fileLines = Utils.readCSVFile(filePath, ',', 0);
+		if (fileLines == null) {
+			System.err.println("Error al leer archivo de Places: " + filePath);
+			return placesProperty;
+		}
+		for (Iterator<String[]> it = fileLines.iterator(); it.hasNext();) {
+			nextLine = it.next();
+			try {
+				// Como tiene varias columnas es preferible leer el header
 				if (!headerFound) {
-					dataIndexes = readHeader(nextLine);
+					dataIndexes = Utils.readHeader(headers, nextLine);
 					headerFound = true;
 					continue;
 				}
@@ -140,17 +119,9 @@ public final class PlaceProperty {
 					}
 				}
 				placesProperty.put(gMapsType, placeProperty);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) { }
 		}
 		return placesProperty;
 	}

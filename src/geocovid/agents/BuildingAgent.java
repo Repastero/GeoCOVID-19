@@ -12,6 +12,7 @@ import geocovid.InfectionReport;
 import geocovid.Temperature;
 import geocovid.contexts.SubContext;
 import repast.simphony.engine.environment.RunEnvironment;
+import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.random.RandomHelper;
 
 /**
@@ -19,11 +20,12 @@ import repast.simphony.random.RandomHelper;
  */
 public class BuildingAgent {
 	protected SubContext context;	// Puntero
+	private static ISchedule schedule; // Puntero 
 	private int sectoralType;	// Indice de tipo de seccional
 	private int sectoralIndex;	// Indice de seccional
 	// Atributos del GIS
 	private Coordinate coordinate;
-	private long id;
+	private int id;
 	private String type;
 	private int area;
 	private int coveredArea;
@@ -49,7 +51,7 @@ public class BuildingAgent {
 	/** Mapa de SurfaceAgent dentro de parcela <Id Superficie, SurfaceAgent> */
 	protected Map<Integer, SurfaceAgent> surfacesMap = new HashMap<>();
 	
-	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea) {
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, int id, String type, int area, int coveredArea) {
 		this.context = subContext;
 		this.sectoralType = secType;
 		this.sectoralIndex = secIndex;
@@ -60,7 +62,7 @@ public class BuildingAgent {
 		this.coveredArea = coveredArea;
 	}
 	
-	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int area, int coveredArea, double areaModifier, boolean workplace) {
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, int id, String type, int area, int coveredArea, double areaModifier, boolean workplace) {
 		// Constructor Home/Workplace
 		this(subContext, secType, secIndex, coord, id, type, area, coveredArea);
 		//
@@ -69,7 +71,7 @@ public class BuildingAgent {
 		setBuildingShape();
 	}
 	
-	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, long id, String type, int width, int lenght, boolean workplace) {
+	public BuildingAgent(SubContext subContext, int secType, int secIndex, Coordinate coord, int id, String type, int width, int lenght, boolean workplace) {
 		// Constructor Home/Workplace de dimensiones especificas
 		this(subContext, secType, secIndex, coord, id, type, width * lenght * DataSet.HUMANS_PER_SQUARE_METER, width * lenght * DataSet.HUMANS_PER_SQUARE_METER);
 		//
@@ -111,6 +113,10 @@ public class BuildingAgent {
 	 * @see DataSet#PERSONAL_DISTANCE
 	 */
 	public static void initInfAndPDRadius() {
+		// Asigno ISchedule de la nueva instancia
+		schedule = RunEnvironment.getInstance().getCurrentSchedule();
+		SurfaceAgent.init(schedule);
+		//
 		final int[] shiftsCount = {8,20,36,56,80,128,164,204,248,296,348,444,508,576,648};
 		// Setear radio de contagio por droplet y aerosol
 		dropletCircleRadius	= getCircleRadius(DataSet.DROPLET_INFECTION_RADIUS);
@@ -273,8 +279,8 @@ public class BuildingAgent {
 			if (!human.wasExposed() && !surfacesMap.isEmpty())
 				checkIfSurfaceContaminated(human, posId);
 		}
-		// Puede existir contacto estrecho entre trabajadores
-		if (workingPlace) {
+		// Puede existir contacto estrecho entre trabajadores / estudiantes
+		if (workingPlace && context.closeContactsEnabled()) {
 			lookForCloseContacts(human, pos);
 		}
 		// Si es contagioso se buscan contactos cercanos susceptibles
@@ -295,7 +301,7 @@ public class BuildingAgent {
 	 * @param agentPos posicion
 	 */
 	public void sociallyInteract(HumanAgent agent, int[] agentPos) {
-		double lastTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		double lastTick = schedule.getTickCount();
 		// Primero revisa si el tiempo de contacto minimo
 		if ((lastTick - agent.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
 			return;
@@ -380,9 +386,10 @@ public class BuildingAgent {
 	/**
 	 * Setea inicio de contagio en humano.
 	 * @param prey HumanAgent susceptible
+	 * @param infRate beta contagio
 	 */
-	protected void infectHuman(HumanAgent prey) {
-		prey.setExposed();
+	protected boolean infectHuman(HumanAgent prey, double infRate) {
+		return prey.checkContagion(infRate);
 	}
 	
 	/**
@@ -423,12 +430,7 @@ public class BuildingAgent {
 		
 		// Se modifica la cantidad de droplets segun estado
 		infectionRate *= DataSet.STATE_DROPLET_VOLUME[spreader.getCurrentState()];
-		
-		if (RandomHelper.nextDoubleFromTo(0d, 100d) <= infectionRate) {
-			infectHuman(prey);
-			return true;
-		}
-		return false;
+		return infectHuman(prey, infectionRate);
 	}
 	
 	/**
@@ -455,7 +457,7 @@ public class BuildingAgent {
 		int[] pos = new int[2];
 		int xShift, yShift;
 		HumanAgent prey;
-		double lastTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		double lastTick = schedule.getTickCount();
 		
 		// Primero revisa si el tiempo que estuvo alcanza para contagiar
 		if ((lastTick - spreader.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
@@ -485,7 +487,7 @@ public class BuildingAgent {
 	protected void findNearbySpreaders(HumanAgent prey, int[] pos, List<HumanAgent> spreaders) {
 		int[] spPos = new int[2];
 		int xShift, yShift;
-		double lastTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		double lastTick = schedule.getTickCount();
 		
 		// Primero revisa si el tiempo que estuvo alcanza para contagiarse
 		if ((lastTick - prey.getRelocationTime()) < DataSet.INFECTION_EXPOSURE_TIME)
@@ -562,14 +564,15 @@ public class BuildingAgent {
 	protected void checkIfSurfaceContaminated(HumanAgent human, int csId) {
 		SurfaceAgent surface = surfacesMap.get(csId);
 		if (surface != null) {
-			// Si en el ultimo checkeo la superficie seguia contaminada
-			if (surface.isContaminated()) {
-				if (RandomHelper.nextIntFromTo(1, 100) <= surface.getInfectionRate()) {
-					infectHuman(human);
+			int csBeta = surface.getInfectionRate();
+			if (csBeta != 0) {
+				if (human.checkContagion(csBeta)) {
 					InfectionReport.addExposedToCS();
 				}
 			}
-		// Es preferible no eliminar la superficie contaminada, para utilizar el objeto posteriormente
+			else {
+				surfacesMap.remove(csId);
+			}
 		}
 	}
     
@@ -624,11 +627,11 @@ public class BuildingAgent {
 		return coordinate;
 	}
 	
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 	
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 	

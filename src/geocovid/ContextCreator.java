@@ -171,7 +171,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 		Town tempTown;
 		SubContext subContext;
 		SubContext lastContexts[] = new SubContext[3];
-		
 		String[] towns;
 		for (String dept : DEPARTMENTS_NAMES) {
 			towns = Town.DEPARTMENTS_TOWNS.get(dept);

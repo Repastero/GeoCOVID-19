@@ -10,12 +10,11 @@ import geocovid.InfectionReport;
 import geocovid.contexts.SubContext;
 
 public class ClassroomAgent extends WorkplaceAgent {
-
 	private List<HumanAgent> students = new ArrayList<HumanAgent>();
 	private static boolean schoolProtocol; // Habilita protoloco de asistencia 50% semanal
 	private static boolean firstGroup = false; // flag para cambio de grupo de estudio
 	
-	public ClassroomAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType) {
+	public ClassroomAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, int id, String workType) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, 1, DataSet.CLASSROOM_SIZE, DataSet.CLASSROOM_SIZE, DataSet.CLASS_SIZE);
 	}
 	
@@ -36,7 +35,7 @@ public class ClassroomAgent extends WorkplaceAgent {
 		if (closed)
 			return null;
 		if (schoolProtocol) {
-			boolean firstGroupStudent = (pos[0] % DataSet.SPACE_BETWEEN_STUDENTS == 0 ? true : false);
+			boolean firstGroupStudent = (pos[0] % DataSet.SPACE_BETWEEN_STUDENTS == 0);
 			if ((firstGroup && !firstGroupStudent) || (!firstGroup && firstGroupStudent))
 				return null;
 		}
@@ -65,7 +64,7 @@ public class ClassroomAgent extends WorkplaceAgent {
 			col += distance;
 			if (col >= x) {
 				col = 1;
-				row += distance;
+				row += distance - 1;
 				if (row >= y) {
 					if (i + 1 < workPositionsCount) { // TODO esto lo deje como info por las dudas
 						// Si faltan crear puestos
@@ -96,24 +95,19 @@ public class ClassroomAgent extends WorkplaceAgent {
 	
 	@Override
 	protected void lookForCloseContacts(HumanAgent human, int[] pos) {
-		if (schoolProtocol) {
-			// Si hay pre-sintomaticos, se aislan los alumnos presentes
-			if (!preSpreadersList.isEmpty()) {
-				// El pre-sintomaticos setea contacto estrecho en el resto 
-				if (human.isPreInfectious()) {
-					students.forEach(student -> {
-						if (student != human)
-							student.setCloseContact(human.getInfectiousStartTime());
-					});
-				}
-				// Se setea contacto estrecho con el primero de la lista
-				else if (!human.isInCloseContact()) {
-					human.setCloseContact(preSpreadersList.get(0).getInfectiousStartTime());
-				}
+		// Si hay pre-sintomaticos, se aislan los alumnos presentes
+		if (!preSpreadersList.isEmpty()) {
+			// El pre-sintomaticos setea contacto estrecho en el resto 
+			if (human.isPreInfectious()) {
+				students.forEach(student -> {
+					if (student != human)
+						student.setCloseContact(human.getInfectiousStartTime());
+				});
 			}
-		}
-		else {
-			super.lookForCloseContacts(human, pos);
+			// Se setea contacto estrecho con el primero de la lista
+			else if (!human.isInCloseContact()) {
+				human.setCloseContact(preSpreadersList.get(0).getInfectiousStartTime());
+			}
 		}
 	}
 	
@@ -123,9 +117,12 @@ public class ClassroomAgent extends WorkplaceAgent {
 	}
 	
 	@Override
-	protected void infectHuman(HumanAgent prey) {
-		InfectionReport.addCumExposedSchool();
-		super.infectHuman(prey);
+	protected boolean infectHuman(HumanAgent prey, double infRate) {
+		if (super.infectHuman(prey, infRate)) {
+			InfectionReport.addCumExposedSchool();
+			return true;
+		}
+		return false;
 	}
 	
 	public static void setSchoolProtocol(boolean schoolProtocol) {

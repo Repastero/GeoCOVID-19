@@ -12,7 +12,7 @@ import geocovid.contexts.SubContext;
  */
 public class PublicTransportAgent extends WorkplaceAgent {
 	
-	public PublicTransportAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, PlaceProperty pp) {
+	public PublicTransportAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, int id, String workType, PlaceProperty pp) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, pp.getActivityState(), DataSet.PUBLIC_TRANSPORT_UNIT_WIDTH, pp.getBuildingArea() / DataSet.PUBLIC_TRANSPORT_UNIT_WIDTH,
 				(pp.getWorkersPerPlace() > 0 ? pp.getWorkersPerPlace() : (pp.getBuildingArea() / pp.getWorkersPerArea())));
 		
@@ -29,9 +29,12 @@ public class PublicTransportAgent extends WorkplaceAgent {
 	}
 	
 	@Override
-	protected void infectHuman(HumanAgent prey) {
-		InfectionReport.addCumExposedPublicTransport();
-		super.infectHuman(prey);
+	protected boolean infectHuman(HumanAgent prey, double infRate) {
+		if (super.infectHuman(prey, infRate)) {
+			InfectionReport.addCumExposedPublicTransport();
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

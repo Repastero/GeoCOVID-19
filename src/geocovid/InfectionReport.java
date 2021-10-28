@@ -30,7 +30,8 @@ public class InfectionReport {
 	private static int[] cumHospitalized;	// Acumulado
 	private static int[] cumRecovered;		// Acumulado
 	private static int[] cumDeaths;			// Acumulado
-	private static int[] dailyCases;		// Instantaneo
+	private static int[] dailyAsxCases;		// Instantaneo
+	private static int[] dailySymCases;		// Instantaneo
 	//
 	private static int[] dailyStatesContagion;	// Instantaneo
 	//
@@ -45,6 +46,9 @@ public class InfectionReport {
 	private static int insSpacePublicTransport;		// 
 	//
 	private static int cumExposedSchool;
+	//
+	private static int firstVaccineDoses;	// Primeras dosis aplicadas
+	private static int secondVaccineDoses;	// Segundas dosis aplicadas
 	
 	public InfectionReport(int startDay, int maxDeaths) {
 		simulationStartDay	= startDay;
@@ -61,6 +65,8 @@ public class InfectionReport {
 		cumDeathsAll		= 0;
 		dailyAsxCasesAll	= 0;
 		dailySymCasesAll	= 0;
+		firstVaccineDoses	= 0;
+		secondVaccineDoses	= 0;
 		
 		cumExposed		= new int[DataSet.AGE_GROUPS];
 		insAsxInfectious= new int[DataSet.AGE_GROUPS];
@@ -69,7 +75,8 @@ public class InfectionReport {
 		cumHospitalized	= new int[DataSet.AGE_GROUPS];
 		cumRecovered	= new int[DataSet.AGE_GROUPS];
 		cumDeaths		= new int[DataSet.AGE_GROUPS];
-		dailyCases      =  new int[DataSet.AGE_GROUPS];
+		dailyAsxCases	= new int[DataSet.AGE_GROUPS];
+		dailySymCases	= new int[DataSet.AGE_GROUPS];
 		
 		contextsInteracting		= 0;
 		avgContextsSI	= new double[DataSet.AGE_GROUPS];
@@ -91,7 +98,8 @@ public class InfectionReport {
 		// Reinicia contadores de contactos personales promedio y contagios diarios
 		for (i = 0; i < DataSet.AGE_GROUPS; i++) {
 			avgContextsSI[i] = 0d;
-			dailyCases[i] = 0;
+			dailyAsxCases[i] = 0;
+			dailySymCases[i] = 0;
 		}
 		contextsInteracting = 0;
 		// Reinicia contadores de nuevos casos diarios
@@ -180,11 +188,14 @@ public class InfectionReport {
 	}
 	
 	public static void addDailyCases(int agIndex, boolean asx) {
-		if (asx)
+		if (asx) {
 			++dailyAsxCasesAll;
-		else
+			++dailyAsxCases[agIndex];
+		}
+		else {
 			++dailySymCasesAll;
-		++dailyCases[agIndex];
+			++dailySymCases[agIndex];
+		}
 	}
 	
 	public static String getInfectedReport(int agIndex) {
@@ -216,6 +227,14 @@ public class InfectionReport {
 		++cumExposedSchool;
 	}
 	
+	public static void addFirstVaccineDoses(int value) {
+		firstVaccineDoses += value;
+	}
+	
+	public static void addSecondVaccineDoses(int value) {
+		secondVaccineDoses += value;
+	}
+	
 	// Getters para usar en reportes de Repast Simphony
 	public static int getCumExposed()		{ return cumExposedAll; }
 	public static int getCumExposedToCS()	{ return cumExposedToCSAll; }
@@ -239,7 +258,8 @@ public class InfectionReport {
 	public static int getCumHospitalized(int ai)	{ return cumHospitalized[ai]; }
 	public static int getCumRecovered(int ai)		{ return cumRecovered[ai]; }
 	public static int getCumDeaths(int ai)			{ return cumDeaths[ai]; }
-	public static int getInsDailyCases(int ai)		{ return dailyCases[ai]; }
+	public static int getInsDailyAsxCases(int ai)	{ return dailyAsxCases[ai]; }
+	public static int getInsDailySymCases(int ai)	{ return dailySymCases[ai]; }
 	
 	public static int getChildCumExposed()			{ return cumExposed[0]; }
 	public static int getChildInsASXInfectious()	{ return insAsxInfectious[0]; }
@@ -249,7 +269,8 @@ public class InfectionReport {
 	public static int getChildCumHospitalized()		{ return cumHospitalized[0]; }
 	public static int getChildCumRecovered()		{ return cumRecovered[0]; }
 	public static int getChildCumDeaths()			{ return cumDeaths[0]; }
-	public static int getChildInsDailyCases()		{ return dailyCases[0]; }
+	public static int getChildInsDailyAsxCases()	{ return dailyAsxCases[0]; }
+	public static int getChildInsDailySymCases()	{ return dailySymCases[0]; }
 	
 	public static int getYoungCumExposed()			{ return cumExposed[1]; }
 	public static int getYoungInsASXInfectious()	{ return insAsxInfectious[1]; }
@@ -259,7 +280,8 @@ public class InfectionReport {
 	public static int getYoungCumHospitalized()		{ return cumHospitalized[1]; }
 	public static int getYoungCumRecovered()		{ return cumRecovered[1]; }
 	public static int getYoungCumDeaths()			{ return cumDeaths[1]; }
-	public static int getYoungInsDailyCases()		{ return dailyCases[1]; }
+	public static int getYoungInsDailyAsxCases()	{ return dailyAsxCases[1]; }
+	public static int getYoungInsDailySymCases()	{ return dailySymCases[1]; }
 	
 	public static int getAdultCumExposed()			{ return cumExposed[2]; }
 	public static int getAdultInsASXInfectious() 	{ return insAsxInfectious[2]; }
@@ -269,7 +291,8 @@ public class InfectionReport {
 	public static int getAdultCumHospitalized()		{ return cumHospitalized[2]; }
 	public static int getAdultCumRecovered()		{ return cumRecovered[2]; }
 	public static int getAdultCumDeaths()			{ return cumDeaths[2]; }
-	public static int getAdultInsDailyCases()		{ return dailyCases[2]; }
+	public static int getAdultInsDailyAsxCases()	{ return dailyAsxCases[2]; }
+	public static int getAdultInsDailySymCases()	{ return dailySymCases[2]; }
 	
 	public static int getElderCumExposed()			{ return cumExposed[3]; }
 	public static int getElderInsASXInfectious()	{ return insAsxInfectious[3]; }
@@ -279,7 +302,8 @@ public class InfectionReport {
 	public static int getElderCumHospitalized()		{ return cumHospitalized[3]; }
 	public static int getElderCumRecovered()		{ return cumRecovered[3]; }
 	public static int getElderCumDeaths()			{ return cumDeaths[3]; }
-	public static int getElderInsDailyCases()		{ return dailyCases[3]; }
+	public static int getElderInsDailyAsxCases()	{ return dailyAsxCases[3]; }
+	public static int getElderInsDailySymCases()	{ return dailySymCases[3]; }
 	
 	public static int getHigherCumExposed()			{ return cumExposed[4]; }
 	public static int getHigherInsASXInfectious()	{ return insAsxInfectious[4]; }
@@ -289,7 +313,8 @@ public class InfectionReport {
 	public static int getHigherCumHospitalized()	{ return cumHospitalized[4]; }
 	public static int getHigherCumRecovered()		{ return cumRecovered[4]; }
 	public static int getHigherCumDeaths()			{ return cumDeaths[4]; }
-	public static int getHigherInsDailyCases()		{ return dailyCases[4]; }
+	public static int getHigherInsDailyAsxCases()	{ return dailyAsxCases[4]; }
+	public static int getHigherInsDailySymCases()	{ return dailySymCases[4]; }
 	
 	public static double getChildAVGInteractions()	{ return avgContextsSI[0] / contextsInteracting; }
 	public static double getYoungAVGInteractions()	{ return avgContextsSI[1] / contextsInteracting; }
@@ -311,4 +336,7 @@ public class InfectionReport {
 	public static int getCumExposedPublicTransport(){ return cumExposedPublicTransport; }
 	public static int getCumTicketTransportPublic()	{ return cumTicketTransportPublic; }
 	public static int getInsSpacePublicTransport()	{ return insSpacePublicTransport; }
+	
+	public static int getFirstVaccineDoses()		{ return firstVaccineDoses; }
+	public static int getSecondVaccineDoses()		{ return secondVaccineDoses; }
 }
