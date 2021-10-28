@@ -1,5 +1,5 @@
 <repast.simphony.data2.engine.DataSetDescriptor simphonyVersion="2.8.0">
-  <name>Casos diarios</name>
+  <name>Casos sintomaticos diarios</name>
   <type>NON_AGGREGATE</type>
   <sourceType>geocovid.InfectionReport</sourceType>
   <inclTick>true</inclTick>
@@ -21,7 +21,7 @@
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>5-15</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getChildInsDailyCases</methodName>
+        <methodName>getChildInsDailySymCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
@@ -29,7 +29,7 @@
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>16-25</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getYoungInsDailyCases</methodName>
+        <methodName>getYoungInsDailySymCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
@@ -37,7 +37,7 @@
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>26-40</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getAdultInsDailyCases</methodName>
+        <methodName>getAdultInsDailySymCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
@@ -45,7 +45,7 @@
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>41-64</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getElderInsDailyCases</methodName>
+        <methodName>getElderInsDailySymCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
@@ -53,7 +53,7 @@
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>65+</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getHigherInsDailyCases</methodName>
+        <methodName>getHigherInsDailySymCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
@@ -61,7 +61,7 @@
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
         <id>Totales</id>
         <className>geocovid.InfectionReport</className>
-        <methodName>getInsDailyCases</methodName>
+        <methodName>getInsDailySymCases</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
   </methodDataSources>

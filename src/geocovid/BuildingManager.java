@@ -570,53 +570,6 @@ public final class BuildingManager {
 	}
 	
 	/**
-	 * Remueve elementos al azar de la lista hasta alcanzar la cantidad deseada.
-	 * @param places lista de Places
-	 * @param maxSize limite de Places
-	 */
-	private void resizeBuildingsList(List<BuildingAgent> places, int maxSize) {
-		if (maxSize == -1) // Todos los resultados
-			return;
-		else {
-			int pSize = places.size();
-			while (pSize > maxSize) {
-				places.remove(RandomHelper.nextIntFromTo(0, --pSize)); // 0 a size-1
-			}
-		}
-	}
-	
-	/**
-	 * Crea una lista de todos los BuildingAgent con el mismo tipo primario de Place. 
-	 * @param maxBuilding cantidad maxima de resultados
-	 * @param priType tipo primario
-	 * @return lista de Places <b>BuildingAgent</b>
-	 */
-	public List<BuildingAgent> getActivityBuildings(int maxBuilding, String priType) {
-		List<BuildingAgent> places = new ArrayList<BuildingAgent>();
-		placesMap.get(priType).forEach(sect -> places.addAll(sect));
-		resizeBuildingsList(places, maxBuilding);
-		return places;
-	}
-	
-	/**
-	 * Crea una lista de todos los BuildingAgent con el mismo tipo secundario de Place.
-	 * @param maxBuilding cantidad maxima de resultados
-	 * @param priType tipo primario
-	 * @param secType tipo secundario
-	 * @return lista de Places <b>BuildingAgent</b>
-	 */
-	public List<BuildingAgent> getActivityBuildings(int maxBuilding, String priType, String secType) {
-		List<BuildingAgent> places = new ArrayList<BuildingAgent>();
-		placesMap.get(priType).forEach(sect -> sect.forEach(
-		work -> {
-			if (work.getType().equals(secType))
-				places.add(work);
-        }));
-		resizeBuildingsList(places, maxBuilding);
-		return places;
-	}
-	
-	/**
 	 * Crea un punto en las coordenadas del building donde se encuentra el infeccioso.
 	 * @param agentID id de humano infeccioso
 	 * @param coordinate coordinadas actuales

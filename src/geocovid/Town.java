@@ -13,7 +13,7 @@ public final class Town {
 	/** Cantidad de infectados iniciales en cada municipio */
 	public static int firstInfectedAmount = 1;
 	
-	/** Dias por defecto de los cambios de unidades de transporte publico */
+	/** Cambios en % de unidades de transporte publico */
 	private final double[] PUBLIC_TRANSPORT_QUANTIFICATION	= {};
 	
 	/** Nombre del municipio o comuna a simular */
@@ -104,6 +104,14 @@ public final class Town {
 	
 	public String getPlacesFilepath() {
 		return String.format("./data/%s/places.shp", townName);
+	}
+	
+	public String getVacScheduleFilepath() {
+		return String.format("./data/%s/vac-schedule.csv", townName);
+	}
+	
+	public String getVacTypesFilepath() {
+		return String.format("./data/%s/vac-types.csv", townName);
 	}
 	
 	/**

@@ -1,10 +1,8 @@
 package geocovid;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
-import au.com.bytecode.opencsv.CSVReader;
 import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 
@@ -16,6 +14,8 @@ public class Temperature {
 	private static int currentYear;
 	/** Contador diario */
 	private static int dayOfTheYear;
+	/** Cantidad dias anuales */
+	private static int daysInYear;
 	
 	/** Numero de regiones: sur, centro y norte */
 	private static final int REGIONS = 3;
@@ -25,8 +25,6 @@ public class Temperature {
 	/** Temperatura del dia actual */
 	private static double[] DAILY_TEMPERATURE = new double[REGIONS];
 	
-	/** Beta base inicial */
-	private static final double BETA_BASE = 24.64d;
 	/** Offset en porcentaje para variacion de beta base */
 	private static final double [] BETA_VARIANT = new double [366];
 	/** Beta diario para cada tipo de seccional */
@@ -65,16 +63,13 @@ public class Temperature {
 	 * Lee de archivo csv los datos de temperatura media del ano actual.
 	 */
 	public static void initTemperature() {
-		int year = currentYear;
-		loadWeatherData(year); // Leer temp del ano inicio
-		// Suma anos si la cantidad de dias > 365
-		while (dayOfTheYear > 365) {
-			dayOfTheYear -= 366;
-			++currentYear;
+		loadWeatherData(currentYear); // Leer temp del ano inicio
+		// Suma anos si la cantidad de dias sobrepasa a la del ano
+		while (dayOfTheYear >= daysInYear) {
+			dayOfTheYear -= daysInYear;
+			// Lee archivo de proximo ano
+			loadWeatherData(++currentYear);
 		}
-		// Si la cantidad de dias supera el ano de inicio, se vuelve a leer 
-		if (year != currentYear)
-			loadWeatherData(currentYear);
 		// Setear las chances de infeccion del dia inicial
 		updateInfectionChances();
 	}
@@ -82,7 +77,7 @@ public class Temperature {
 	@ScheduledMethod(start = 24, interval = 24, priority = ScheduleParameters.FIRST_PRIORITY)
 	public static void updateDailyTemperature() {
 		// Ultimo dia del ano, lee los datos del ano siguiente
-		if (++dayOfTheYear == 366) {
+		if (++dayOfTheYear == daysInYear) {
 			dayOfTheYear = 0;
 			loadWeatherData(++currentYear);
 		}
@@ -98,7 +93,7 @@ public class Temperature {
 		for (int r = 0; r < REGIONS; r++) {
 			DAILY_TEMPERATURE[r] = TEMPERATURES[r][dayOfTheYear];
 			
-			INFECTION_RATE[r][0] = BETA_VARIANT[dayOfTheYear] * BETA_BASE * ((DAILY_TEMPERATURE[r] / 2) - 22.36d) / -17.11d;
+			INFECTION_RATE[r][0] = BETA_VARIANT[dayOfTheYear] * DataSet.INFECTION_RATE * ((DAILY_TEMPERATURE[r] / 2) - 22.36d) / -17.11d;
 			INFECTION_RATE[r][1] = INFECTION_RATE[r][0] * DataSet.INFECTION_RATE_SEC11_MOD;
 			
 			VEN_INFECTION_RATE[r][0] = INFECTION_RATE[r][0] * DataSet.DROPLET_VENTILATED_MOD;
@@ -124,40 +119,27 @@ public class Temperature {
 	 * @param dayTo hasta que dia leer
 	 */
 	private static void readTemperatureFile(String file, int index, int dayFrom, int dayTo) {
-		boolean headerFound = false;
-		CSVReader reader = null;
-		String [] nextLine;
-		int i = 0;
-		int r = 0;
-		try {
-			reader = new CSVReader(new FileReader(file), ';');
-			while ((nextLine = reader.readNext()) != null) {
-				if (i >= dayFrom) {
-					try {
-						for (r = 0; r < REGIONS; r++)
-							TEMPERATURES[r][index] = Double.valueOf(nextLine[r]);
-						index++;
-					} catch (NumberFormatException e) {
-						if (headerFound) {
-							e.printStackTrace();
-							return;
-						}
-						else {
-							headerFound = true;
-						}
-					}
-				}
-				if (++i > dayTo)
-					break;
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
+		// Ignoro header, las temperaturas se dividen en 3 columnas: sur, centro y norte
+		List<String[]> fileLines = Utils.readCSVFile(file, ';', 1 + dayFrom);
+		if (fileLines == null) {
+			System.err.println("Error al leer archivo de temperatura: " + file);
+			return;
+		}
+		int i = dayFrom;
+		int r;
+		String[] line; 
+		for (Iterator<String[]> it = fileLines.iterator(); it.hasNext();) {
+			line = it.next();
 			try {
-				reader.close();
-			} catch (IOException e) { }
+				for (r = 0; r < REGIONS; r++)
+					TEMPERATURES[r][index] = Double.valueOf(line[r]);
+				++index;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
+			if (++i > dayTo)
+				break;
 		}
 	}
 	
@@ -169,46 +151,39 @@ public class Temperature {
 	 * @param dayTo hasta que dia leer
 	 */
 	private static void readBetaVariantFile(String file, int index, int dayFrom, int dayTo) {
-		boolean headerFound = false;
-		CSVReader reader = null;
-		String [] nextLine;
-		int i = 0;
-		try {
-			reader = new CSVReader(new FileReader(file), ';');
-			while ((nextLine = reader.readNext()) != null) {
-				if (i >= dayFrom) {
-					try {
- 						BETA_VARIANT[index] = Double.valueOf(nextLine[0]);
-						index++;
-					} catch (NumberFormatException e) {
-						if (headerFound) {
-							e.printStackTrace();
-							return;
-						}
-						else {
-							headerFound = true;
-						}
-					}
-				}
-				if (++i > dayTo)
-					break;
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
+		// Ignoro header, es una sola columna con la variacion del beta 
+		List<String[]> fileLines = Utils.readCSVFile(file, ';', 1 + dayFrom);
+		if (fileLines == null) {
+			System.err.println("Error al leer archivo de variacion de beta: " + file);
+			return;
+		}
+		int i = dayFrom;
+		String[] line; 
+		for (Iterator<String[]> it = fileLines.iterator(); it.hasNext();) {
+			line = it.next();
 			try {
-				reader.close();
-			} catch (IOException e) { }
+				BETA_VARIANT[index] = Double.valueOf(line[0]);
+				++index;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
+			if (++i > dayTo)
+				break;
 		}
 	}
 	
 	private static void loadWeatherData(int year) {
+		// Setear dias en ano, por si toca bisiesto
+		if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0))
+			daysInYear = 366;
+		else
+			daysInYear = 365;
+		//
 		String weatherFile = String.format("./data/%d-temperature.csv", year);
 		String variantFile = String.format("./data/%d-variant.csv", year);
-		readTemperatureFile(weatherFile, 0, 0, 366);
-		readBetaVariantFile(variantFile, 0, 0, 366);
+		readTemperatureFile(weatherFile, 0, 0, daysInYear);
+		readBetaVariantFile(variantFile, 0, 0, daysInYear);
 	}
 	
 	/**
@@ -262,7 +237,7 @@ public class Temperature {
 	 */
 	public static int getOOCContagionChance(int region, int ooc) {
 		if (OOC_CONTAGION_CHANCE[region] < 0)
-			OOC_CONTAGION_CHANCE[region] = (int) (300000 - (ooc * OD_INFECTION_RATE[region]));
+			OOC_CONTAGION_CHANCE[region] = (int) (3000 - (ooc * OD_INFECTION_RATE[region]));
 		return OOC_CONTAGION_CHANCE[region];
 	}
 }

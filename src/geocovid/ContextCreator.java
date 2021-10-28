@@ -151,7 +151,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 		SubContext lastContexts[] = new SubContext[3];
 		for (int i = 0; i < TOWN_NAMES.length; i++) {
 			tempTown = new Town(TOWN_NAMES[i]);
-			humansCount += tempTown.getLocalPopulation();
+			humansCount += tempTown.localHumans;
 			// Segun el indice de la region, el tipo de sub contexto
 			subContext = null;
 			//

@@ -25,7 +25,7 @@ public class WorkplaceAgent extends BuildingAgent {
 	/** Lista de HumanAgent pre-trasmisores (sintomaticos) */
 	protected List<HumanAgent> preSpreadersList = new ArrayList<HumanAgent>();
 	
-	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
+	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, int id, String workType, int activityType, int area, int coveredArea, int workersPlace, int workersArea) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, area, (area * coveredArea) / 100, DataSet.WORKPLACE_AVAILABLE_AREA, true);
 		
 		this.workplaceType = workType;
@@ -39,7 +39,7 @@ public class WorkplaceAgent extends BuildingAgent {
 		createWorkPositions();
 	}
 
-	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, String workType, int activityType, int width, int lenght, int workersPlace) {
+	public WorkplaceAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, int id, String workType, int activityType, int width, int lenght, int workersPlace) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, workType, width, lenght, true);
 		
 		this.workplaceType = workType;
@@ -219,7 +219,7 @@ public class WorkplaceAgent extends BuildingAgent {
 			}
 		}
 		// Chequea efectividad de cubrebocas
-		if (context.getMaskEffectivity() > 0) {
+		if (context.getMaskEffectivity() > 0d) {
 			// Si es un lugar cerrado o se usa cubreboca en exteriores
 			if (!isOutdoor() || context.wearMaskOutdoor()) {
 				// Si el contagio es entre cliente-cliente/empleado-cliente o entre empleados
@@ -227,11 +227,11 @@ public class WorkplaceAgent extends BuildingAgent {
 				if (workers) {
 					// Chequea si utilizan cubreboca entre empleados del tipo de actividad de parcela
 					if ((activityType == 1 && context.wearMaskWorkspace()) || (activityType > 1 && context.wearMaskCS()))
-						infectionRate *= 1 - context.getMaskEffectivity();
+						infectionRate *= 1d - context.getMaskEffectivity();
 				}
 				// Chequea si utilizan cubreboca entre clientes y empleados
 				else if (context.wearMaskCustomer()) {
-					infectionRate *= 1 - context.getMaskEffectivity();
+					infectionRate *= 1d - context.getMaskEffectivity();
 				}
 			}
 		}
