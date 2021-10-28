@@ -7,8 +7,10 @@ import geocovid.DataSet;
 import geocovid.InfectionReport;
 import geocovid.MarkovChains;
 import geocovid.Temperature;
+import geocovid.Utils;
 import geocovid.contexts.SubContext;
 import repast.simphony.engine.environment.RunEnvironment;
+import repast.simphony.engine.schedule.ISchedulableAction;
 import repast.simphony.engine.schedule.ISchedule;
 import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.random.RandomHelper;
@@ -38,6 +40,8 @@ public class HumanAgent {
 	private int currentState = 0;
 	/** Indice de franja etaria */
 	private int ageGroup = 0;
+	/** Chance de padecer caso grave */
+	private double severeCaseChance = 0d;
 	/** Humano extranjero */
 	private boolean foreignTraveler = false;
 	/** Humano turista */
@@ -48,6 +52,11 @@ public class HumanAgent {
 	private int ticksDelay = 0;
 	/** Tick de inicio de periodo infeccioso */
 	private double infectiousStartTime;
+	
+    /** Nivel de inmunidad parcial por vacuna */
+    private int immunityLevel = DataSet.IMMUNITY_LVL_NONE;
+    /** Referencia al fin del periodo de inmunidad natural o por vacuna */
+    private ISchedulableAction immunityAction;
 	
 	/** Tiene una actividad programada */
 	private boolean activityQueued = false;
@@ -60,7 +69,7 @@ public class HumanAgent {
 	
 	/** Puntero a ISchedule para programar acciones */
 	protected static ISchedule schedule;
-	/** Cntador Id de agente */
+	/** Contador Id de agente */
 	private static int agentIDCounter = 0;
 	/** Id de agente */
 	private int agentID = ++agentIDCounter;
@@ -69,11 +78,12 @@ public class HumanAgent {
     private Map<Integer, Integer> socialInteractions = new HashMap<>();
 	
     // ESTADOS //
-    public boolean exposed;			// Contagiado
-    public boolean asxInfectious;	// Infeccioso asintomatico
-    public boolean symInfectious;	// Infeccioso sintomatico
-    public boolean hospitalized;	// Hospitalizado en UTI
-    public boolean recovered;		// Recuperado
+    protected boolean exposed;		// Contagiado
+    protected boolean asxInfectious;// Infeccioso asintomatico
+    protected boolean symInfectious;// Infeccioso sintomatico
+    protected boolean hospitalized;	// Hospitalizado en UTI
+    protected boolean recovered;	// Recuperado
+    protected boolean deceased;		// Fallecido
     // Extras
     public boolean quarantined;		// Aislado por sintomatico o cuarentena preventiva
     public boolean distanced;		// Respeta distanciamiento social
@@ -91,6 +101,7 @@ public class HumanAgent {
 		this.workPlace = work;
 		this.workplacePosition = workPos;
 		this.ageGroup = ageGroup;
+		setSCChance(ageGroup);
 	}
     
 	public HumanAgent(SubContext subContext, int secHome, int secHomeIndex, int ageGroup, BuildingAgent home, BuildingAgent work, int[] workPos, boolean foreign, boolean tourist) {
@@ -129,9 +140,24 @@ public class HumanAgent {
 		return exposed;
 	}
 	
+	/** @return {@link HumanAgent#recovered} */
+	public boolean hasRecovered() {
+		return recovered;
+	}
+	
+	/** @return {@link HumanAgent#deceased} */
+	public boolean isDead() {
+		return deceased;
+	}
+	
 	/** @return <b>true</b> si en estado infeccioso */
 	public boolean isContagious() {
 		return (asxInfectious || symInfectious);
+	}
+	
+	/** @return <b>true</b> si es sintomatico */
+	public boolean isSymptomatic() {
+		return symInfectious;
 	}
 	
 	/** @return <b>true</b> si en actividad trabajo */
@@ -179,9 +205,24 @@ public class HumanAgent {
 		return activityQueued;
 	}
 	
-	/** @return {@link HumanAgent#isInCloseContact} */
+	/** @return {@link HumanAgent#inCloseContact} */
 	public boolean isInCloseContact() {
 		return inCloseContact;
+	}
+	
+	/**
+	 * Setea la chance de padecer caso grave segun franja etaria y comorbilidades.
+	 * @param ag indice franja etaria
+	 */
+	private void setSCChance(int ag) {
+		double increasedRisk = 0d;
+		int r;
+		for (int i = 0; i < DataSet.DISEASE_SEVERE_CASE_CHANCE_MOD.length; i++) {
+			r = RandomHelper.nextIntFromTo(1, 1000);
+			if (r <= DataSet.DISEASE_CHANCE_PER_AGE_GROUP[i][ag])
+				increasedRisk += DataSet.DISEASE_SEVERE_CASE_CHANCE_MOD[i];
+		}
+		this.severeCaseChance = DataSet.SEVERE_CASE_CHANCE_PER_AG[ag] + increasedRisk;
 	}
 	
 	/**
@@ -280,6 +321,23 @@ public class HumanAgent {
 	}
 	
 	/**
+	 * Compara si un valor aleatorio entre 0 y 100 es menor igual a la chance de contagio.
+	 * @param infectionRate beta contagio
+	 * @see DataSet#VACCINE_INFECTION_CHANCE_MOD
+	 * @return <b>true</b> si el agente se contagia
+	 */
+	public boolean checkContagion(double infectionRate) {
+		// Chequea inmunidad parcial por vacuna
+		if (immunityLevel != DataSet.IMMUNITY_LVL_NONE)
+			infectionRate *= DataSet.VACCINE_INFECTION_CHANCE_MOD[immunityLevel];
+		if (RandomHelper.nextDoubleFromTo(0d, 100d) <= infectionRate) {
+			setExposed();
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * Setea inicio de contagio, define el tiempo de incubacion y si va ser asinto o sintomatico.<p>
 	 * Si contactos estrechos esta habilitado, es sintomatico y tiene lugar de trabajo; programa inicio de pre-contagio.
 	 * @see DataSet#EXPOSED_PERIOD_MEAN
@@ -287,20 +345,18 @@ public class HumanAgent {
 	 * @see DataSet#ASX_INFECTIOUS_RATE
 	 * @see DataSet#CLOSE_CONTACT_INFECTIOUS_TIME
 	 */
-	public void setExposed() {
+	private void setExposed() {
 		// Una vez expuesto, no puede volver a contagiarse
 		if (exposed)
 			return;
+		
 		// Se contagia del virus
 		exposed = true;
 		InfectionReport.addExposed(ageGroup, currentState);
-		int mean = DataSet.EXPOSED_PERIOD_MEAN;
-		int std = DataSet.EXPOSED_PERIOD_DEVIATION;
-		double period = RandomHelper.createNormal(mean, std).nextDouble();
-		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
+		int period = Utils.getStdNormalDeviate(DataSet.EXPOSED_PERIOD_MEAN, DataSet.EXPOSED_PERIOD_DEVIATION);
 		
 		// Define al comienzo de infeccion si va a ser asintomatico o sintomatico
-		boolean asymp = (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ASX_INFECTIOUS_RATE[ageGroup]) ? true : false;
+		boolean asymp = (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ASX_INFECTIOUS_RATE[ageGroup]);
 		InfectionReport.addDailyCases(ageGroup, asymp);
 		
 		// Programa el inicio del periodo de contagio
@@ -319,9 +375,7 @@ public class HumanAgent {
 	
 	/**
 	 * Inicia el periodo infeccioso y define la duracion.<p>
-	 * Si es sintomatico tiene chances de ser internado en UTI<p>
 	 * Si es sintomatico y cuarentena preventiva esta habilitada, aisla integrantes del hogar.
-	 * @see DataSet#ICU_CHANCE_PER_AGE_GROUP
 	 * @param asymptomatic <b>true</b> si es asintomatico
 	 * @param initial <b>true</b> si es de los primeros infectados
 	 */
@@ -344,7 +398,7 @@ public class HumanAgent {
 			// Si es local y cuarentena preventiva esta habilitada
 			if (!foreignTraveler && context.prevQuarantineEnabled()) {
 				// Todos los habitantes del hogar se ponen en cuarentena (exepto los ya expuestos)
-				((HomeAgent) homePlace).startPreventiveQuarentine(schedule.getTickCount());
+				((HomeAgent) homePlace).startPreventiveQuarentine((int) schedule.getTickCount());
 			}
 			
 			// Se aisla si es sintomatico
@@ -354,24 +408,24 @@ public class HumanAgent {
 		}
 		//
 		
-		if (!hospitalized && currentBuilding != null && currentPosition != null) {
-			// Si no fue a ICU y tiene position dentro de un Building, se crear el marcador de infeccioso
+		if (currentBuilding != null && currentPosition != null) {
+			// Si tiene position dentro de un Building, se crear el marcador de infeccioso
 			currentBuilding.addSpreader(this);
 			context.getBuildManager().createInfectiousHuman(agentID, currentBuilding.getCoordinate());
 		}
-		
-		int mean = DataSet.INFECTED_PERIOD_MEAN_AG;
-		int std = DataSet.INFECTED_PERIOD_DEVIATION;
-		double period = RandomHelper.createNormal(mean, std).nextDouble();
-		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
-		
+				
+		int period = Utils.getStdNormalDeviate(DataSet.INFECTED_PERIOD_MEAN, DataSet.INFECTED_PERIOD_DEVIATION);
 		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(scheduleParams, this, "setRecovered");
 	}
 	
 	/**
 	 * Recuperacion de infeccion.<p>
+	 * Si es sintomatico hay chances de que sea un caso grave y quedar internado en UTI<p>
+	 * Un caso grave puede derivar en critico y causar la muerte pre-UTI<p>
 	 * En caso de estar internado en UTI demora un tiempo hasta que vuelve al contexto.
+	 * @see DataSet#VACCINE_SEVERE_CASE_CHANCE_MOD
+	 * @see DataSet#DEFAULT_PREICU_DEATH_RATE
 	 * @see DataSet#EXTENDED_ICU_PERIOD
 	 */
 	public void setRecovered() {
@@ -385,48 +439,60 @@ public class HumanAgent {
 		else
 			return;
 		
-		// Si se complica el caso, se interna - si no continua vida normal
-		if (RandomHelper.nextDoubleFromTo(0, 100) <= DataSet.ICU_CHANCE_PER_AGE_GROUP[ageGroup]) {
-			// Mover a ICU hasta que se cure o muera
-			hospitalized = true;
-			InfectionReport.modifyHospitalizedCount(ageGroup, 1);
-			removeFromContext();
-		}
-		
-		// Se recupera de la infeccion
+		// Fin periodo de contagio
 		asxInfectious = false;
 		symInfectious = false;
-		if (!hospitalized) {
-			recovered = true;
-			InfectionReport.addRecovered(ageGroup);
-			
-			if (currentBuilding != null && currentPosition != null)
-				currentBuilding.removeSpreader(this, currentPosition);
-			
-			// Se borra el marcador de infectado
-			context.getBuildManager().deleteInfectiousHuman(agentID);
+		// Se elimina como spreader y el marcador de infectado
+		if (currentBuilding != null && currentPosition != null)
+			currentBuilding.removeSpreader(this, currentPosition);
+		context.getBuildManager().deleteInfectiousHuman(agentID);
+		
+		// Chance caso severo
+		double severeCC = severeCaseChance;
+		// Chequea inmunidad parcial por vacuna
+		if (immunityLevel != DataSet.IMMUNITY_LVL_NONE) {
+			severeCC *= DataSet.VACCINE_SEVERE_CASE_CHANCE_MOD[immunityLevel];
 		}
+		// Si es caso grave, se interna o muere sin internacion
+		if (RandomHelper.nextDoubleFromTo(0, 100) <= severeCC) {
+			if (RandomHelper.nextDoubleFromTo(0, 100) <= context.getPreICUDeathRate()) {
+				// Caso critico, se muere antes de ICU
+				deceased = true;
+				InfectionReport.addDead(ageGroup);
+			}
+			else {
+				// Mover a ICU hasta que se cure o muera
+				hospitalized = true;
+				InfectionReport.modifyHospitalizedCount(ageGroup, 1);
+				// X dias en ICU
+				ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(
+						schedule.getTickCount() + DataSet.EXTENDED_ICU_PERIOD, ScheduleParameters.FIRST_PRIORITY);
+				schedule.schedule(scheduleParams, this, "dischargeFromICU");
+			}
+			removeFromContext();
+		}
+		// Si es caso leve, se recupera y reanuda vida normal
 		else {
-			// X dias en ICU
-			ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + DataSet.EXTENDED_ICU_PERIOD, ScheduleParameters.FIRST_PRIORITY);
-			schedule.schedule(scheduleParams, this, "dischargeFromICU");
+			setImmune(true);
+			InfectionReport.addRecovered(ageGroup);
 		}
 	}
 	
 	/**
 	 * Da el alta de internacion en UTI o tiene un chance que fallezca. 
-	 * @see DataSet#ICU_DEATH_RATE
+	 * @see DataSet#DEFAULT_ICU_DEATH_RATE
 	 */
 	public void dischargeFromICU() {
 		hospitalized = false;
 		InfectionReport.modifyHospitalizedCount(ageGroup, -1);
 		if (RandomHelper.nextDoubleFromTo(0, 100) <= context.getICUDeathRate()) {
 			// Se muere en ICU
+			deceased = true;
 			InfectionReport.addDead(ageGroup);
 		}
 		else {
 			// Sale de ICU - continua vida normal
-			recovered = true;
+			setImmune(true);
 			InfectionReport.addRecovered(ageGroup);
 			addRecoveredToContext();
 		}
@@ -434,16 +500,13 @@ public class HumanAgent {
 	
 	/**
 	 * Si es sintomatico, inicia el periodo de quarentena en el hogar.
-	 * @see DataSet#QUARANTINED_PERIOD_MEAN_AG
+	 * @see DataSet#QUARANTINED_PERIOD_MEAN
 	 * @see DataSet#QUARANTINED_PERIOD_DEVIATION
 	 */
 	public void startQuarantine() {
 		quarantined = true;
 		// Calcula el periodo de quarentena
-		int mean = DataSet.QUARANTINED_PERIOD_MEAN_AG;
-		int std = DataSet.QUARANTINED_PERIOD_DEVIATION;
-		double period = RandomHelper.createNormal(mean, std).nextDouble();
-		period = (period > mean+std) ? mean+std : (period < mean-std ? mean-std: period);
+		int period = Utils.getStdNormalDeviate(DataSet.QUARANTINED_PERIOD_MEAN, DataSet.QUARANTINED_PERIOD_DEVIATION);
 		// Programa el fin de cuarentena por sintomatico
 		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
 		schedule.schedule(scheduleParams, this, "stopQuarantine");
@@ -466,6 +529,74 @@ public class HumanAgent {
 	 */
 	public void stopQuarantine() {
 		quarantined = false;
+	}
+	
+	/**
+	 * Recuperar e inmunizar por medio natural o vacuna.
+	 * @param natural por medio natural
+	 */
+	public void setImmune(boolean natural) {
+		// Ni puede ganar inmunidad si no se recupero del contagio 
+		if (exposed && !recovered)
+			return;
+		exposed = true;
+		recovered = true;
+		
+		if (natural) {
+			// Gana inmunidad total, por un tiempo
+			immunityLevel = DataSet.IMMUNITY_LVL_HIGH;
+			startImmunityPeriod(DataSet.NATURAL_IMMUNITY_PERIOD_MEAN, DataSet.NATURAL_IMMUNITY_PERIOD_DEVIATION);
+		}
+	}
+	
+	/**
+	 * Setea nivel de inmunidad por vacuna o por fin de inmunidad natural.
+	 * @param immLevel nivel de inmunidad
+	 * @see DataSet#IMMUNITY_LVL_NONE
+	 * @see DataSet#IMMUNITY_LVL_LOW
+	 * @see DataSet#IMMUNITY_LVL_MED
+	 * @see DataSet#IMMUNITY_LVL_HIGH 
+	 */
+	public void setImmunityLevel(int immLevel) {
+		// Pierde toda inmunidad, pasa a susceptible si corresponde
+		if (immLevel == DataSet.IMMUNITY_LVL_NONE) {
+			if (immunityLevel == DataSet.IMMUNITY_LVL_HIGH) {
+				setSusceptible();
+			}
+			immunityLevel = immLevel;
+			return;
+		}
+		// Gana nivel de inmunidad, no se puede reducir (salvo a NONE)
+		else if (immLevel > immunityLevel) {
+			if (immunityLevel == DataSet.IMMUNITY_LVL_HIGH) {
+				setImmune(false);
+			}
+			immunityLevel = immLevel;
+		}
+		startImmunityPeriod(DataSet.VACCINE_IMMUNITY_PERIOD_MEAN, DataSet.VACCINE_IMMUNITY_PERIOD_DEVIATION);
+	}
+	
+	/**
+	 * Calcula y programa la duracion de inmunidad adquirida.
+	 * @param meanTicks media
+	 * @param stdDevTicks desvio estandar
+	 */
+	public void startImmunityPeriod(int meanTicks, int stdDevTicks) {
+		// Calcula el tiempo de inmunidad
+		int period = Utils.getStdNormalDeviate(meanTicks, stdDevTicks);
+		// Programa el fin de inmunidad
+		ScheduleParameters scheduleParams = ScheduleParameters.createOneTime(schedule.getTickCount() + period, ScheduleParameters.FIRST_PRIORITY);
+		if (immunityAction != null)
+			schedule.removeAction(immunityAction);
+		immunityAction = schedule.schedule(scheduleParams, this, "setImmunityLevel", DataSet.IMMUNITY_LVL_NONE);
+	}
+	
+	/**
+	 * Reinicia el estado de expuesto y recuperado.
+	 */
+	public void setSusceptible() {
+		exposed = false;
+		recovered = false;
 	}
 	
 	/**
@@ -564,10 +695,9 @@ public class HumanAgent {
         }
         // Si estuvo afuera, tiene una chance de volver infectado
         else if (!exposed && context.localOutbreakStarted()) {
-        	int infectChance = (int) (schedule.getTickCount() - relocationTime);
-        	if (RandomHelper.nextIntFromTo(1, Temperature.getOOCContagionChance(context.getTownRegion(), context.getOOCContagionValue())) <= infectChance) {
-    			setExposed();
-    		}
+			double oocInfRate = (schedule.getTickCount() - relocationTime)
+					/ Temperature.getOOCContagionChance(context.getTownRegion(), context.getOOCContagionValue());
+        	checkContagion(oocInfRate);
         }
         currentState = newState;
         

@@ -19,8 +19,7 @@ public final class Town {
 			{163,201,215,    254,257,264,281,302,310,    343,348,358,359,365,366,376,397,411,425,435,445,459,471,487,494,507,516}	//concord
 	};
 	
-	/** Dias por defecto de los cambios de unidades de transporte publico
-	 * [enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre - 2020] */
+	/** Cambios en % de unidades de transporte publico */
 	private final double[] PUBLIC_TRANSPORT_QUANTIFICATION	= {0.22, 0.28, 0.34, 0.4, 0.45, 0.51, 0.75};
 	
 	/** Nombre del municipio o comuna a simular */
@@ -117,6 +116,14 @@ public final class Town {
 	
 	public String getPlacesFilepath() {
 		return String.format("./data/%s/places.shp", townName);
+	}
+	
+	public String getVacScheduleFilepath() {
+		return String.format("./data/%s/vac-schedule.csv", townName);
+	}
+	
+	public String getVacTypesFilepath() {
+		return String.format("./data/%s/vac-types.csv", townName);
 	}
 	
 	/**

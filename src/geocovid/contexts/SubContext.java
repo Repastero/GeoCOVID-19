@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,7 @@ import geocovid.DataSet;
 import geocovid.InfectionReport;
 import geocovid.PlaceProperty;
 import geocovid.Town;
+import geocovid.VaccinationManager;
 import geocovid.agents.BuildingAgent;
 import geocovid.agents.ClassroomAgent;
 import geocovid.agents.ForeignHumanAgent;
@@ -48,7 +50,7 @@ import repast.simphony.space.gis.Geography;
  * Contexto que representa a un municipio.
  */
 public abstract class SubContext extends DefaultContext<Object> {
-	private long lastHomeId;	// Para no repetir ids, al crear hogares ficticios
+	private int lastHomeId;	// Para no repetir ids, al crear hogares ficticios
 	private List<List<HomeAgent>> homePlaces;	// Lista de hogares en cada seccional
 	private List<WorkplaceAgent> workPlaces = new ArrayList<WorkplaceAgent>();		// Lista de lugares de trabajo
 	private List<WorkplaceAgent> schoolPlaces = new ArrayList<WorkplaceAgent>();	// Lista de lugares de estudio primario/secundario (aulas)
@@ -57,7 +59,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	private HumanAgent[] contextHumans;	// Array de HumanAgent parte del contexto
 	private int localHumansCount;		// Cantidad de humanos que viven en contexto
 	private int foreignHumansCount;		// Cantidad de humanos que viven fuera del contexto
-	private int[] localHumansIndex;		// Indice en contextHumans de caga grupo etario (local)
+	private int[] localHumansAGIndex;		// Indice en contextHumans de caga grupo etario (local)
 	
 	private ForeignHumanAgent[] touristHumans;	// Array de HumanAgent temporales/turistas
 	private int[] lodgingPlacesSI;				// Seccionales donde existen lugares de hospedaje
@@ -68,6 +70,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	protected Map<String, PlaceProperty> placesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	protected BuildingManager buildingManager;
 	protected Town town;
+	private VaccinationManager vaccineManager;
 	
 	private ISchedule schedule;
 	private static Geography<Object> geography;
@@ -134,6 +137,14 @@ public abstract class SubContext extends DefaultContext<Object> {
 		return buildingManager;
 	}
 	
+	public int[] getLocalHumansAGIndex() {
+		return localHumansAGIndex;
+	}
+	
+	public HumanAgent getHuman(int idx) {
+		return contextHumans[idx];
+	}
+	
 	public int getTownRegion() {
 		return town.regionIndex;
 	}
@@ -144,8 +155,9 @@ public abstract class SubContext extends DefaultContext<Object> {
 	public void init() {
 		schedule = RunEnvironment.getInstance().getCurrentSchedule();
 		// Crea Schedule one shot para agregar infectados el dia de ingreso del primero, o el primer dia de simulacion (si ingresa antes)  
-		ScheduleParameters params = ScheduleParameters.createOneTime(
-				(InfectionReport.simulationStartDay > town.outbreakStartDay ? 0 : (town.outbreakStartDay - InfectionReport.simulationStartDay) * 24), 0.9d);
+		ScheduleParameters params = ScheduleParameters
+				.createOneTime((InfectionReport.simulationStartDay > town.outbreakStartDay ? 0
+						: (town.outbreakStartDay - InfectionReport.simulationStartDay) * 24), 0.9d);
 		schedule.schedule(params, this, "infectLocalRandos", Town.firstInfectedAmount);
 		
 		// Programa los cambios de fases, pasadas y futuras
@@ -184,6 +196,10 @@ public abstract class SubContext extends DefaultContext<Object> {
 		workPlaces.clear();
 		schoolPlaces.clear();
 		universityPlaces.clear();
+		
+		// Inicializar gestor de vacunacion
+		vaccineManager = new VaccinationManager(this);
+		vaccineManager.loadScheduleFiles(town.getVacScheduleFilepath(), town.getVacTypesFilepath());
 	}
 	
 	/**
@@ -234,7 +250,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		int i;
 		do {
 			// Saltea primer y ultima franja etaria
-			i = RandomHelper.nextIntFromTo(localHumansIndex[0], localHumansIndex[localHumansIndex.length - 2] - 1);
+			i = RandomHelper.nextIntFromTo(localHumansAGIndex[0], localHumansAGIndex[localHumansAGIndex.length - 2] - 1);
 			// Chequea si no es repetido
 			if (indexes.add(i)) {
 				contextHumans[i].setInfectious(true, true); // Asintomatico
@@ -339,8 +355,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 		int partIndex = 0;
 		for (int i = 0; i < humansByAG.length; i++) { // Franjas
 			// Busca desde el indice del grupo etario anterior, al siguiente 
-			rndFrom = (i == 0) ? 0 : localHumansIndex[i - 1];
-			rndTo = localHumansIndex[i] - 1;
+			rndFrom = (i == 0) ? 0 : localHumansAGIndex[i - 1];
+			rndTo = localHumansAGIndex[i] - 1;
 			// Si tiene que seleccionar mas de los disponibles
 			if (humansByAG[i] > (rndTo - rndFrom + 1)) {
 				System.err.println("Cantidad de Humanos insuficiente en franja etaria: " + i);
@@ -380,45 +396,6 @@ public abstract class SubContext extends DefaultContext<Object> {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Programa actividad forzada en Places para ciertos Humanos.
-	 * @param type tipo secundario de Place
-	 * @param secondaryOnly si se ignora el tipo primario
-	 * @param maxPlaces cantidad de Places al azar (-1 para todos)
-	 * @param humansPerPlace cantidad de Humanos por Place
-	 * @param ageGroupPerc porcentaje de Humanos por franja etaria
-	 * @param ticksDuration duracion de la actividad en ticks
-	 */
-	@SuppressWarnings("unused")
-	private void scheduleForcedActivity(String type, Boolean secondaryOnly, int maxPlaces, int humansPerPlace, int[] ageGroupPerc, int ticksDuration) {
-		PlaceProperty placeProp = placesProperty.get(type);
-		if (placeProp == null) {
-			System.err.println("Type de Place desconocido: " + type);
-			return;
-		}
-		
-		List<BuildingAgent> places;
-		if (secondaryOnly) // No toma el resto de places en el grupo primario
-			places = buildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType(), placeProp.getGoogleMapsType());
-		else
-			places = buildingManager.getActivityBuildings(maxPlaces, placeProp.getGooglePlaceType());
-		
-		if (places.isEmpty()) {
-			System.err.println("No existen Places del type: " + type);
-			return;
-		}
-		
-		int[] agPerBuilding = new int[ageGroupPerc.length];
-		int adjHumPerPlace = 0; // Cantidad ajustada de Humanos por Place
-		for (int i = 0; i < ageGroupPerc.length; i++) {
-			agPerBuilding[i] = Math.round((humansPerPlace * ageGroupPerc[i]) / 100);
-			adjHumPerPlace += agPerBuilding[i];
-		}
-		
-		HumanAgent[][] activeHumans = gatherHumansForEvent(places.size(), adjHumPerPlace, agPerBuilding);
-		distributeHumansInEvent(places, activeHumans, ticksDuration);
 	}
 	
 	/**
@@ -538,7 +515,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	protected void stopRepeatingYoungAdultsParty() {
 		if (!removeYAPartyAction()) {
 			ScheduleParameters params;
-			params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1d);
+			params = ScheduleParameters.createOneTime(schedule.getTickCount() + 0.1);
 			schedule.schedule(params, this, "removeYAPartyAction");
 		}
 	}
@@ -582,12 +559,15 @@ public abstract class SubContext extends DefaultContext<Object> {
 	}
 			
 	/**
-	 * Eliminar la accion programada para protocolo burbuja
+	 * Eliminar la accion programada para intercambiar burbujas y deshabilita el protocolo.
 	 * @return <b>true</b> si se elimino la accion
 	 */
 	public boolean removeSchoolProtocolAction() {
-		ClassroomAgent.setSchoolProtocol(false);
-		return schedule.removeAction(startSchoolProtocolAction);
+		if (schedule.removeAction(startSchoolProtocolAction)) {
+			ClassroomAgent.setSchoolProtocol(false);
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -608,7 +588,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		// El nuevo porcentaje es menor
 		if (newAmount < oldAmount) {
 			int toRemove = oldAmount - newAmount;
-			for (java.util.Iterator<Integer> it = socialDistIndexes.iterator(); it.hasNext();) {
+			for (Iterator<Integer> it = socialDistIndexes.iterator(); it.hasNext();) {
 				Integer index = it.next();
 				contextHumans[index].setSociallyDistanced(false);
 				it.remove();
@@ -1089,7 +1069,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 		// Inicia cantidad de humanos e indices
 		localHumansCount = 0;
 		foreignHumansCount = 0;
-		localHumansIndex = new int[DataSet.AGE_GROUPS];
+		localHumansAGIndex = new int[DataSet.AGE_GROUPS];
 		
 		// Calcula la cantidad de humanos en el contexto de acuerdo a la poblacion del municipio y la distribucion por seccional
 		for (i = 0; i < town.sectoralsCount; i++) {
@@ -1112,7 +1092,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 			for (j = 0; j < DataSet.AGE_GROUPS; j++) {
 				locals[i][j] = (int) Math.round((localCount * DataSet.HUMANS_PER_AGE_GROUP[j]) / 100);
 				localHumansCount += locals[i][j];
-				localHumansIndex[j] += locals[i][j];
+				localHumansAGIndex[j] += locals[i][j];
 				localTravelers[i][j] = (int) (localTravelersCount * getLocalHumansPerAG(sectoralType)[j]) / 100;
 				locals[i][j] -= localTravelers[i][j];
 			}
@@ -1131,8 +1111,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 		// Calcula el indice en contextHumans donde comienza cada grupo etario
 		int[] humansIdx = new int[DataSet.AGE_GROUPS]; // Indice desde cual ubicar cada grupo etario
 		for (i = 1; i < DataSet.AGE_GROUPS; i++) {
-			localHumansIndex[i] += localHumansIndex[i - 1];
-			humansIdx[i] = localHumansIndex[i - 1];
+			localHumansAGIndex[i] += localHumansAGIndex[i - 1];
+			humansIdx[i] = localHumansAGIndex[i - 1];
 		}
 		//
 		return humansIdx;
@@ -1370,6 +1350,8 @@ public abstract class SubContext extends DefaultContext<Object> {
 	/** @return <b>true</b> si entre clientes y trabajadores en lugares de otros/ocio usan tapaboca */
 	public boolean wearMaskCustomer()	{ return wearMaskCustomer; }
 	
+	/** @return porcentaje sobre 100 de mortalidad en pacientes con casos graves */
+	public double getPreICUDeathRate()	{ return DataSet.DEFAULT_PREICU_DEATH_RATE; }
 	/** @return porcentaje sobre 100 de mortalidad en pacientes internados en UTI */
 	public double getICUDeathRate()		{ return DataSet.DEFAULT_ICU_DEATH_RATE; }
 	/** @return modificador para calcular chance de contagio fuera del contexto (al aumentar, aumenta chance) */

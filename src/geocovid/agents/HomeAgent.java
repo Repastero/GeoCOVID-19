@@ -13,9 +13,9 @@ import geocovid.contexts.SubContext;
  */
 public class HomeAgent extends BuildingAgent {
 	private List<HumanAgent> occupants = new ArrayList<HumanAgent>();
-	private double lastQuarentineST = -DataSet.PREVENTIVE_QUARANTINE_TIME;
+	private int lastQuarentineST = -DataSet.PREVENTIVE_QUARANTINE_TIME;
 	
-	public HomeAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, long id, int homeArea, int homeCoveredArea) {
+	public HomeAgent(SubContext subContext, int sectoralType, int sectoralIndex, Coordinate coord, int id, int homeArea, int homeCoveredArea) {
 		super(subContext, sectoralType, sectoralIndex, coord, id, "home", homeArea, homeCoveredArea, DataSet.BUILDING_AVAILABLE_AREA, false);
 	}
 	
@@ -31,7 +31,7 @@ public class HomeAgent extends BuildingAgent {
 	 * Pone en cuarentena preventiva a los ocupantes no expuestos.
 	 * @param startTime tick de inicio
 	 */
-	public void startPreventiveQuarentine(double startTime) {
+	public void startPreventiveQuarentine(int startTime) {
 		// Chequear que no junten dos periodos de cuarentena
 		if ((startTime - lastQuarentineST) > DataSet.PREVENTIVE_QUARANTINE_TIME) {
 			lastQuarentineST = startTime;
