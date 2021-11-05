@@ -207,7 +207,7 @@ public abstract class SubContext extends DefaultContext<Object> {
 	 * Para usar como Schedulable Action
 	 */
 	public void switchHumanLocation() {
-		Stream<Object> iteral = getObjectsAsStream(HumanAgent.class);
+		Stream<Object> iteral = getRandomObjectsAsStream(HumanAgent.class, Long.MAX_VALUE);
 		iteral.forEach(h -> ((HumanAgent) h).switchLocation());
 	}
 	
