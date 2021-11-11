@@ -61,6 +61,8 @@ public class ConcordContext extends SubContext {
 
 	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
 	private static final int[] TRAVEL_OUTSIDE_CHANCE = {50, 40};	// Se desplazan mas de 1500 metros el 60% de la poblacion (bajamos un poco por la epidemia)
+	/** chance de contagio al realizar una actividad fuera del contexto */
+	private static final int OOC_CONTAGION_VALUE = 240;
 	
 	private static Map<String, PlaceProperty> customPlacesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	private static String currentMonth = null;	// Para distinguir entre cambios de markovs
@@ -105,7 +107,7 @@ public class ConcordContext extends SubContext {
 		case 201: // 20 julio
 			// Reapertura progresiva (Fase 4)
 			buildingManager.openPlaces("sports_school", "gym", "sports_club", "church");
-			buildingManager.limitActivitiesCapacity(3d);
+			buildingManager.limitActivitiesCapacity(3.2d);
 			break;
 		case 215: // 3 agosto
 			// Mini veranito
@@ -122,24 +124,24 @@ public class ConcordContext extends SubContext {
 			break;
 		case 257: // 14 septiembre
 			buildingManager.ventilateEntertainmentPlaces(true);
-			buildingManager.limitActivitiesCapacity(1.4);
+			buildingManager.limitActivitiesCapacity(2);
 			break;
 		case 264: // 21 septiembre
 			buildingManager.openPlaces("sports_club", "sports_complex", "park");
 			break;
 		case 281: // 9 octubre
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
-			buildingManager.limitActivitiesCapacity(1d);
+			buildingManager.limitActivitiesCapacity(1.8d);
 			setSocialDistancing(20);
 			break;
 		case 302: // 29 octubre
 			buildingManager.openPlaces("casino", "nursery_school", "association_or_organization");
-			buildingManager.limitActivitiesCapacity(1.2);
+			buildingManager.limitActivitiesCapacity(2);
 			setMaskEffectivity(0.25);
 			setSocialDistancing(20);
 			break;
 		case 310: // 6 noviembre
-			buildingManager.limitActivitiesCapacity(1.6);
+			buildingManager.limitActivitiesCapacity(1.5);
 			setSocialDistancing(25);
 			break;
 		case 343: // 9 diciembre
@@ -152,7 +154,7 @@ public class ConcordContext extends SubContext {
 		case 348: // 14 diciembre
 			// Aumentan las compras por las fiestas
 			setSocialDistancing(25);
-			buildingManager.limitActivitiesCapacity(1.7);
+			buildingManager.limitActivitiesCapacity(2.4);
 			// Verano sin ventilacion en hogares 
 			buildingManager.ventilateHomes(false);
 			break;
@@ -166,7 +168,7 @@ public class ConcordContext extends SubContext {
 			scheduleForcedEvent(8, true, true, tmp, 15, new int[] {14, 18, 23, 32, 13}, 3); // 3 ticks = 2 horas
 			break;
 		case 366: // 1 enero
-			buildingManager.limitActivitiesCapacity(2d);
+			buildingManager.limitActivitiesCapacity(1.5d);
 		case 359: // 25 diciembre
 			// Festejos entre jovenes - 4% de la poblacion a 1 cuadrados por persona, al aire libre
 			tmp = (int) Math.round(town.localHumans * 0.04d);
@@ -183,7 +185,7 @@ public class ConcordContext extends SubContext {
 			buildingManager.limitEntertainmentActCap(2.5); // mas actividades afuera
 			break;
 		case 411: // 15 febrero
-			buildingManager.limitEntertainmentActCap(3d);
+			buildingManager.limitEntertainmentActCap(3.2d);
 			buildingManager.openPlaces("movie_theater", "cultural_center", "art_gallery", "club");
 			break;
 		case 425: // 1 marzo
@@ -192,23 +194,23 @@ public class ConcordContext extends SubContext {
 			buildingManager.ventilateWorkplaces(true);
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
-			buildingManager.limitActivitiesCapacity(1.75, 2.5);
+			buildingManager.limitActivitiesCapacity(1.75, 2.9);
 			buildingManager.openPlaces("library", "school","primary_school", "secondary_school");
 			setSchoolProtocol(true); // habilita protocolo burbuja 50%
 			break;
 		case 435: // 11 marzo
 			// Aumenta el ocio 
-			buildingManager.limitActivitiesCapacity(1.5, 1.75);
+			buildingManager.limitActivitiesCapacity(1.5, 2.8);
 			buildingManager.openPlaces("movie_theater");
 			break;
 		case 445: // 21 marzo
 			// Aumenta un poco mas el ocio 
-			buildingManager.limitActivitiesCapacity(1.25, 1.5);
+			buildingManager.limitActivitiesCapacity(1.25, 2.8);
 			break;
 		case 456: // 1 abril - jueves
 			// Inicio Semana Santa
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
-			buildingManager.limitActivitiesCapacity(1d, 1.25);
+			buildingManager.limitActivitiesCapacity(1d, 1.5);
 			break;
 		case 459: // 4 abril - domingo
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
@@ -223,24 +225,24 @@ public class ConcordContext extends SubContext {
 			// Nuevas medidas
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.ventilateHomes(false);
-			buildingManager.limitActivitiesCapacity(1.5, 2.25);
+			buildingManager.limitActivitiesCapacity(1.5, 1.6);
 			// Merman las jodas, por que vuelven a controlar
 			stopRepeatingYoungAdultsParty();
 			break;
 		case 487: // 2 mayo - nuevas restricciones
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
-			buildingManager.limitActivitiesCapacity(2.25, 2.75);
+			buildingManager.limitActivitiesCapacity(2.25, 2.4);
 			buildingManager.closePlaces("library", "school","primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club");
 			break;
 		case 494: // 9 mayo - fin de nuevas restricciones
-			buildingManager.limitActivitiesCapacity(1.75, 2.25);
+			buildingManager.limitActivitiesCapacity(1.75, 2.3);
 			buildingManager.openPlaces("library", "school", "primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club");
 			break;
 		case 507: // 22 mayo - nuevas restricciones fase 1
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
-			buildingManager.limitActivitiesCapacity(2d, 2.75);
+			buildingManager.limitActivitiesCapacity(2d, 2.4);
 			buildingManager.closePlaces(
 			// Trabajo/estudio
 			 "primary_school", "secondary_school", "university",
@@ -250,38 +252,38 @@ public class ConcordContext extends SubContext {
 			break;
 		case 516: // 31 mayo - fin de nuevas restricciones fase 1
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
-			buildingManager.limitActivitiesCapacity(1.5, 2.25);
+			buildingManager.limitActivitiesCapacity(1.5, 2.5);
 			buildingManager.openPlaces(
 			// Ocio
 			"childrens_party_service", "church", "spa", "park", "cultural_center");
 			break;
 		case 523: // 7 junio  
-			buildingManager.openPlaces("gym"); // "movie_theater" no?
+			buildingManager.openPlaces("gym", "movie_theater"); // "movie_theater" no?
 			break;
 		case 527: // 11 junio
-			buildingManager.limitActivitiesCapacity(1.25, 2d);
+			buildingManager.limitActivitiesCapacity(2, 2.4d);
 			buildingManager.openPlaces("primary_school");
 			break;
 		case 538: // 22 junio
 			buildingManager.openPlaces("secondary_school");
-			buildingManager.limitEntertainmentActCap(1.8);
+			buildingManager.limitEntertainmentActCap(3);
 			break;
 		case 556: // 10 julio sabado
 			// Inicio receso escolar de invierno, 2 semanas
 			buildingManager.closePlaces("school", "primary_school", "secondary_school");
-			buildingManager.limitEntertainmentActCap(1.6);
+			buildingManager.limitEntertainmentActCap(2.5);
 			break;
 		case 572: // 26 julio lunes
 			// Fin receso escolar de invierno
 			buildingManager.openPlaces("school", "primary_school", "secondary_school");
-			buildingManager.limitEntertainmentActCap(1.4);
+			buildingManager.limitEntertainmentActCap(2.9);
 			setMaskEffectivity(0.20);
 			setSocialDistancing(10);
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			break;
 		case 583: // 6 agosto viernes
 			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
-			buildingManager.limitEntertainmentActCap(1.25);
+			buildingManager.limitEntertainmentActCap(3.2);
 			//se mantiene las mismas restriccones , se aumenta el aforo en algunas actividades, 
 			//falta habilitra "night_club", "stadium","childrens_party_service,"club""
 			//https://www.argentina.gob.ar/noticias/nuevas-disposiciones-sanitarias-ante-pandemia-de-covid-19
@@ -294,8 +296,10 @@ public class ConcordContext extends SubContext {
 			break;
 		case 640: // 2 octubre sabado
 			// Distancia-que???
-			setSocialDistancing(0);
+			setSocialDistancing(10);
+			setMaskEffectivity(0.15);
 			buildingManager.openPlaces("night_club", "stadium","childrens_party_service","club");
+			
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
@@ -376,4 +380,6 @@ public class ConcordContext extends SubContext {
 	public int[][][] getIsolatedLocalTMMC(int ageGroup) { return isolatedLocalTMMC[ageGroup]; }
 	@Override
 	public int[][][] getLocalTMMC(int sectoralType, int ageGroup) { return localTMMC[sectoralType][ageGroup]; }
+	@Override
+	public int getOOCContagionValue() { return OOC_CONTAGION_VALUE; }
 }

@@ -62,6 +62,9 @@ public class GchuContext extends SubContext {
 	/** % sobre 100 de que al realizar actividades de ocio u otros salga del contexto */
 	private static final int[] TRAVEL_OUTSIDE_CHANCE = {45, 0};	// Se desplazan mas de 1500 metros el 47% de la población
 	
+	/** % de casos graves en UTI que mueren al terminar periodo de internacion */
+	public static final double	ICU_DEATH_RATE = 75d; // ma mortalida Gchu
+	
 	private static Map<String, PlaceProperty> customPlacesProperty = new HashMap<>(); // Lista de atributos de cada tipo de Place
 	private static String currentMonth = null;	// Para distinguir entre cambios de markovs
 	private static boolean weekendTMMCEnabled = false;	// Flag fin de seamana
@@ -219,12 +222,12 @@ public class GchuContext extends SubContext {
 			break;
 		case 445: // 21 marzo
 			// Aumenta un poco mas el ocio 
-			buildingManager.limitActivitiesCapacity(1.25, 1.5);
+			buildingManager.limitActivitiesCapacity(1.25, 1.3);
 			break;
 		case 456: // 1 abril - jueves
 			// Inicio Semana Santa
 			setTMMCs("holidays", MarkovChains.HOLIDAYS_TMMC);
-			buildingManager.limitActivitiesCapacity(1d, 1.25);
+			buildingManager.limitActivitiesCapacity(1d, 1);
 			break;
 		case 459: // 4 abril - domingo
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
@@ -239,24 +242,24 @@ public class GchuContext extends SubContext {
 			// Nuevas medidas
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
 			buildingManager.ventilateHomes(false);
-			buildingManager.limitActivitiesCapacity(1.75, 2.25);
+			buildingManager.limitActivitiesCapacity(1.75, 1.8);
 			// Merman las jodas, por que vuelven a controlar
 			stopRepeatingYoungAdultsParty();
 			break;
 		case 487: // 2 mayo - nuevas restricciones
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
-			buildingManager.limitActivitiesCapacity(2.25, 2.75);
+			buildingManager.limitActivitiesCapacity(2.25, 1.9);
 			buildingManager.closePlaces("library", "school","primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club");
 			break;
 		case 494: // 9 mayo - fin de nuevas restricciones
-			buildingManager.limitActivitiesCapacity(1.75, 2.25);
+			buildingManager.limitActivitiesCapacity(1.75, 2);
 			buildingManager.openPlaces("library", "school", "primary_school", "secondary_school",
 			"casino","club","childrens_party_service", "night_club");
 			break;
 		case 507: // 22 mayo - nuevas restricciones fase 1
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
-			buildingManager.limitActivitiesCapacity(2.25, 2.75);
+			buildingManager.limitActivitiesCapacity(2.25, 2.4);
 			buildingManager.closePlaces(
 			// Trabajo/estudio
 			 "primary_school", "secondary_school", "university",
@@ -266,7 +269,7 @@ public class GchuContext extends SubContext {
 			break;
 		case 516: // 31 mayo - fin de nuevas restricciones fase 1
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
-			buildingManager.limitActivitiesCapacity(1.75, 2.25);
+			buildingManager.limitActivitiesCapacity(1.75, 1.2);
 			buildingManager.openPlaces(
 			// Ocio
 			"church", "spa", "park", "cultural_center"); // "childrens_party_service" no?
@@ -275,12 +278,12 @@ public class GchuContext extends SubContext {
 			buildingManager.openPlaces("movie_theater", "gym");
 			break;
 		case 527: // 11 junio
-			buildingManager.limitActivitiesCapacity(1.25, 2d);
+			buildingManager.limitActivitiesCapacity(1.25, 1.4d);
 			buildingManager.openPlaces("primary_school");
 			break;
 		case 538: // 22 junio
 			buildingManager.openPlaces("secondary_school");
-			buildingManager.limitEntertainmentActCap(1.8);
+			buildingManager.limitEntertainmentActCap(1.5);
 			break;
 		case 556: // 10 julio sabado
 			// Inicio receso escolar de invierno, 2 semanas
@@ -392,4 +395,6 @@ public class GchuContext extends SubContext {
 	public int[][][] getIsolatedLocalTMMC(int ageGroup) { return isolatedLocalTMMC[ageGroup]; }
 	@Override
 	public int[][][] getLocalTMMC(int sectoralType, int ageGroup) { return localTMMC[sectoralType][ageGroup]; }
+	@Override
+	public double getICUDeathRate() { return ICU_DEATH_RATE; }
 }

@@ -304,7 +304,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 583: // 6 agosto viernes
 			setTMMCs("default", MarkovChains.DEFAULT_TMMC);
-			buildingManager.limitEntertainmentActCap(1d);
+			buildingManager.limitEntertainmentActCap(2d);
 			//se mantiene las mismas restriccones , se aumenta el aforo en algunas actividades, 
 			//falta habilitra "night_club", "stadium","childrens_party_service,"club""
 			//https://www.argentina.gob.ar/noticias/nuevas-disposiciones-sanitarias-ante-pandemia-de-covid-19
@@ -320,8 +320,8 @@ public class ParanaContext extends SubContext {
 			buildingManager.ventilateHomes(true);
 			break;
 		case 640: // 2 octubre sabado
-			// Distancia-que???
-			setSocialDistancing(0);
+			
+			setSocialDistancing(10);
 			buildingManager.openPlaces("night_club", "stadium","childrens_party_service","club");
 			break;
 		default:
