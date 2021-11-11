@@ -102,7 +102,7 @@ public class OtrosContext extends SubContext {
 			buildingManager.ventilateEntertainmentPlaces(false);
 			break;
 		case 159: // 8 junio - domingo
-			// Gastronomicos con reserva previa con un mÃ¡ximo del 30% de la capacidad (hasta las 23).
+			// Gastronomicos con reserva previa con un máximo del 30% de la capacidad (hasta las 23).
 			buildingManager.openPlaces("bar", "restaurant");
 			setSocialDistancing(60);
 			break;
@@ -120,16 +120,16 @@ public class OtrosContext extends SubContext {
 			setSocialDistancing(40);
 			break;
 		case 226: // 14 agosto - viernes
-			buildingManager.limitActivitiesCapacity(2.5, 3);
+			buildingManager.limitActivitiesCapacity(2.5, 1.5);
 			break;
 		case 231: // 19 agosto - miercoles
-			buildingManager.limitActivitiesCapacity(1.5, 2.25);
+			buildingManager.limitActivitiesCapacity(1.5, 1.);
 			setSocialDistancing(20);
 			break;
 		case 255: // 12 septiembre - domingo
 			// Vuelta atras de fase por 14 dias
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
-			buildingManager.limitEntertainmentActCap(2);
+			buildingManager.limitEntertainmentActCap(1);//1.3
 			buildingManager.closePlaces("bar", "restaurant", "church");
 			// Nuevas medidas (contacto estrecho)
 			enableCloseContacts();
@@ -140,14 +140,14 @@ public class OtrosContext extends SubContext {
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
 			buildingManager.openPlaces("bar", "restaurant", "church", "gym", "sports_club", "sports_school", "sports_complex");
 			// Inicio mini veranito
-			buildingManager.limitActivitiesCapacity(1.25, 1.5);
+			buildingManager.limitActivitiesCapacity(1.25, 1);
 			setMaskEffectivity(0.10);
 			setSocialDistancing(10);
 			break;
 		case 281: // 9 octubre - viernes
 			buildingManager.openPlaces("club", "campground");
 			// Fin mini veranito
-			buildingManager.limitActivitiesCapacity(1.5, 2.5);
+			buildingManager.limitActivitiesCapacity(2.5, 3.2);
 			setMaskEffectivity(0.20);
 			setSocialDistancing(20);
 			break;
@@ -155,24 +155,24 @@ public class OtrosContext extends SubContext {
 			// Desde Octubre ventilacion en hogares y ocio
 			buildingManager.ventilateHomes(true);
 			buildingManager.ventilateEntertainmentPlaces(true);
-			buildingManager.limitEntertainmentActCap(3);
+			buildingManager.limitEntertainmentActCap(2.8);
 			break;
 		case 313: // 9 noviembre - lunes
 			// Se habilitan eventos culturales y actividades recreativas al aire libre
 			setTMMCs("november", MarkovChains.NOVEMBER_TMMC);
-			buildingManager.limitEntertainmentActCap(2);
+			buildingManager.limitEntertainmentActCap(2.5);
 			buildingManager.openPlaces("cultural_center", "art_gallery");
 			break;
 		case 317: // 13 noviembre - viernes
-			buildingManager.limitEntertainmentActCap(1.5);
+			buildingManager.limitEntertainmentActCap(2.3);//2.6
 			break;
 		case 331: // 27 noviembre - viernes
 			// Se habilitan salones para fiestas como bar / restaurant
 			buildingManager.openPlaces("night_club");
 			break;
 		case 335: // 1 diciembre - martes
-			buildingManager.limitEntertainmentActCap(2);
-			// El decreto NÂº 1531, habilita desde el 1 de diciembre el funcionamiento de jardines maternales de gestiÃ³n privada "nursery_school"
+			buildingManager.limitEntertainmentActCap(2.4);
+			// El decreto Nº 1531, habilita desde el 1 de diciembre el funcionamiento de jardines maternales de gestión privada "nursery_school"
 			buildingManager.openPlaces("lodging", "spa");
 			break;
 		case 340: // 6 diciembre - domingo
@@ -197,7 +197,7 @@ public class OtrosContext extends SubContext {
 			buildingManager.closePlaces("courthouse", "local_government_office", "social_services_organization",
 					"association_or_organization", "corporate_office");
 			// Aumentan mas las compras y las juntadas por las fiestas
-			buildingManager.limitEntertainmentActCap(3.5);
+			buildingManager.limitEntertainmentActCap(3);
 		case 365: // 31 diciembre - jueves
 			// Cenas familiares - 80% de la poblacion dividida en grupos de 15 personas, mitad afuera y mitad adentro
 			tmp = (int) Math.round(town.localHumans / 15 * 0.8d);
@@ -237,7 +237,7 @@ public class OtrosContext extends SubContext {
 			buildingManager.ventilateWorkplaces(true);
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
-			buildingManager.limitEntertainmentActCap(2); 
+			buildingManager.limitEntertainmentActCap(1.7); 
 			break;
 		case 434: // 10 marzo - miercoles
 			// Cines en Ciudad de SF pueden ocupar hasta el 50% de su capacidad
@@ -245,6 +245,7 @@ public class OtrosContext extends SubContext {
 			break;
 		case 439: // 15 marzo - lunes
 			// En Santa Fe inician las clases presenciales de todos los cursos
+			buildingManager.limitEntertainmentActCap(1); 
 			buildingManager.openPlaces("library", "school", "primary_school", "secondary_school");
 			setSchoolProtocol(true);//habilita protocolo burbuja 50%
 			break;
@@ -257,7 +258,7 @@ public class OtrosContext extends SubContext {
 			break;
 		case 478: // 23 abril - viernes, nuevas restricciones
 			buildingManager.closePlaces("movie_theater", "bar", "restaurant", "casino", "childrens_party_service", "night_club");
-			buildingManager.limitEntertainmentActCap(2.5);
+			buildingManager.limitEntertainmentActCap(2);
 			setMaskEffectivity(0.25);
 			break;
 		case 488: // 3 mayo - lunes, fin de nuevas restricciones
@@ -266,7 +267,7 @@ public class OtrosContext extends SubContext {
 		case 505: // 20 mayo - jueves, nuevas restricciones fase 1
 			setSocialDistancing(30);
 			setTMMCs("june", MarkovChains.JUNE_TMMC);
-			buildingManager.limitEntertainmentActCap(3);
+			buildingManager.limitEntertainmentActCap(1d);//2.1
 			buildingManager.closePlaces(
 			// Trabajo/estudio
 			"lodging", "nursery_school", "association_or_organization", "primary_school", "secondary_school",
@@ -277,15 +278,47 @@ public class OtrosContext extends SubContext {
 		case 516: // 31 mayo - lunes
 			// TODO segun decreto siguen con muchas restricciones de fase 1 (pero comparando movilidad, no se cumplen)
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
-			buildingManager.limitEntertainmentActCap(2.5);
+			setSocialDistancing(20);
+			buildingManager.limitActivitiesCapacity(1.3, 2.1);
+			
 			buildingManager.openPlaces("bar", "restaurant"); // entre las 6 y 19 horas
 			// medidas hasta el 6 que despues se extienden al 11 de junio
 			break;
 		case 528: // 12 junio - sabado
-			// TODO implementar medidas hasta el 26
+			// mismas medidas hasta el 26
 			break;
 		case 538: // 22 junio - martes
-			// TODO vuelven clases inicial y primario
+			buildingManager.openPlaces("library","primary_school","nursery_school");
+			buildingManager.limitEntertainmentActCap(2d);
+			break;
+		case 542: // 26 junio - sabado
+			// mismas medidas hasta el 9 de julio
+			break;
+		case 555: // 9 julio - viernes al 23 de julio
+			buildingManager.openPlaces("lodging","park","movie_theater","church","casino","cultural_center","art_gallery","gym","sports_complex",
+			"spa","campground");
+			break;
+		case 558: // 12 de julio- lunes  al 23/7: receso escolar de invierno
+			buildingManager.closePlaces("nursery_school", "primary_school");
+			break;
+		case 572: // 26 de julio- lunes  fin receso escolar de invierno
+			buildingManager.openPlaces( "nursery_school", "primary_school","secondary_school");
+			buildingManager.limitActivitiesCapacity(1.5,2);
+			break;
+		case 577: // 31 de julio : restricciones hasta 6 de agosto
+		buildingManager.openPlaces( "sports_club","club","sports_school");
+		buildingManager.limitEntertainmentActCap(2.2d);
+		    break;
+		case 583: //6 de Agosto viernes
+			setTMMCs("pre-pandemic", MarkovChains.DEFAULT_TMMC);
+			buildingManager.limitEntertainmentActCap(2d);
+			//se mantiene las mismas restriccones , se aumenta el aforo en algunas actividades, 
+			//falta habilitra "night_club", "stadium","childrens_party_service,"club""
+			//https://www.argentina.gob.ar/noticias/nuevas-disposiciones-sanitarias-ante-pandemia-de-covid-19
+			break;
+		case 640://1 de octubre
+			//buildingManager.limitEntertainmentActCap(1.5d);
+			buildingManager.openPlaces("night_club", "stadium","childrens_party_service","club");
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);

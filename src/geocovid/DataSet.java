@@ -91,8 +91,8 @@ public final class DataSet {
 	public static final int QUARANTINED_PERIOD_DEVIATION=  2*24; // 2 dia desvio standard
 	
 	/** Duracion de inmunidad por vacuna */
-	public static final int VACCINE_IMMUNITY_PERIOD_MEAN		= 11*30*24; // 11 meses
-	public static final int VACCINE_IMMUNITY_PERIOD_DEVIATION	=  2*30*24; // 2 meses
+	public static final int VACCINE_IMMUNITY_PERIOD_MEAN		= 10*30*24; // 11 meses
+	public static final int VACCINE_IMMUNITY_PERIOD_DEVIATION	=  9*30*24; // 2 meses
 	/** Duracion de inmunidad natural */
 	public static final int NATURAL_IMMUNITY_PERIOD_MEAN		= VACCINE_IMMUNITY_PERIOD_MEAN;
 	public static final int NATURAL_IMMUNITY_PERIOD_DEVIATION	= VACCINE_IMMUNITY_PERIOD_DEVIATION;

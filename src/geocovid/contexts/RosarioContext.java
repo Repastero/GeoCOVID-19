@@ -103,7 +103,7 @@ public class RosarioContext extends SubContext {
 			buildingManager.ventilateEntertainmentPlaces(false);
 			break;
 		case 159: // 8 junio - domingo
-			// Gastronomicos con reserva previa con un mÃ¡ximo del 30% de la capacidad (hasta las 23).
+			// Gastronomicos con reserva previa con un máximo del 30% de la capacidad (hasta las 23).
 			buildingManager.openPlaces("bar", "restaurant");
 			setSocialDistancing(55);
 			break;
@@ -112,8 +112,8 @@ public class RosarioContext extends SubContext {
 			setSocialDistancing(40);
 			// Bares y restoranes abren de 7 a 24 horas, y los supermercados de 8 a 20 horas.
 			buildingManager.limitActivitiesCapacity(3, 3.5);
-			// Gimnasios e Instalaciones a los fines de la prÃ¡ctica de actividades deportivas
-			// que no impliquen contacto fÃ­sico entre los participantes. De 7 a 23 hs.
+			// Gimnasios e Instalaciones a los fines de la práctica de actividades deportivas
+			// que no impliquen contacto físico entre los participantes. De 7 a 23 hs.
 			buildingManager.openPlaces("gym", "sports_complex");
 			break;
 		case 181: // 30 junio - martes
@@ -143,11 +143,11 @@ public class RosarioContext extends SubContext {
 			buildingManager.limitActivitiesCapacity(1, 1.5);
 			break;
 		case 231: // 19 agosto - miercoles
-			buildingManager.limitActivitiesCapacity(1.5, 2);
+			buildingManager.limitActivitiesCapacity(1.5, 1.4);
 			break;
 		case 240: // 28 agosto - viernes
 			setSocialDistancing(20);
-			buildingManager.limitActivitiesCapacity(1.5, 2.5);
+			buildingManager.limitActivitiesCapacity(1.5, 1.9);
 			break;
 		case 255: // 12 septiembre - domingo
 			// Vuelta atras de fase por 14 dias
@@ -158,14 +158,14 @@ public class RosarioContext extends SubContext {
 			enablePrevQuarantine();
 			//
 			setSocialDistancing(30);
-			buildingManager.limitActivitiesCapacity(2, 3);
+			buildingManager.limitActivitiesCapacity(2, 1.8);
 			break;
 		case 269: // 26 septiembre - sabado
 			// Cambio de fase, gran cantidad de habilitaciones
 			setTMMCs("october", MarkovChains.OCTOBER_TMMC);
 			buildingManager.openPlaces("bar", "restaurant", "church", "gym", "sports_club", "sports_school", "sports_complex");
 			// Inicio mini veranito
-			buildingManager.limitOtherActCap(1.75);
+			buildingManager.limitOtherActCap(2.2);
 			// Ventilacion en hogares y ocio (adelantada de octubre)
 			buildingManager.ventilateHomes(true);
 			buildingManager.ventilateEntertainmentPlaces(true);
@@ -174,7 +174,7 @@ public class RosarioContext extends SubContext {
 			buildingManager.openPlaces("club", "campground");
 			// Fin mini veranito
 			setMaskEffectivity(0.25);
-			buildingManager.limitOtherActCap(2);
+			buildingManager.limitActivitiesCapacity(2.5, 3.2);
 			// Ventilo oficinas para bajar mas la curva
 			buildingManager.ventilateWorkplaces(true);
 			// Aumenta flota de colectivos
@@ -193,7 +193,7 @@ public class RosarioContext extends SubContext {
 		case 335: // 1 diciembre - martes
 			setSocialDistancing(20);
 			buildingManager.limitOtherActCap(1.5);
-			// El decreto NÂº 1531, habilita desde el 1 de diciembre el funcionamiento de jardines maternales de gestiÃ³n privada "nursery_school"
+			// El decreto Nº 1531, habilita desde el 1 de diciembre el funcionamiento de jardines maternales de gestión privada "nursery_school"
 			buildingManager.openPlaces("lodging", "spa");
 			break;
 		case 340: // 6 diciembre - domingo
@@ -250,7 +250,7 @@ public class RosarioContext extends SubContext {
 			setTMMCs("august", MarkovChains.AUGUST_TMMC);
 			break;
 		case 413: // 17 febrero - miercoles
-			buildingManager.limitActivitiesCapacity(1.5, 2);
+			buildingManager.limitActivitiesCapacity(1.5, 1.5);
 			buildingManager.openPlaces("nursery_school");
 			break;
 		case 425: // 1 marzo - lunes
@@ -259,7 +259,7 @@ public class RosarioContext extends SubContext {
 			buildingManager.ventilateWorkplaces(true);
 			// Aumenta el movimiento, casi vida normal
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
-			buildingManager.limitActivitiesCapacity(1, 1.5); 
+			buildingManager.limitActivitiesCapacity(1, 1.2); 
 			break;
 		case 434: // 10 marzo - miercoles
 			// Cines en Ciudad de SF pueden ocupar hasta el 50% de su capacidad
@@ -267,11 +267,12 @@ public class RosarioContext extends SubContext {
 			break;
 		case 439: // 15 marzo - lunes
 			// En Santa Fe inician las clases presenciales de todos los cursos
+			buildingManager.limitEntertainmentActCap(1d);
 			buildingManager.openPlaces("library", "school", "primary_school", "secondary_school");
 			setSchoolProtocol(true);//habilita protocolo burbuja 50%
 			break;
 		case 463: // 8 abril- jueves
-			buildingManager.limitActivitiesCapacity(1.5, 2);
+			buildingManager.limitActivitiesCapacity(1.5, 1.3);
 			// Suspension de actividades culturales
 			buildingManager.closePlaces("cultural_center", "art_gallery");
 			// Almuerzo domingo de pascuas - 50% de la poblacion dividida en grupos de 10 personas, todas adentro
@@ -280,11 +281,12 @@ public class RosarioContext extends SubContext {
 			break;
 		case 478: // 23 abril - viernes, nuevas restricciones
 			buildingManager.closePlaces("movie_theater", "bar", "restaurant", "casino", "childrens_party_service", "night_club");
-			buildingManager.limitActivitiesCapacity(2, 3);
+			buildingManager.limitActivitiesCapacity(2, 1);
 			setMaskEffectivity(0.25);
 			setSocialDistancing(30);
 			break;
 		case 488: // 3 mayo - lunes, fin de nuevas restricciones
+			buildingManager.limitEntertainmentActCap(1.3d);
 			buildingManager.openPlaces("movie_theater", "bar", "restaurant", "casino", "childrens_party_service", "night_club");
 			break;
 		case 505: // 20 mayo - jueves, nuevas restricciones fase 1
@@ -299,15 +301,47 @@ public class RosarioContext extends SubContext {
 		case 516: // 31 mayo - lunes
 			// TODO segun decreto siguen con muchas restricciones de fase 1 (pero comparando movilidad, no se cumplen)
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
-			buildingManager.limitEntertainmentActCap(2.5);
+			setSocialDistancing(20);
+			buildingManager.limitActivitiesCapacity(1.3, 2);
+			
 			buildingManager.openPlaces("bar", "restaurant"); // entre las 6 y 19 horas
 			// medidas hasta el 6 que despues se extienden al 11 de junio
 			break;
 		case 528: // 12 junio - sabado
-			// TODO implementar medidas hasta el 26
+			// mismas medidas hasta el 26
 			break;
 		case 538: // 22 junio - martes
-			// TODO vuelven clases inicial y primario
+			buildingManager.openPlaces("library","primary_school","nursery_school");
+			buildingManager.limitEntertainmentActCap(1.7d);
+			break;
+		case 542: // 26 junio - sabado
+			// mismas medidas hasta el 9 de julio
+			break;
+		case 555: // 9 julio - viernes al 23 de julio
+			buildingManager.openPlaces("lodging","park","movie_theater","church","casino","cultural_center","art_gallery","gym","sports_complex",
+			"spa","campground");
+			break;
+		case 558: // 12 de julio- lunes  al 23/7: receso escolar de invierno
+			buildingManager.closePlaces("nursery_school", "primary_school");
+			break;
+		case 572: // 26 de julio- lunes  fin receso escolar de invierno
+			buildingManager.openPlaces( "nursery_school", "primary_school","secondary_school");
+			buildingManager.limitActivitiesCapacity(1.5, 1.5);
+			break;
+		case 577: // 31 de julio : restricciones hasta 6 de agosto
+		buildingManager.openPlaces( "sports_club","club","sports_school");
+		buildingManager.limitEntertainmentActCap(2d);
+		    break;
+		case 583: //6 de Agosto viernes
+			setTMMCs("pre-pandemic", MarkovChains.DEFAULT_TMMC);
+			buildingManager.limitEntertainmentActCap(2d);
+			//se mantiene las mismas restriccones , se aumenta el aforo en algunas actividades, 
+			//falta habilitra "night_club", "stadium","childrens_party_service,"club""
+			//https://www.argentina.gob.ar/noticias/nuevas-disposiciones-sanitarias-ante-pandemia-de-covid-19
+			break;
+		case 640://1 de octubre
+			//buildingManager.limitEntertainmentActCap(1.5d);
+			buildingManager.openPlaces(	"night_club", "stadium","childrens_party_service","club");
 			break;
 		default:
 			throw new InvalidParameterException("Dia de fase no implementada: " + phase);
