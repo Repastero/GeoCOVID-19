@@ -44,10 +44,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 	
 	/** Lista de municipios a simular */
 	static final String[] TOWN_NAMES = { // se puede variar la cantidad, pero no repetir
-			"concordia"
-		/*"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
+		"parana","gualeguay","diamante","nogoya","victoria","sansalvador",
 		"gualeguaychu","uruguay","federacion","colon","islasdelibicuy",
-		"concordia","lapaz","villaguay","federal","tala","feliciano"*/
+		"concordia","lapaz","villaguay","federal","tala","feliciano"
 	};
 	
 	public ContextCreator() {
