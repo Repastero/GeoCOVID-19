@@ -271,12 +271,12 @@ public class ConcordContext extends SubContext {
 		case 556: // 10 julio sabado
 			// Inicio receso escolar de invierno, 2 semanas
 			buildingManager.closePlaces("school", "primary_school", "secondary_school");
-			buildingManager.limitEntertainmentActCap(2.5);
+			buildingManager.limitEntertainmentActCap(3.5);//2.5
 			break;
 		case 572: // 26 julio lunes
 			// Fin receso escolar de invierno
 			buildingManager.openPlaces("school", "primary_school", "secondary_school");
-			buildingManager.limitEntertainmentActCap(2.9);
+			buildingManager.limitEntertainmentActCap(3.5);
 			setMaskEffectivity(0.20);
 			setSocialDistancing(10);
 			setTMMCs("march", MarkovChains.MARCH_TMMC);
@@ -290,7 +290,7 @@ public class ConcordContext extends SubContext {
 			break;
 		case 607: // 30 agosto lunes
 			// Presencialidad plena en escuelas
-			setSchoolProtocol(false);
+			//setSchoolProtocol(false);
 			// Ventila hogares desde Septiembre
 			buildingManager.ventilateHomes(true);
 			break;

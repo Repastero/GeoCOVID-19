@@ -283,7 +283,7 @@ public class GchuContext extends SubContext {
 			break;
 		case 538: // 22 junio
 			buildingManager.openPlaces("secondary_school");
-			buildingManager.limitEntertainmentActCap(1.5);
+			buildingManager.limitEntertainmentActCap(1.7);//1.5
 			break;
 		case 556: // 10 julio sabado
 			// Inicio receso escolar de invierno, 2 semanas
@@ -307,7 +307,7 @@ public class GchuContext extends SubContext {
 			break;
 		case 607: // 30 agosto lunes
 			// Presencialidad plena en escuelas
-			setSchoolProtocol(false);
+			//setSchoolProtocol(false);
 			// Ventila hogares desde Septiembre
 			buildingManager.ventilateHomes(true);
 			break;

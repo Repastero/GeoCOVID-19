@@ -146,15 +146,16 @@ public final class DataSet {
 	/** Nombres de tipos de vacunas */
 	public static final String[] VACCINES_TYPES_NAME = {"AstraZeneca","Cansino","Moderna","Pfizer","Sinopharm","Sputnik"};
 	/** Cantidad de dosis por tipo de vacuna */
-	public static final int[] VACCINES_DOSES = {2, 1, 2, 2, 2, 2};
+	public static final int[] VACCINES_DOSES = {3, 1, 3, 3, 3, 3};
 	
 	/** Mediana de efectividad de vacunas por tipo y dosis */
 	public static final int[][] VACCINES_EFFICACY_MEAN = {
 			{63, 68, 92, 52, 65, 72}, // Primera dosis
 			{82,  0, 94, 95, 80, 91}, // Segunda dosis
+			{82,  0, 94, 95, 80, 91}, // Tercera dosis revisar
 	};
 	/** Desvio de efectividad de vacunas por dosis */
-	public static final int[] VACCINES_EFFICACY_DEVIATION = {10, 5};
+	public static final int[] VACCINES_EFFICACY_DEVIATION = {10, 5, 5};
 	
 	/** Tipos de vacuna combinables - 1er con 2nda dosis */
 	public static final boolean[][] VACCINES_COMBO = {
@@ -170,9 +171,9 @@ public final class DataSet {
 	public static final int VACCINE_IMMUNITY_CHANCE				= 75;
 	
 	/** Delay para ganar inmunidad por vacuna */
-	public static final int[] VACCINE_IMMUNITY_DELAY_MEAN		= {14*24, 14*24}; // 14 dias
+	public static final int[] VACCINE_IMMUNITY_DELAY_MEAN		= {14*24, 14*24, 14*24}; // 14 dias
 	/** Desvio en delay para ganar inmunidad por vacuna */
-	public static final int[] VACCINE_IMMUNITY_DELAY_DEVIATION	= { 1*24,  1*24}; // 1 dia
+	public static final int[] VACCINE_IMMUNITY_DELAY_DEVIATION	= { 1*24,  1*24, 1*24}; // 1 dia
 	
 	// Niveles de inmunidad
 	public static final int IMMUNITY_LVL_NONE	= -1;

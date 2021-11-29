@@ -25,21 +25,26 @@ public class VaccinationManager {
 	private ISchedule schedule; // Puntero
 	private Map<Integer, int[]> vaccineScheduleFD; // Calendario primera dosis
 	private Map<Integer, int[]> vaccineScheduleSD; // Calendario segunda dosis
+	private Map<Integer, int[]> vaccineScheduleTD; // Calendario tercera dosis
 	private int[][][] vaccineTypesRatio; // Proporcion de dosis de cada tipo aplicadas por grupo etario
 	private Map<Integer, int[][]> vaccineCombinations; // Segundas dosis combinables y proporciones por grupo etario
 	
 	private List<List<Integer>> sdQueueList; // Lista de espera segunda dosis
+	private List<List<Integer>> tdQueueList; // Lista de espera tercera dosis
 	private Map<Integer, Integer> fdReceivedType; // Tipo de primera dosis aplicada a cada humano
+	private Map<Integer, Integer> sdReceivedType; // Tipo de segunda dosis aplicada a cada humano
 	
 	private int[] agIndexes;		// Indice maximo en contextHumans, de humanos por grupo etario
 	private int[] unvacAGIndexes;	// Indice maximo en contextHumans, de humanos por grupo etario sin vacunar
 	private int[] unvacIndexes;		// Indices ordenado de humanos en contextHumans, sin vacunar o con dosis vencidas
 	
+	
 	public VaccinationManager(SubContext subContext) {
 		this.context = subContext;
 		this.vaccineScheduleFD = new TreeMap<>();
 		this.vaccineScheduleSD = new TreeMap<>();
-		this.vaccineTypesRatio = new int[2][DataSet.AGE_GROUPS][DataSet.VACCINES_TYPES];
+		this.vaccineScheduleTD = new TreeMap<>();
+		this.vaccineTypesRatio = new int[3][DataSet.AGE_GROUPS][DataSet.VACCINES_TYPES];
 		
 		// Inicializar arrays de espera PD
 		this.agIndexes = context.getLocalHumansAGIndex();
@@ -47,11 +52,16 @@ public class VaccinationManager {
 		this.unvacIndexes = IntStream.range(0, agIndexes[agIndexes.length - 1]).toArray();
 		
 		// Inicializar lista de espera SD y mapa de tipo de dosis administradas
+		this.tdQueueList = new ArrayList<List<Integer>>(DataSet.AGE_GROUPS);
+		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
+			this.tdQueueList.add(new ArrayList<Integer>());
+		}
 		this.sdQueueList = new ArrayList<List<Integer>>(DataSet.AGE_GROUPS);
 		for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
 			this.sdQueueList.add(new ArrayList<Integer>());
 		}
 		this.fdReceivedType = new HashMap<>();
+		this.sdReceivedType = new HashMap<>();
 	}
 	
 	/**
@@ -61,7 +71,7 @@ public class VaccinationManager {
 	 */
 	public void loadScheduleFiles(String scheduleFile, String typesFile) {
 		// Leer calendario de vacunacion por dia, con tipo y dosis por franja etaria
-		loadVaccineSchedule(scheduleFile, vaccineScheduleFD, vaccineScheduleSD);
+		loadVaccineSchedule(scheduleFile, vaccineScheduleFD, vaccineScheduleSD, vaccineScheduleTD);
 		// Leer proporcion de dosis por tipo y franja etaria
 		loadVaccineTypes(typesFile, vaccineTypesRatio);
 		
@@ -69,6 +79,7 @@ public class VaccinationManager {
 		schedule = RunEnvironment.getInstance().getCurrentSchedule();
 		scheduleVaccinationDays(vaccineScheduleFD, "applyFirstDoses");
 		scheduleVaccinationDays(vaccineScheduleSD, "applySecondDoses");
+		scheduleVaccinationDays(vaccineScheduleTD, "applyThirdDoses");
 		// Calcular proporcion vacunas combinables
 		this.vaccineCombinations = getVaccineCombos(vaccineTypesRatio);
 	}
@@ -124,7 +135,21 @@ public class VaccinationManager {
 		else
 			return getRandomVaccine(combos[ageGroup], combos[ageGroup][combos[ageGroup].length - 1]);
 	}
-	
+	/**
+	 * Selecciona el tipo de vacuna correspondiente a la tercera dosis.
+	 * @param secondDose indice tipo primera dosis
+	 * @param ageGroup indice grupo etario
+	 * @return indice tipo segunda dosis
+	 */
+	private int getTDVaccine(int secondDose, int ageGroup) {
+		// Si hay dosis con que combinar, selecciona aleatoriamente una de ellas,
+		// de lo contrario retorna el mismo tipo que la primer dosis.
+		int[][] combos = vaccineCombinations.get(secondDose);
+		if (combos == null)
+			return secondDose;
+		else
+			return getRandomVaccine(combos[ageGroup], combos[ageGroup][combos[ageGroup].length - 1]);
+	}
 	/**
 	 * Aplica las primeras dosis disponibles por grupos etarios, segun calendario de vacunacion.<p>
 	 * Chequea que solo se vacune a humanos vivos y que no presenten sintomas.<p>
@@ -215,9 +240,53 @@ public class VaccinationManager {
 					if (!human.wasExposed() || human.hasRecovered()) {
 						applyVaccine(human, vacType, 1);
 					}
-					// Se reduce la cola de espera para 2nda dosis
-					it.remove();
+					if (DataSet.VACCINES_DOSES[vacType] > 2) {
+						// Agregar a lista de espera para 3 dosis
+						tdQueueList.get(ag).add(humanIdx);
+						sdReceivedType.put(humanIdx, vacType);
+					}
+					// Se reduce la cola de espera para 2nda dosis 
+					
 					fdReceivedType.remove(humanIdx);
+					it.remove();
+					if (--doses == 0)
+						break;
+				}
+			}
+			//if (doses > 0) // sobran dosis
+			//	System.out.println("SOBRAN VACUNAS SD "+ doses + " FRANJA "+ ag + " -> "+ sdQueueList.get(ag).size());
+		}
+	}
+	
+	public void applyThirdDoses(int day) {
+		int[] dosesPerAG = vaccineScheduleTD.get(day);
+		HumanAgent human;
+		for (int ag = 0; ag < dosesPerAG.length; ag++) {
+			if (dosesPerAG[ag] == 0) // no hay dosis para este AG
+				continue;
+			
+			int doses = dosesPerAG[ag];
+			InfectionReport.addThirdVaccineDoses(doses); // sumo el total
+			for (Iterator<Integer> it = tdQueueList.get(ag).iterator(); it.hasNext();) {
+				Integer humanIdx = it.next();
+				human = context.getHuman(humanIdx);
+				// Si fallecio, lo saco de la lista, sin gastar dosis
+				if (human.isDead()) {
+					it.remove();
+				}
+				// Si tiene sintomas, se saltea la aplicacion
+				else if (!human.isSymptomatic()) {
+					int vacType = getTDVaccine(sdReceivedType.get(humanIdx), ag);
+					// Si no fue expuesto o ya se recupero, se aplica vacuna normalmente
+					// de lo contrario, gana inmunidad natural
+					if (!human.wasExposed() || human.hasRecovered()) {
+						applyVaccine(human, vacType, 2);
+					}
+					// Se reduce la cola de espera para 3ra dosis 
+					it.remove();
+					//tdQueueList.get(ag).add(humanIdx);
+					//4dReceivedType.put(humanIdx, vacType);
+					sdReceivedType.remove(humanIdx);
 					if (--doses == 0)
 						break;
 				}
@@ -232,7 +301,7 @@ public class VaccinationManager {
 	 * Calcula y asigna nivel de inmunidad obtenido.
 	 * @param human HumanAgent
 	 * @param vacType tipo vacuna
-	 * @param doseIdx indice dosis (0, 1)
+	 * @param doseIdx indice dosis (0, 1,2)
 	 */
 	private void applyVaccine(HumanAgent human, int vacType, int doseIdx) {
 		int efficacy = Utils.getStdNormalDeviate(DataSet.VACCINES_EFFICACY_MEAN[doseIdx][vacType], DataSet.VACCINES_EFFICACY_DEVIATION[doseIdx]);
@@ -256,7 +325,7 @@ public class VaccinationManager {
 	/**
 	 * Programa el cambio de nivel de inmunidad del humano vacunado.
 	 * @param human HumanAgent
-	 * @param doseIdx indice dosis (0, 1)
+	 * @param doseIdx indice dosis (0, 1, 2)
 	 * @param immLevel nivel de inmunidad adquirida
 	 */
 	private void setDelayedImmunity(HumanAgent human, int doseIdx, int immLevel) {
@@ -283,8 +352,9 @@ public class VaccinationManager {
 	 * @param filePath ruta archivo CSV
 	 * @param firstDoseSch mapa primeras dosis
 	 * @param secondDoseSch mapa segundas dosis
+	 * @param thirdDoseSch mapa terceras dosis
 	 */
-	private static void loadVaccineSchedule(String filePath, Map<Integer, int[]> firstDoseSch, Map<Integer, int[]> secondDoseSch) {
+	private static void loadVaccineSchedule(String filePath, Map<Integer, int[]> firstDoseSch, Map<Integer, int[]> secondDoseSch, Map<Integer, int[]> thirdDoseSch) {
 		final String[] colNames = {"day","dose","5-14","15-24","25-39","40-64","65+"};
 		boolean headerFound = false;
 		String[] nextLine;
@@ -314,8 +384,10 @@ public class VaccinationManager {
 				}
 				if (doseIdx == 0)
 					firstDoseSch.put(dayIdx, dosesPerAG);
-				else
+				else if (doseIdx == 1)
 					secondDoseSch.put(dayIdx, dosesPerAG);
+				else
+					thirdDoseSch.put(dayIdx, dosesPerAG);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -355,7 +427,7 @@ public class VaccinationManager {
 					System.err.println("Error tipo vacuna desconocida: " + vacType);
 					continue;
 				}
-				int doseIdx = Integer.valueOf(nextLine[dataIndexes[1]]); // Indice dosis (0 o 1)
+				int doseIdx = Integer.valueOf(nextLine[dataIndexes[1]]); // Indice dosis (0 o 1 0 2)
 				for (int i = 0; i < DataSet.AGE_GROUPS; i++) {
 					vacTypes[doseIdx][i][vacIdx] = Integer.valueOf(nextLine[dataIndexes[i + 2]]); // +2 por columna nombre e indice
 				}

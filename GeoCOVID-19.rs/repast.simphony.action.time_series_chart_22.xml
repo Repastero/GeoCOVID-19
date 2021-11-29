@@ -33,6 +33,18 @@
       </SeriesData>
     </entry>
     <entry>
+      <string>Tercera Dosis</string>
+      <SeriesData>
+        <label>Tercera Dosis</label>
+        <color>
+          <red>0</red>
+          <green>255</green>
+          <blue>0</blue>
+          <alpha>255</alpha>
+        </color>
+      </SeriesData>
+    </entry>
+    <entry>
       <string>Segundas dosis</string>
       <SeriesData>
         <label>Segundas dosis</label>

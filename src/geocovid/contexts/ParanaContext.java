@@ -315,7 +315,7 @@ public class ParanaContext extends SubContext {
 			break;
 		case 607: // 30 agosto lunes
 			// Presencialidad plena en escuelas
-			setSchoolProtocol(false);
+			//setSchoolProtocol(false);
 			// Ventila hogares desde Septiembre
 			buildingManager.ventilateHomes(true);
 			break;

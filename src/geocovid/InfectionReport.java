@@ -49,6 +49,7 @@ public class InfectionReport {
 	//
 	private static int firstVaccineDoses;	// Primeras dosis aplicadas
 	private static int secondVaccineDoses;	// Segundas dosis aplicadas
+	private static int thirdVaccineDoses;	// Terceras dosis aplicadas
 	
 	public InfectionReport(int startDay, int maxDeaths) {
 		simulationStartDay	= startDay;
@@ -67,6 +68,7 @@ public class InfectionReport {
 		dailySymCasesAll	= 0;
 		firstVaccineDoses	= 0;
 		secondVaccineDoses	= 0;
+		thirdVaccineDoses	= 0;
 		
 		cumExposed		= new int[DataSet.AGE_GROUPS];
 		insAsxInfectious= new int[DataSet.AGE_GROUPS];
@@ -235,6 +237,9 @@ public class InfectionReport {
 		secondVaccineDoses += value;
 	}
 	
+	public static void addThirdVaccineDoses(int value) {
+		thirdVaccineDoses += value;
+	}
 	// Getters para usar en reportes de Repast Simphony
 	public static int getCumExposed()		{ return cumExposedAll; }
 	public static int getCumExposedToCS()	{ return cumExposedToCSAll; }
@@ -339,4 +344,5 @@ public class InfectionReport {
 	
 	public static int getFirstVaccineDoses()		{ return firstVaccineDoses; }
 	public static int getSecondVaccineDoses()		{ return secondVaccineDoses; }
+	public static int getThirdVaccineDoses()		{ return thirdVaccineDoses; }
 }
